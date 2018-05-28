@@ -1,9 +1,11 @@
-# A small PoC of a process wrapper that:
+# A small process wrapper that:
 
 * Forwards signals
 * Reap child processes (PID 1)
 * Rewrites exit codes from JVM
 * Handles crash reports
+
+
 
 
 # Build:
@@ -16,9 +18,9 @@ go install .
 
 # Usage:
 
-eve <javaargs> MainClass <args>
+radish <javaargs> MainClass <args>
 
 Example:
 
-eve -XX:+CrashOnOutOfMemoryError -Xmx10m -cp . Main
+radish -XX:+CrashOnOutOfMemoryError -Xmx10m -cp . Main
 

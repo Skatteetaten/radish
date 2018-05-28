@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/nixx/eve/pkg/eve"
+	"github.com/skatteetaten/radish/pkg/radish"
 	"os"
 )
 
 func main() {
-	eve.RunEve(os.Args)
+	radish.RunRadish(os.Args)
 }

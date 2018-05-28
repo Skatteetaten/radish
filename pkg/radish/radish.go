@@ -1,16 +1,17 @@
-package eve
+package radish
 
 import (
-	"github.com/nixx/eve/pkg/reaper"
-	"github.com/nixx/eve/pkg/signaler"
-	"github.com/nixx/eve/pkg/executor"
-	"syscall"
-	"github.com/Sirupsen/logrus"
 	"os"
 	"os/signal"
+	"syscall"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/skatteetaten/radish/pkg/executor"
+	"github.com/skatteetaten/radish/pkg/reaper"
+	"github.com/skatteetaten/radish/pkg/signaler"
 )
 
-func RunEve(args []string) {
+func RunRadish(args []string) {
 	e := executor.NewJavaExecutor(executor.FAILSAFE)
 	cmd := e.Execute(args)
 	err := cmd.Start()
