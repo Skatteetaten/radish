@@ -20,8 +20,6 @@ set -o pipefail
 
 export CGO_ENABLED=0
 
-echo "$@"
-
 TARGETS=$(for d in "$@"; do echo ./$d/...; done)
 
 echo "Running tests: "

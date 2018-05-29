@@ -2,20 +2,29 @@
 
 
 [[projects]]
-  name = "github.com/Sirupsen/logrus"
+  name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "a3f95b5c423586578a4e099b11a46c2479628cac"
-  version = "1.0.2"
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows"
+  ]
   revision = "0ac51a24ef1c37380f98ba8b98f56e3bffd59850"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7e575412688149f7c6b36571e7ed0f5bbe338bfbfe7fbfe0ce949009e50cd2e5"
+  inputs-digest = "10aeaeee47aff9e563a1db65fdce078290503f9d7ea7b72c6ab305849808c367"
   solver-name = "gps-cdcl"
   solver-version = 1

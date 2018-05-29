@@ -2,17 +2,21 @@ package executor
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
 )
 
+//MemoryStrategy :
 type MemoryStrategy string
 
 const (
-	FAILSAFE    MemoryStrategy = "Failsafe"
+	//FAILSAFE :
+	FAILSAFE MemoryStrategy = "Failsafe"
+	//LARGER_HEAP :
 	LARGER_HEAP MemoryStrategy = "LargerHeap"
 )
 
@@ -24,7 +28,8 @@ type generatedJavaExecutor struct {
 	MemoryStrategy MemoryStrategy
 }
 
-func NewJavaExecutor(stragegy MemoryStrategy) Executor {
+//NewJavaExecutor :
+func NewJavaExecutor(strategy MemoryStrategy) Executor {
 	return &generatedJavaExecutor{
 		javaExitHandler: javaExitHandler{},
 		MemoryStrategy:  FAILSAFE,
@@ -52,11 +57,11 @@ func (m *javaExitHandler) HandleExit(exitCode int, pid int) int {
 		return exitCode
 	}
 	if exitCode == int(syscall.SIGINT)+128 {
-		logrus.Info("Java terminanted successfully from a SIGINT")
+		logrus.Info("Java terminated successfully from a SIGINT")
 		return 0
 	}
 	if exitCode == int(syscall.SIGTERM)+128 {
-		logrus.Info("Java terminanted successfully from a SIGTERM")
+		logrus.Info("Java terminated successfully from a SIGTERM")
 		return 0
 	}
 	logrus.Info("%d", exitCode)

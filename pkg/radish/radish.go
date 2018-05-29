@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/reaper"
 	"github.com/skatteetaten/radish/pkg/signaler"

@@ -1,19 +1,21 @@
 package reaper
 
 import (
-	"github.com/Sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
 )
 
+//Start : start the reaping of child processes.
 func Start() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGCHLD)
-	go reapChilds(c)
+	go reapChildren(c)
 }
 
-func reapChilds(signals chan os.Signal) {
+func reapChildren(signals chan os.Signal) {
 	for range signals {
 		for {
 			var status syscall.WaitStatus
