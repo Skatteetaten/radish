@@ -11,6 +11,7 @@ import (
 	"github.com/skatteetaten/radish/pkg/signaler"
 )
 
+//RunRadish : main executor for Radish
 func RunRadish(args []string) {
 	e := executor.NewJavaExecutor(executor.FAILSAFE)
 	cmd := e.Execute(args)

@@ -1,12 +1,12 @@
 package executor
 
 import (
-	"syscall"
-	"os"
 	"fmt"
-	"os/exec"
 	"github.com/Sirupsen/logrus"
 	"io/ioutil"
+	"os"
+	"os/exec"
+	"syscall"
 )
 
 type MemoryStrategy string

@@ -2,8 +2,8 @@ package reaper
 
 import (
 	"github.com/Sirupsen/logrus"
-	"os/signal"
 	"os"
+	"os/signal"
 	"syscall"
 )
 
