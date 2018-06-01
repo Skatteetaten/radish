@@ -30,6 +30,5 @@ make clean test
 
 #Create executable in /bin/amd64
 make
-
 cd bin/amd64
 tar -cvf radish.tar.gz radish

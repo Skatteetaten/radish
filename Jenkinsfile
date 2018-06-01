@@ -35,12 +35,9 @@ node {
         ' -DgroupId=ske.aurora.openshift -DartifactId=radish -Dversion=' + version + 
         ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/amd64/radish.tar.gz'
 
-    echo(deployOpts)
-
     maven.setMavenVersion('Maven 3')
     maven.run('deploy:deploy-file', deployOpts)
 
-    echo ('after maven deploy:deploy-file')
   }
 
 }
