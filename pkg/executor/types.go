@@ -2,6 +2,7 @@ package executor
 
 import "os/exec"
 
+//Executor :
 type Executor interface {
 	/**
 	Execute a process

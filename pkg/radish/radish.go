@@ -14,8 +14,18 @@ import (
 
 //RunRadish : main executor for Radish
 func RunRadish(args []string) {
-	if args[0] == "bash" {
-		exec.Command("/bin/bash")
+	logrus.Infof("args: %d", args)
+	if args[1] == "bash" {
+		logrus.Info("Inside bash if")
+		cmd := exec.Command("/usr/bin/tail", "-f", "/dev/null")
+		cmd.Start()
+		pid := cmd.Process.Pid
+		logrus.Infof("pid: %d", pid)
+		var wstatus syscall.WaitStatus
+		syscall.Wait4(int(pid), &wstatus, 0, nil)
+		exitCode := wstatus.ExitStatus()
+		logrus.Infof("Exit code bash %d", exitCode)
+		os.Exit(int(exitCode))
 	} else {
 		e := executor.NewJavaExecutor(executor.FAILSAFE)
 		cmd := e.Execute(args)
