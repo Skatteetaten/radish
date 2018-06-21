@@ -1,10 +1,22 @@
 package main
 
 import (
-	"github.com/skatteetaten/radish/pkg/radish"
 	"os"
+	"strings"
+
+	"github.com/sirupsen/logrus"
+	"github.com/skatteetaten/radish/cmd"
+	"github.com/skatteetaten/radish/pkg/radish"
 )
 
 func main() {
-	radish.RunRadish(os.Args)
+
+	logrus.Infof("Started Radish with args: ", os.Args)
+
+	// The arguments contain java option "-cp", we assume we should run the java executor
+	if strings.Contains(strings.Join(os.Args, " "), "-cp") {
+		radish.RunRadish(os.Args)
+	} else {
+		cmd.Execute()
+	}
 }

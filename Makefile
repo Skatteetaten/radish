@@ -95,7 +95,7 @@ build-dirs: .go/src/$(PKG)
 	@rmdir .go/src/$(PKG)
 	@ln -s -r . .go/src/$(PKG)
 
-#make task for deploying local develop to nexus.
+#make task for deploying local artifact to nexus as develop-SNAPSHOT version.
 developdeploy:
 	@tar -cvf bin/$(ARCH)/radish.tar.gz  -C $(GOBIN) radish 
 	@mvn deploy:deploy-file -Durl=https://aurora/nexus/content/repositories/snapshots -DrepositoryId=snapshots -DgroupId=ske.aurora.openshift -DartifactId=radish -Dversion=develop-SNAPSHOT -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/amd64/radish.tar.gz -B
