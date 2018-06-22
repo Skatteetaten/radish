@@ -10,8 +10,8 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "radish",
-	Short: "Radish is..",
-	Long:  `Radish.. some nice text`,
+	Short: "Radish is.. TODO",
+	Long:  `TODO: Radish.. some nice text`,
 }
 
 //Execute :
@@ -25,6 +25,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(radish.RunPlaceholder)
+	rootCmd.AddCommand(radish.GenerateStartScript)
 	// Here you will define your flags and configuration settings.
 	// Cobra supports Persistent Flags, which, if defined here,
 	// will be global for your application.
