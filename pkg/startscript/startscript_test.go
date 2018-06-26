@@ -2,8 +2,8 @@ package startscript
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,15 +15,9 @@ exec radish -Dfoo=bar -cp "/app/lib/metrics.jar:/app/lib/rt.jar:/app/lib/spring.
 
 func TestGenerateStartscript(t *testing.T) {
 	t.Log("test")
-	json, err := ioutil.ReadFile("testconfig")
-	assert.NoError(t, err)
+	json := helperLoadBytes(t, "testconfig")
 
-	fmt.Println("say hi")
-	t.Log("test")
-	t.Logf("dat: %d", json)
-
-	var data Data
-	data, err = unMarshalJSON(json)
+	data, err := unMarshalJSON(json)
 	assert.NoError(t, err)
 
 	writer := newStartScript(data)
@@ -34,4 +28,18 @@ func TestGenerateStartscript(t *testing.T) {
 	startscript := buffer.String()
 	assert.Equal(t, expectedStartScript, startscript)
 
+}
+
+func helperGetTestPath(name string) string {
+	path := filepath.Join("testdata", name) // relative path
+	return path
+}
+
+func helperLoadBytes(t *testing.T, name string) []byte {
+	path := helperGetTestPath(name)
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return bytes
 }

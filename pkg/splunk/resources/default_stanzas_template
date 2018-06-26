@@ -1,0 +1,29 @@
+# --- start/stanza STDOUT
+[monitor://./logs/*.log]
+disabled = false
+followTail = 0
+sourcetype = log4j
+index = {{.SplunkIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
+host = {{.HostName}}
+# --- end/stanza
+
+# --- start/stanza ACCESS_LOG
+[monitor://./logs/*.access]
+disabled = false
+followTail = 0
+sourcetype = access_combined
+index = {{.SplunkIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
+host = {{.HostName}}
+# --- end/stanza
+
+# --- start/stanza GC LOG
+[monitor://./logs/*.gc]
+disabled = false
+followTail = 0
+sourcetype = gc_log
+index = {{.SplunkIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
+host = {{.HostName}}
+# --- end/stanza

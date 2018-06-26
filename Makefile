@@ -55,7 +55,7 @@ deps: build-dirs
 
 
 
-build: build-dirs bin-file
+build: build-dirs generate bin-file
 
 bin-file:
 	@echo "Building with GoPath : $(GOPATH) and GoSrc $(GOSRC)"
@@ -94,6 +94,9 @@ build-dirs: .go/src/$(PKG)
 	@mkdir -p .go/src/$(PKG)
 	@rmdir .go/src/$(PKG)
 	@ln -s -r . .go/src/$(PKG)
+
+generate:
+	@go generate -x ./pkg/splunk	
 
 #make task for deploying local artifact to nexus as develop-SNAPSHOT version.
 developdeploy:

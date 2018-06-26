@@ -1,0 +1,6 @@
+{
+    "SplunkIndex"  : "splunkIndex",
+	"PodNamespace" : "podNameSpace",
+	"AppName"      : "appName",
+	"HostName"     : "hostName"
+}
