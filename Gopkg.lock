@@ -20,6 +20,12 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/plaid/go-envvar"
+  packages = ["envvar"]
+  revision = "9426fece058e5c4d8715f543a76b361e3156435a"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -67,6 +73,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0d30d2300e888bff8e2d60759014124f4760b30a477c6a171b780575cc019b8c"
+  inputs-digest = "05217824f8b6b079be46ae2f886f1c401706d3a93b47e61431e4c33808378a4f"
   solver-name = "gps-cdcl"
   solver-version = 1

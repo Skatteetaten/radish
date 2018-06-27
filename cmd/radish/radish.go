@@ -50,9 +50,9 @@ var GenerateSplunkStanzas = &cobra.Command{
 	Short: "Use to generate Splunk stanzas. If a stanza template file is provided, use it, if not, use default stanzas.",
 	Long: `For generating Splunk stanzas. 
 
-Takes 3 parameters:
+Takes a number of flags, most mandatory:
 
-1. templateFilePath - path of a file containing a template. If empty string, the default template will be used.
+1. templateFilePath - optional - path of a file containing a template. If not provided, the default template will be used.
 	Default template:
 
 		# --- start/stanza STDOUT
@@ -85,31 +85,36 @@ Takes 3 parameters:
 		host = {{.HostName}}
 		# --- end/stanza
 
-2. configFilePath - path to a JSON file containing template variables.
+2. splunkIndex - optional - template variable. Overrides environment variable SPLUNK_INDEX
 
-	Expected configuration file with 4 parameters as follows:
+3. podNamespace - optional - template variable. Overrides environment variable POD_NAMESPACE
 
-		{
-			"SplunkIndex"  : "splunkIndex",
-			"PodNamespace" : "podNameSpace",
-			"AppName"      : "appName",
-			"HostName"     : "hostName"
-		}	
+4. appName - optional - template variable. Overrides environment variable APP_NAME
 
-3. outputFilePath - path/name of the output file.
+5. hostName - optional - template variable. Overrides environment variable HOST_NAME
+
+6. outputFilePath - path/name of the output file.
+
+For the template variables, they are only semi-optional. Radish generateSplunkStanzas will fail 
+if no environment variable or the corresponding flag is set for any of the four template variables. 
+In other words, if the flag is not set, then the environment variable must exist.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		template := ""
 		if cmd.Flag("templateFilePath") != nil {
 			template = cmd.Flag("templateFilePath").Value.String()
 		}
-		config := cmd.Flag("configFilePath").Value.String()
+		
 		output := cmd.Flag("outputFilePath").Value.String()
+		splunkIndex := cmd.Flag("splunkIndex").Value.String()
+		podNamespace := cmd.Flag("podNamespace").Value.String()
+		appName := cmd.Flag("appName").Value.String()
+		hostName := cmd.Flag("hostName").Value.String()
 
-		success, err := splunk.GenerateStanzas(template, config, output)
+		success, err := splunk.GenerateStanzas(template, splunkIndex, podNamespace, appName, hostName, output)
 
 		if err != nil {
-			logrus.Fatalf("Splunk stanza generation failed: %d", err)
+			logrus.Fatalf("Splunk stanza generation failed: %s", err)
 			os.Exit(1)
 		}
 

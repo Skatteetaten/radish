@@ -18,6 +18,10 @@ var rootCmd = &cobra.Command{
 var TemplateFilePath string
 var ConfigFilePath string
 var OutputFilePath string
+var SplunkIndex string
+var PodNamespace string
+var AppName string
+var HostName string
 
 //Execute :
 func Execute() {
@@ -39,8 +43,12 @@ func init() {
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&TemplateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")
-	radish.GenerateSplunkStanzas.Flags().StringVarP(&ConfigFilePath, "configFilePath", "c", "", "path of json config file")
-	radish.GenerateSplunkStanzas.MarkFlagRequired("configFilePath")
+
+	radish.GenerateSplunkStanzas.Flags().StringVarP(&SplunkIndex, "splunkIndex", "s", "", "SplunkIndex value - template variable, will attempt to use environment variable SPLUNK_INDEX if not set. ")
+	radish.GenerateSplunkStanzas.Flags().StringVarP(&PodNamespace, "podNamespace", "p", "", "PodNamespace value - template variable, will attempt to use environment variable POD_NAMESPACE if not set.")
+	radish.GenerateSplunkStanzas.Flags().StringVarP(&AppName, "appName", "a", "", "AppName value - template variable, will attempt to use environment variable APP_NAME if not set.")
+	radish.GenerateSplunkStanzas.Flags().StringVarP(&HostName, "hostName", "n", "", "HostName value - template variable, will attempt to use environment variable HOST_NAME if not set.")
+
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&OutputFilePath, "outputFilePath", "o", "", "path of output file")
 	radish.GenerateSplunkStanzas.MarkFlagRequired("outputFilePath")
 
