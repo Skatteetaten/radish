@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/skatteetaten/radish/pkg/auroraenv"
 	"github.com/skatteetaten/radish/pkg/splunk"
 	"github.com/skatteetaten/radish/pkg/startscript"
 )
@@ -44,13 +45,35 @@ var GenerateStartScript = &cobra.Command{
 	},
 }
 
+//SetAuroraEnv : Use to set environment variables from appropriate properties files, based on app- and aurora versions.
+var SetAuroraEnv = &cobra.Command{
+	Use:   "setAuroraEnv",
+	Short: "Use to set environment variables from appropriate properties files, based on app- and aurora versions.",
+	Long: `For setting environment variables based on properties files. 
+	Which properties files is deduced from environment variables APP_VERSION and AURORA_VERSION.
+	The environment variable HOME is also required, as the base folder for all operations.
+	This command is looking for .properties files in $HOME/config/{secrets, configmaps}
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		success, err := auroraenv.SetAuroraEnv()
+		if err != nil {
+			logrus.Fatalf("Setting Aurora environment variables failed: %s", err)
+			os.Exit(1) //TODO what to exit with?
+		}
+		if success {
+			logrus.Infof("Aurora environment variables set")
+		}
+
+	},
+}
+
 //GenerateSplunkStanzas : Use to generate Splunk stanzas. If a stanza template file is present, use it, if not, use default stanzas.
 var GenerateSplunkStanzas = &cobra.Command{
 	Use:   "generateSplunkStanzas",
 	Short: "Use to generate Splunk stanzas. If a stanza template file is provided, use it, if not, use default stanzas.",
 	Long: `For generating Splunk stanzas. 
 
-Takes a number of flags, most mandatory:
+Takes a number of flags:
 
 1. templateFilePath - optional - path of a file containing a template. If not provided, the default template will be used.
 	Default template:
@@ -104,7 +127,7 @@ In other words, if the flag is not set, then the environment variable must exist
 		if cmd.Flag("templateFilePath") != nil {
 			template = cmd.Flag("templateFilePath").Value.String()
 		}
-		
+
 		output := cmd.Flag("outputFilePath").Value.String()
 		splunkIndex := cmd.Flag("splunkIndex").Value.String()
 		podNamespace := cmd.Flag("podNamespace").Value.String()

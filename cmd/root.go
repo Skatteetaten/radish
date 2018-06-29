@@ -52,6 +52,8 @@ func init() {
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&OutputFilePath, "outputFilePath", "o", "", "path of output file")
 	radish.GenerateSplunkStanzas.MarkFlagRequired("outputFilePath")
 
+	rootCmd.AddCommand(radish.SetAuroraEnv)
+
 	// Here you will define your flags and configuration settings.
 	// Cobra supports Persistent Flags, which, if defined here,
 	// will be global for your application.
