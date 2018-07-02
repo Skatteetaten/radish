@@ -5,7 +5,7 @@ type dep 2> /dev/null || /bin/sh -c "export GOPATH=$GOROOT && curl https://raw.g
 type go-junit-report 2> /dev/null || go get -u github.com/jstemmer/go-junit-report
 type gocov 2> /dev/null || go get github.com/axw/gocov/gocov
 type gocov-xml 2> /dev/null || go get github.com/AlekSi/gocov-xml
-
+type go-bindata 2> /dev/null || go get -u github.com/jteeuwen/go-bindata/...
 
 make build-dirs
 
@@ -25,10 +25,13 @@ export COBERTURA_REPORT=coverage.xml
 # Go get is not the best way of installing.... :/
 export PATH=$PATH:$HOME/go/bin
 
-#Run test and coverage
-make clean test
+make clean 
 
 #Create executable in /bin/amd64
 make
+
+#Run test and coverage
+make test
+
 cd bin/amd64
-tar -cvf radish.tar.gz radish
+tar -cvzf radish.tar.gz radish
