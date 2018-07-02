@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	logrus.Infof("Started Radish with args: ", os.Args)
+	logrus.Debugf("Started Radish with args: ", os.Args)
 
 	// The arguments contain java option "-cp", we assume we should run the java executor
 	if strings.Contains(strings.Join(os.Args, " "), "-cp") {

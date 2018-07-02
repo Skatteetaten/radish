@@ -1,6 +1,7 @@
 package auroraenv
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -25,8 +26,6 @@ type EnvData struct {
 
 //SetAuroraEnv :
 func SetAuroraEnv() (bool, error) {
-	logrus.Info("Inside SetAuroraEnv")
-
 	vars := EnvData{}
 	if err := envvar.Parse(&vars); err != nil {
 		logrus.Fatal(err)
@@ -40,8 +39,7 @@ func SetAuroraEnv() (bool, error) {
 	for _, dir := range configDirs {
 		configVersion, err := findConfigVersion(vars.AuroraVersion, vars.AppVersion, dir)
 		if err != nil {
-			logrus.Info("No config in " + dir)
-			logrus.Debug(err)
+			logrus.Debugf("No config in %d. Err: %s", dir, err)
 			continue
 		}
 		exportPropertiesAsEnvVars(dir + "/" + configVersion + ".properties")
@@ -73,7 +71,7 @@ func exportPropertiesAsEnvVars(filepath string) (bool, error) {
 	p := properties.MustLoadFile(filepath, properties.UTF8)
 	for _, key := range p.Keys() {
 		val := p.MustGetString(key)
-		os.Setenv(key, val)
+		fmt.Printf("export %s=%v\n", key, val)
 
 		//TODO need to handle panic? can't I think.. must check conditions before calling if so
 	}

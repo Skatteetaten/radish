@@ -96,7 +96,8 @@ build-dirs: .go/src/$(PKG)
 	@ln -s -r . .go/src/$(PKG)
 
 generate:
-	@go generate -x ./pkg/splunk	
+	@go generate -x ./pkg/splunk
+	@go fmt pkg/splunk/resources/bindata.go
 
 #make task for deploying local artifact to nexus as develop-SNAPSHOT version.
 developdeploy:

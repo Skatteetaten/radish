@@ -1,6 +1,7 @@
 package auroraenv
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -27,8 +28,6 @@ key2=val2
 	success, err := SetAuroraEnv()
 	assert.NoError(t, err)
 	assert.True(t, success)
-
-	assert.True(t, os.Getenv("key1") == "value1")
 
 	//cleanup file
 	os.RemoveAll("envtest")
@@ -61,13 +60,27 @@ key1=value1
 key2=val2
 `), 0644)
 
-	exportPropertiesAsEnvVars("test_data/test.properties")
+	output := captureOutputFromFunction(exportPropertiesAsEnvVars, "test_data/test.properties")
 
-	assert.True(t, os.Getenv("key1") == "value1")
-	assert.True(t, os.Getenv("key2") == "val2")
-	_, val3Exist := os.LookupEnv("key3")
-	assert.False(t, val3Exist)
+	expected := `export key1=value1
+export key2=val2
+`
+	assert.Equal(t, output, expected)
 
 	os.RemoveAll("test_data")
+}
 
+func captureOutputFromFunction(f func(param string) (bool, error), param string) string {
+	rescueStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	f(param)
+	w.Close()
+	out, _ := ioutil.ReadAll(r)
+	os.Stdout = rescueStdout
+
+	fmt.Printf("Captured: %s", out)
+
+	return string(out)
 }

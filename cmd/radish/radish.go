@@ -50,6 +50,10 @@ var SetAuroraEnv = &cobra.Command{
 	Use:   "setAuroraEnv",
 	Short: "Use to set environment variables from appropriate properties files, based on app- and aurora versions.",
 	Long: `For setting environment variables based on properties files. 
+	Running this command will print a number of export statements that can be eval'ed.
+
+	Example usage: eval $(radish setAuroraEnv)
+
 	Which properties files is deduced from environment variables APP_VERSION and AURORA_VERSION.
 	The environment variable HOME is also required, as the base folder for all operations.
 	This command is looking for .properties files in $HOME/config/{secrets, configmaps}

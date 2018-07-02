@@ -13,7 +13,12 @@ import (
 
 func TestGenerateStanzas(t *testing.T) {
 	outputFileName := "testStanza"
-	GenerateStanzas("", helperGetTestPath("testconfig"), outputFileName)
+	os.Setenv("SPLUNK_INDEX", "splunkIndex")
+	os.Setenv("POD_NAMESPACE", "podNamespace")
+	os.Setenv("APP_NAME", "appName")
+	os.Setenv("HOST_NAME", "hostName")
+
+	GenerateStanzas("", "", "", "", "", outputFileName)
 
 	if _, err := os.Stat(outputFileName); err == nil {
 		t.Logf("%s exists!", outputFileName)
@@ -47,12 +52,6 @@ func TestReadStanzasTemplate(t *testing.T) {
 	t.Log(stanzaString2)
 
 	assert.True(t, strings.HasPrefix(stanzaString2, "# --- start/stanza STDOUT"))
-}
-
-func TestReadConfig(t *testing.T) {
-	config, err := readConfigFile(helperGetTestPath("testconfig"))
-	assert.NoError(t, err)
-	assert.True(t, config.AppName == "appName")
 }
 
 //TODO move generic helper funcs to utils package or something
