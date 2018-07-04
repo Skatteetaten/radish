@@ -1,3 +1,5 @@
 vendor
 .go
 bin/amd64
+.idea/
+

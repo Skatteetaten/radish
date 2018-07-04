@@ -11,6 +11,7 @@ import (
 	"github.com/skatteetaten/radish/pkg/auroraenv"
 	"github.com/skatteetaten/radish/pkg/splunk"
 	"github.com/skatteetaten/radish/pkg/startscript"
+	"fmt"
 )
 
 //GenerateStartScript : Use to generate startScript. Input params: configFilePath, outputFilePath
@@ -45,29 +46,28 @@ var GenerateStartScript = &cobra.Command{
 	},
 }
 
-//SetAuroraEnv : Use to set environment variables from appropriate properties files, based on app- and aurora versions.
-var SetAuroraEnv = &cobra.Command{
-	Use:   "setAuroraEnv",
+//GenerateEnvScript : Use to set environment variables from appropriate properties files, based on app- and aurora versions.
+var GenerateEnvScript = &cobra.Command{
+	Use:   "generateEnvScript",
 	Short: "Use to set environment variables from appropriate properties files, based on app- and aurora versions.",
 	Long: `For setting environment variables based on properties files. 
 	Running this command will print a number of export statements that can be eval'ed.
 
-	Example usage: eval $(radish setAuroraEnv)
+	Example usage: eval $(radish generateEnvScript)
 
 	Which properties files is deduced from environment variables APP_VERSION and AURORA_VERSION.
 	The environment variable HOME is also required, as the base folder for all operations.
 	This command is looking for .properties files in $HOME/config/{secrets, configmaps}
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		success, err := auroraenv.SetAuroraEnv()
+		//We set output to stderr since we eval from stdout
+		logrus.SetOutput(os.Stderr)
+		shellscript, err := auroraenv.GenerateEnvScript()
 		if err != nil {
 			logrus.Fatalf("Setting Aurora environment variables failed: %s", err)
-			os.Exit(1) //TODO what to exit with?
+		} else {
+			fmt.Println(shellscript)
 		}
-		if success {
-			logrus.Infof("Aurora environment variables set")
-		}
-
 	},
 }
 

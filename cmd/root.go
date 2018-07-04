@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/cmd/radish"
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 var rootCmd = &cobra.Command{
@@ -52,7 +53,7 @@ func init() {
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&OutputFilePath, "outputFilePath", "o", "", "path of output file")
 	radish.GenerateSplunkStanzas.MarkFlagRequired("outputFilePath")
 
-	rootCmd.AddCommand(radish.SetAuroraEnv)
+	rootCmd.AddCommand(radish.GenerateEnvScript)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports Persistent Flags, which, if defined here,
@@ -67,5 +68,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	//TODO
+	if strings.ToUpper(os.Getenv("DEBUG")) == "TRUE" {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
 }

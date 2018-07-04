@@ -4,7 +4,7 @@ disabled = false
 followTail = 0
 sourcetype = log4j
 index = splunkIndex
-_meta = environment::podNameSpace application::appName nodetype::openshift
+_meta = environment::podNamespace application::appName nodetype::openshift
 host = hostName
 # --- end/stanza
 
@@ -14,7 +14,7 @@ disabled = false
 followTail = 0
 sourcetype = access_combined
 index = splunkIndex
-_meta = environment::podNameSpace application::appName nodetype::openshift
+_meta = environment::podNamespace application::appName nodetype::openshift
 host = hostName
 # --- end/stanza
 
@@ -24,6 +24,6 @@ disabled = false
 followTail = 0
 sourcetype = gc_log
 index = splunkIndex
-_meta = environment::podNameSpace application::appName nodetype::openshift
+_meta = environment::podNamespace application::appName nodetype::openshift
 host = hostName
 # --- end/stanza
