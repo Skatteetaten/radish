@@ -1,6 +1,6 @@
 package splunk
 
-//go:generate go-bindata -pkg=$GOPACKAGE -o=resources/bindata.go resources
+//go:generate go-bindata -ignore=.*bindata.go.* -pkg=$GOPACKAGE -o=resources/bindata.go  resources
 
 import (
 	"io/ioutil"
