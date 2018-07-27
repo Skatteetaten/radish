@@ -24,7 +24,7 @@ type Data struct {
 
 //GenerateStanzas :
 func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
-	podNamespaceFlag string, appNameFlag string, hostNameFlag string, outputFilePath string) (bool, error) {
+	podNamespaceFlag string, appNameFlag string, hostNameFlag string, outputFilePath string) error {
 	vars := Data{}
 	if err := envvar.Parse(&vars); err != nil {
 		logrus.Fatal(err)
@@ -32,37 +32,41 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 
 	if splunkIndexFlag != "" {
 		vars.SplunkIndex = splunkIndexFlag
-	} else if vars.SplunkIndex == "" {
-		return false, errors.New("No SplunkIndex present as flag or environment variable")
+	}
+
+	if vars.SplunkIndex == "" {
+		logrus.Debug("No SPLUNK_INDEX env variable present")
+		return nil
 	}
 	if podNamespaceFlag != "" {
 		vars.PodNamespace = podNamespaceFlag
 	} else if vars.PodNamespace == "" {
-		return false, errors.New("No PodNamespace present as flag or environment variable")
+		return errors.New("No PodNamespace present as flag or environment variable")
 	}
 	if appNameFlag != "" {
 		vars.AppName = appNameFlag
 	} else if vars.AppName == "" {
-		return false, errors.New("No AppName present as flag or environment variable")
+		return errors.New("No AppName present as flag or environment variable")
 	}
 	if hostNameFlag != "" {
 		vars.HostName = hostNameFlag
 	} else if vars.HostName == "" {
-		return false, errors.New("No HostName present as flag or environment variable")
+		return errors.New("No HostName present as flag or environment variable")
 	}
 
 	stanzatemplate, err := readStanzasTemplate(templateFilePath)
 	if err != nil {
-		return false, errors.Wrapf(err, "Failed to read template file from ", templateFilePath)
+		return errors.Wrapf(err, "Failed to read template file from ", templateFilePath)
 	}
 
 	fileWriter := util.NewFileWriter(outputFilePath)
 
 	if err := fileWriter(newSplunkStanzas(string(stanzatemplate), vars), outputFilePath); err != nil {
-		return false, errors.Wrap(err, "Failed to write Splunk stanzas")
+		return errors.Wrap(err, "Failed to write Splunk stanzas")
 	}
 
-	return true, nil
+	logrus.Infof("Wrote splunk stanza to %s", outputFilePath)
+	return nil
 }
 
 func readStanzasTemplate(templateFilePath string) ([]byte, error) {

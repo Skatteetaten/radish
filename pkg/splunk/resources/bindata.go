@@ -83,7 +83,7 @@ func resourcesDefault_stanzas_template() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "resources/default_stanzas_template", size: 768, mode: os.FileMode(420), modTime: time.Unix(1530694711, 0)}
+	info := bindataFileInfo{name: "resources/default_stanzas_template", size: 768, mode: os.FileMode(420), modTime: time.Unix(1532685304, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

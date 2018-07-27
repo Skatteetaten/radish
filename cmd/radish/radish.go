@@ -138,15 +138,11 @@ In other words, if the flag is not set, then the environment variable must exist
 		appName := cmd.Flag("appName").Value.String()
 		hostName := cmd.Flag("hostName").Value.String()
 
-		success, err := splunk.GenerateStanzas(template, splunkIndex, podNamespace, appName, hostName, output)
+		err := splunk.GenerateStanzas(template, splunkIndex, podNamespace, appName, hostName, output)
 
 		if err != nil {
 			logrus.Fatalf("Splunk stanza generation failed: %s", err)
 			os.Exit(1)
-		}
-
-		if success {
-			logrus.Infof("Splunk Stanzas generated")
 		}
 	},
 }
