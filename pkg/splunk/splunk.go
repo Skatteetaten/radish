@@ -19,7 +19,7 @@ type Data struct {
 	SplunkIndex  string `envvar:"SPLUNK_INDEX" default:""`
 	PodNamespace string `envvar:"POD_NAMESPACE" default:""`
 	AppName      string `envvar:"APP_NAME" default:""`
-	HostName     string `envvar:"HOST_NAME" default:""`
+	HostName     string `envvar:"HOSTNAME" default:""`
 }
 
 //GenerateStanzas :
