@@ -61,7 +61,7 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 
 	fileWriter := util.NewFileWriter(outputFilePath)
 
-	if err := fileWriter(newSplunkStanzas(string(stanzatemplate), vars), outputFilePath); err != nil {
+	if err := fileWriter(newSplunkStanzas(string(stanzatemplate), vars), "application.splunk"); err != nil {
 		return errors.Wrap(err, "Failed to write Splunk stanzas")
 	}
 

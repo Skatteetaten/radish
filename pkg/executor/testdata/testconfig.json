@@ -1,0 +1,14 @@
+{
+  "Type": "JavaDescriptor",
+  "Version": "1",
+  "Data": {
+    "BaseDir": "testdata",
+    "PathsToClassLibraries": [
+      "lib",
+      "lib/lib2/lib4.jar"
+    ],
+    "JvmOptions": "-Dfoo=bar",
+    "MainClass": "foo.bar.Main",
+    "ApplicationArgs": "--logging.config=logback.xml"
+  }
+}

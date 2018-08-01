@@ -24,7 +24,7 @@ var PodNamespace string
 var AppName string
 var HostName string
 
-//Execute :
+//BuildCmd :
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -35,12 +35,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.AddCommand(radish.RunPlaceholder)
-	rootCmd.AddCommand(radish.GenerateStartScript)
-	radish.GenerateStartScript.Flags().StringVarP(&ConfigFilePath, "configFilePath", "c", "", "path of json config file")
-	radish.GenerateStartScript.MarkFlagRequired("configFilePath")
-	radish.GenerateStartScript.Flags().StringVarP(&OutputFilePath, "outputFilePath", "o", "", "path of output file")
-	radish.GenerateStartScript.MarkFlagRequired("outputFilePath")
+	rootCmd.AddCommand(radish.RunJava)
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&TemplateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")

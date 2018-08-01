@@ -1,23 +1,26 @@
 package radish
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
-
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/reaper"
 	"github.com/skatteetaten/radish/pkg/signaler"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 )
 
-//RunRadish : main executor for Radish
 func RunRadish(args []string) {
-	logrus.Infof("args: %d", args)
-
-	e := executor.NewJavaExecutor(executor.FAILSAFE)
-	cmd := e.Execute(args)
-	err := cmd.Start()
+	e := executor.NewJavaExecutor()
+	radishDescriptor, err := locateRadishDescriptor(args)
+	cmd, err := e.BuildCmd(radishDescriptor)
+	logrus.Infof("Starting java with %s", strings.Join(cmd.Args, " "))
+	if err != nil {
+		logrus.Fatalf("Unable to start app %s", err)
+	}
+	err = cmd.Start()
 	if err != nil {
 		logrus.Fatalf("Error starting: %s", err)
 	}
@@ -26,10 +29,29 @@ func RunRadish(args []string) {
 	pid := cmd.Process.Pid
 	signaler.Start(cmd.Process)
 	var wstatus syscall.WaitStatus
-	//processState, error := cmd.Process.Wait()
-	//processState.
 	syscall.Wait4(int(pid), &wstatus, 0, nil)
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
 	os.Exit(int(exitCode))
+}
+
+func locateRadishDescriptor(args []string) (string, error) {
+	if len(args) > 0 {
+		if _, err := os.Stat(args[0]); err == nil {
+			return args[0], nil
+		} else {
+			errors.Wrapf(err, "Error reading %s", args[0])
+		}
+	}
+	descriptor, exists := os.LookupEnv("RADISH_DESCRIPTOR")
+	if exists {
+		return descriptor, nil
+	}
+	if _, err := os.Stat("/u01/app/radish.json"); err == nil {
+		return "/u01/app/radish.json", nil
+	}
+	if _, err := os.Stat("/radish.json"); err == nil {
+		return "/radish.json", nil
+	}
+	return "", errors.New("No radish descriptor found")
 }

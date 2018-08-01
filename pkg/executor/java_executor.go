@@ -1,23 +1,14 @@
 package executor
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/sirupsen/logrus"
+	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"syscall"
-
-	"github.com/sirupsen/logrus"
-)
-
-//MemoryStrategy :
-type MemoryStrategy string
-
-const (
-	//FAILSAFE :
-	FAILSAFE MemoryStrategy = "Failsafe"
-	//LARGER_HEAP :
-	LARGER_HEAP MemoryStrategy = "LargerHeap"
 )
 
 type javaExitHandler struct {
@@ -25,29 +16,32 @@ type javaExitHandler struct {
 
 type generatedJavaExecutor struct {
 	javaExitHandler
-	MemoryStrategy MemoryStrategy
 }
 
-//NewJavaExecutor :
-func NewJavaExecutor(strategy MemoryStrategy) Executor {
+func NewJavaExecutor() Executor {
 	return &generatedJavaExecutor{
 		javaExitHandler: javaExitHandler{},
-		MemoryStrategy:  FAILSAFE,
 	}
 }
 
-func (m *generatedJavaExecutor) Execute(args []string) *exec.Cmd {
-	//TODO Generate Exec string and read all the config and secret stuff
-
-	environ := os.Environ()
-	processedEnviron := make([]string, len(environ))
-	processedEnviron = append(processedEnviron, "EKSTRA_KONFIG=CONFIG")
-	cmd := exec.Command("java", args[1:]...)
+func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, error) {
+	dat, err := ioutil.ReadFile(radishDescriptor)
+	if err != nil {
+		return nil, err
+	}
+	desc, err := unmarshallDescriptor(bytes.NewBuffer(dat))
+	if err != nil {
+		return nil, err
+	}
+	args, err := buildArgline(desc, os.LookupEnv, util.ReadCGroupLimits())
+	if err != nil {
+		return nil, err
+	}
+	cmd := exec.Command("java", args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.Env = processedEnviron
-	return cmd
+	return cmd, nil
 }
 
 func (m *javaExitHandler) HandleExit(exitCode int, pid int) int {
@@ -64,7 +58,6 @@ func (m *javaExitHandler) HandleExit(exitCode int, pid int) int {
 		logrus.Info("Java terminated successfully from a SIGTERM")
 		return 0
 	}
-	logrus.Info("%d", exitCode)
 	return exitCode
 }
 

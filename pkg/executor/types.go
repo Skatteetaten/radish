@@ -2,12 +2,11 @@ package executor
 
 import "os/exec"
 
-//Executor :
 type Executor interface {
 	/**
-	Execute a process
+	Build a command
 	*/
-	Execute(args []string) *exec.Cmd
+	BuildCmd(string) (*exec.Cmd, error)
 
 	/**
 	Handles exit code and rewrites exit code

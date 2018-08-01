@@ -6,7 +6,7 @@ import (
 )
 
 func TestHandleExit(t *testing.T) {
-	executor := NewJavaExecutor(FAILSAFE)
+	executor := NewJavaExecutor()
 
 	oomCode := int(syscall.SIGABRT) + 128
 	oomHandled := executor.HandleExit(oomCode, 1)

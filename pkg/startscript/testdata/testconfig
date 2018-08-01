@@ -1,1 +1,0 @@
-{"Classpath" : ["/app/lib/metrics.jar", "/app/lib/rt.jar", "/app/lib/spring.jar"],"JvmOptions" : "-Dfoo=bar","MainClass" : "foo.bar.Main",	"ApplicationArgs" : "--logging.config=logback.xml"}

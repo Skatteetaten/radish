@@ -2,49 +2,14 @@ package radish
 
 import (
 	"os"
-	"os/exec"
-	"syscall"
-
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/skatteetaten/radish/pkg/auroraenv"
 	"github.com/skatteetaten/radish/pkg/splunk"
-	"github.com/skatteetaten/radish/pkg/startscript"
 	"fmt"
+	"github.com/skatteetaten/radish/pkg/radish"
 )
-
-//GenerateStartScript : Use to generate startScript. Input params: configFilePath, outputFilePath
-var GenerateStartScript = &cobra.Command{
-	Use:   "generateStartScript",
-	Short: "Use to generate startScript. Input options: configFilePath, outputFilePath",
-	Long: `Requires 2 parameters: 
-	1. configFilePath - Path to a file containing configuration json with classpath, mainclass, java options and application arguments. Example config:
-	{
-		"Classpath" : ["/app/lib/metrics.jar", "/app/lib/rt.jar", "/app/lib/spring.jar"],
-		"JvmOptions" : "-Dfoo=bar",
-		"MainClass" : "foo.bar.Main",	
-		"ApplicationArgs" : "--logging.config=logback.xml"
-	}
-
-	2. outputFilePath - Where to put the generated startscript file.
-	`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		var configFilePath = cmd.Flag("configFilePath").Value.String()
-		var outputFilePath = cmd.Flag("outputFilePath").Value.String()
-
-		success, err := startscript.GenerateStartscript(configFilePath, outputFilePath)
-		if err != nil {
-			logrus.Fatalf("Startscript generation failed: %d", err)
-			os.Exit(1) //TODO what to exit with?
-		}
-
-		if success {
-			logrus.Infof("Startscript generated")
-		}
-	},
-}
 
 //GenerateEnvScript : Use to set environment variables from appropriate properties files, based on app- and aurora versions.
 var GenerateEnvScript = &cobra.Command{
@@ -147,22 +112,12 @@ In other words, if the flag is not set, then the environment variable must exist
 	},
 }
 
-//RunPlaceholder :(DEPRECATED) Initally a way to start a container that used radish as entrypoint.
-var RunPlaceholder = &cobra.Command{
-	Use:   "placeholder",
-	Short: "(DEPRECATED) Run radish with a placeholder process (tail -f /dev/null) for use with radish as entrypoint",
-	Long:  `Will be removed`,
+var RunJava = &cobra.Command{
+	Use:   "runJava",
+	Short: "Runs a Java process with Radish",
+	Long:  `Runs a Java process with Radish. It automatically detects CGroup limits and some common flags`,
+	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		logrus.Info("Inside placeholder")
-		comd := exec.Command("/usr/bin/tail", "-f", "/dev/null")
-		comd.Start()
-		pid := comd.Process.Pid
-		logrus.Infof("pid: %d", pid)
-		var wstatus syscall.WaitStatus
-		syscall.Wait4(int(pid), &wstatus, 0, nil)
-		exitCode := wstatus.ExitStatus()
-		logrus.Infof("Exit code bash %d", exitCode)
-		os.Exit(int(exitCode))
-
+		radish.RunRadish(args)
 	},
 }
