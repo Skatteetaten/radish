@@ -16,10 +16,10 @@ func RunRadish(args []string) {
 	e := executor.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
 	cmd, err := e.BuildCmd(radishDescriptor)
-	logrus.Infof("Starting java with %s", strings.Join(cmd.Args, " "))
 	if err != nil {
 		logrus.Fatalf("Unable to start app %s", err)
 	}
+	logrus.Infof("Starting java with %s", strings.Join(cmd.Args, " "))
 	err = cmd.Start()
 	if err != nil {
 		logrus.Fatalf("Error starting: %s", err)
