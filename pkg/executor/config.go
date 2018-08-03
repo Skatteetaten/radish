@@ -60,6 +60,10 @@ func createClasspath(basedir string, patterns []string) ([]string, error) {
 	for _, pattern := range patterns {
 		p := path.Join(basedir, pattern)
 		fi, err := os.Stat(p)
+		if os.IsNotExist(err) {
+			logrus.Debugf("Trying to build classpath from %s but it does not exist", p)
+			continue
+		}
 		if err != nil {
 			logrus.Warnf("Trying to build classpath from %s but it was an error", p, err)
 			continue

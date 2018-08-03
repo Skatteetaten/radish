@@ -12,6 +12,7 @@ import (
 	"github.com/plaid/go-envvar/envvar"
 	"github.com/sirupsen/logrus"
 	"io"
+	"path"
 )
 
 // local SYMLINK_FOLDER=$1    //=$HOME
@@ -36,23 +37,44 @@ func GenerateEnvScript() (string, error) {
 
 	configBaseDir := vars.HomeFolder + "/config"
 
-	configDirs := []string{configBaseDir + "/secrets", configBaseDir + "/configmaps"}
+	type configFile struct {
+		shouldMask bool
+		basedir    string
+		dir        string
+	}
+
+	configDirs := []configFile{
+		{
+			shouldMask: true,
+			basedir:    configBaseDir,
+			dir:        "secrets",
+		}, {
+			shouldMask: true,
+			basedir:    configBaseDir,
+			dir:        "secret",
+		}, {
+			shouldMask: false,
+			basedir:    configBaseDir,
+			dir:        "configmaps",
+		},
+	}
 
 	buffer := &bytes.Buffer{}
 
 	for _, dir := range configDirs {
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			logrus.Debugf("No configdir in %s", dir)
+		path := path.Join(dir.basedir, dir.dir)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			logrus.Debugf("No configdir in %s", path)
 			continue
 		}
-		configVersion, err := findConfigVersion(vars.AppVersion, dir)
+		configVersion, err := findConfigVersion(vars.AppVersion, path)
 		if err != nil {
 			return "", errors.Wrap(err, "Error reading config")
 		} else if configVersion == "" {
 			logrus.Infof("No config in %s", dir)
 			continue
 		}
-		err = exportPropertiesAsEnvVars(buffer, dir+"/"+configVersion+".properties")
+		err = exportPropertiesAsEnvVars(buffer, path+"/"+configVersion+".properties", dir.shouldMask)
 		if err != nil {
 			return "", err
 		}
@@ -86,7 +108,7 @@ func findConfigVersion(appVersion string, configLocation string) (string, error)
 	return "", nil
 }
 
-func exportPropertiesAsEnvVars(writer io.Writer, filepath string) error {
+func exportPropertiesAsEnvVars(writer io.Writer, filepath string, maskValue bool) error {
 	logrus.Debugf("Reading file %s", filepath)
 	p, err := properties.LoadFile(filepath, properties.UTF8)
 	if err != nil {
@@ -95,7 +117,11 @@ func exportPropertiesAsEnvVars(writer io.Writer, filepath string) error {
 	for _, key := range p.Keys() {
 		val := p.MustGetString(key)
 		fmt.Fprintf(writer, "export %s=%s\n", key, val)
-		logrus.Debugf("export %s=%s\n", key, val)
+		if maskValue {
+			logrus.Debugf("export %s=******\n", key)
+		} else {
+			logrus.Debugf("export %s=%s\n", key, val)
+		}
 		//TODO need to handle panic? can't I think.. must check conditions before calling if so
 	}
 	return nil
