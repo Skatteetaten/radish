@@ -123,7 +123,7 @@ func (m *appDynamicsOptions) deriveArguments(context ArgumentsContext) []string 
 	appDynamicsBaseDir, exists := context.Environment("APPDYNAMICS_AGENT_BASE_DIR")
 	args := make([]string, 0)
 	if !exists {
-		logrus.Warn("AppDynamics was supposed to be enabled, but no path found")
+		logrus.Error("AppDynamics was supposed to be enabled, but no path found")
 		return context.Arguments
 	}
 	// Need to set app, tier and node name.
@@ -132,7 +132,7 @@ func (m *appDynamicsOptions) deriveArguments(context ArgumentsContext) []string 
 	if !exists {
 		appNameSpace, exists := context.Environment("POD_NAMESPACE")
 		if !exists {
-			logrus.Warn("AppDynamics has no APPLICATION_NAME associated to it. Agent will not be enabled!")
+			logrus.Error("AppDynamics has no APPLICATION_NAME associated to it. Agent will not be enabled!")
 			return context.Arguments
 		}
 		agentAppName = appNameSpace
@@ -146,7 +146,7 @@ func (m *appDynamicsOptions) deriveArguments(context ArgumentsContext) []string 
 		} else {
 			appServiceName, exists := context.Environment("SERVICE_NAME")
 			if !exists {
-				logrus.Warn("AppDynamics has no TIER_NAME associated to it. Agent will not be enabled!")
+				logrus.Error("AppDynamics has no TIER_NAME associated to it. Agent will not be enabled!")
 				return context.Arguments
 			}
 			agentTierName = appServiceName
@@ -161,7 +161,7 @@ func (m *appDynamicsOptions) deriveArguments(context ArgumentsContext) []string 
 		} else {
 			appHostName, exists := context.Environment("HOSTNAME")
 			if !exists {
-				logrus.Warn("AppDynamics has no NODE_NAME associated to it. Agent will not be enabled!")
+				logrus.Error("AppDynamics has no NODE_NAME associated to it. Agent will not be enabled!")
 				return context.Arguments
 			}
 			agentNodeName = appHostName
