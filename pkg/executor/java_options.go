@@ -24,6 +24,7 @@ var ArgumentsModificators = []ArgumentsDeriver{
 	&debugOptions{},
 	&diagnosticsOptions{},
 	&jolokiaOptions{},
+	&appDynamicsOptions{},
 	&cpuCoreTuning{},
 	&memoryOptions{},
 }
@@ -107,6 +108,73 @@ func (m *jolokiaOptions) deriveArguments(context ArgumentsContext) []string {
 	}
 	jolokiaArgument := fmt.Sprintf("-javaagent:%s=host=0.0.0.0,port=8778,protocol=https", jolokiaPath)
 	args = append([]string{jolokiaArgument}, context.Arguments...)
+	return args
+}
+
+type appDynamicsOptions struct {
+}
+
+func (m *appDynamicsOptions) shouldDeriveArguments(context ArgumentsContext) bool {
+	value, exists := context.Environment("ENABLE_APPDYNAMICS")
+	return exists && strings.ToUpper(value) == "TRUE"
+}
+
+func (m *appDynamicsOptions) deriveArguments(context ArgumentsContext) []string {
+	appDynamicsBaseDir, exists := context.Environment("APPDYNAMICS_AGENT_BASE_DIR")
+	args := make([]string, 0)
+	if !exists {
+		logrus.Error("AppDynamics was supposed to be enabled, but no path found")
+		return context.Arguments
+	}
+	// Need to set app, tier and node name.
+	// For daemonsets some variables are not present, eks. POD_NAME.
+	agentAppName, exists := context.Environment("APPDYNAMICS_AGENT_APPLICATION_NAME")
+	if !exists {
+		appNameSpace, exists := context.Environment("POD_NAMESPACE")
+		if !exists {
+			logrus.Error("AppDynamics has no APPLICATION_NAME associated to it. Agent will not be enabled!")
+			return context.Arguments
+		}
+		agentAppName = appNameSpace
+	}
+
+	agentTierName, exists := context.Environment("APPDYNAMICS_AGENT_TIER_NAME")
+	if !exists {
+		appName, exists := context.Environment("APP_NAME")
+		if exists {
+			agentTierName = appName
+		} else {
+			appServiceName, exists := context.Environment("SERVICE_NAME")
+			if !exists {
+				logrus.Error("AppDynamics has no TIER_NAME associated to it. Agent will not be enabled!")
+				return context.Arguments
+			}
+			agentTierName = appServiceName
+		}
+	}
+
+	agentNodeName, exists := context.Environment("APPDYNAMICS_AGENT_NODE_NAME")
+	if !exists {
+		appPodName, exists := context.Environment("POD_NAME")
+		if exists {
+			agentNodeName = appPodName
+		} else {
+			appHostName, exists := context.Environment("HOSTNAME")
+			if !exists {
+				logrus.Error("AppDynamics has no NODE_NAME associated to it. Agent will not be enabled!")
+				return context.Arguments
+			}
+			agentNodeName = appHostName
+		}
+	}
+
+	appDynamicsArgument := fmt.Sprintf("-javaagent:%s/javaagent.jar", appDynamicsBaseDir)
+	args = append([]string{appDynamicsArgument})
+	args = append(args, "-Dappdynamics.agent.applicationName="+agentAppName,
+		"-Dappdynamics.agent.tierName="+agentTierName,
+		"-Dappdynamics.agent.nodeName="+agentNodeName)
+	args = append(args, context.Arguments...)
+
 	return args
 }
 
