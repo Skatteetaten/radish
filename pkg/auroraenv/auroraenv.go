@@ -56,6 +56,10 @@ func GenerateEnvScript() (string, error) {
 			shouldMask: false,
 			basedir:    configBaseDir,
 			dir:        "configmaps",
+		}, {
+			shouldMask: false,
+			basedir:    configBaseDir,
+			dir:        "configmap",
 		},
 	}
 
