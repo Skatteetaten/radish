@@ -63,7 +63,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if strings.ToUpper(os.Getenv("DEBUG")) == "TRUE" {
+	if strings.ToUpper(os.Getenv("DEBUG")) == "TRUE" || strings.ToUpper("RADISH_DEBUG") == "TRUE" {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 }

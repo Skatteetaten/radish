@@ -19,12 +19,22 @@ func TestBuildArgline(t *testing.T) {
 	dat, err := ioutil.ReadFile("testdata/testconfig.json")
 	assert.NoError(t, err)
 	desc, err := unmarshallDescriptor(bytes.NewBuffer(dat))
-	assert.NoError(t, err)
-	args, err := buildArgline(desc, envFunc, util.CGroupLimits{
+	limits := util.CGroupLimits{
 		MaxCoresEstimated:  2,
 		MemoryLimitInBytes: 2 * 1024 * 1024 * 1024,
-	})
+	}
 	assert.NoError(t, err)
-	assert.Contains(t, args, "-cp")
+	args, err := buildArgline(desc, envFunc, limits)
+	assert.NoError(t, err)
 	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar")
+	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar")
+	desc.Data.JavaOptions = "-Dtest.tull1 -Dtest2"
+	args, err = buildArgline(desc, envFunc, limits)
+	assert.NoError(t, err)
+	assert.Contains(t, args, "-Dtest.tull1")
+	assert.Contains(t, args, "-Dtest2")
+	desc.Data.JavaOptions = "\"-Dtest.tull1 -Dtest2\""
+	args, err = buildArgline(desc, envFunc, limits)
+	assert.NoError(t, err)
+	assert.Contains(t, args, "-Dtest.tull1 -Dtest2")
 }

@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/kballard/go-shellquote"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 )
@@ -41,7 +42,11 @@ func buildArgline(descriptor JavaDescriptor, env func(string) (string, bool), cg
 		args = append(args, "-cp", strings.Join(classpath, ":"))
 	}
 	if len(descriptor.Data.JavaOptions) != 0 {
-		args = append(args, descriptor.Data.JavaOptions)
+		splittedArgs, err := shellquote.Split(descriptor.Data.JavaOptions)
+		if err != nil {
+			logrus.Error("Unable to parse args from radish descriptor: %s %s", descriptor.Data.JavaOptions, err)
+		}
+		args = append(args, splittedArgs...)
 	}
 	args = applyArguments(ArgumentsModificators, ArgumentsContext{
 		Arguments:    args,
