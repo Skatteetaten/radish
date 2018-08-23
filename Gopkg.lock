@@ -8,6 +8,12 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/drone/envsubst"
+  packages = [".","parse"]
+  revision = "f4d1a8ef8670afc9eea1fb95ee09a979fd2763a3"
+
+[[projects]]
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
@@ -82,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d095e32f7e9cf0d60824ef2bba10e56fd152eac5e16b4239235fab1adf724e10"
+  inputs-digest = "44cc4e797945643fea73c60a9aac57b0d17a0a59cdbffe4cd41b323aeb40c4a4"
   solver-name = "gps-cdcl"
   solver-version = 1

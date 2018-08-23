@@ -28,3 +28,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/kballard/go-shellquote"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/drone/envsubst"

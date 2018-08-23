@@ -1,7 +1,6 @@
 package splunk
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,28 +11,18 @@ import (
 )
 
 func TestGenerateStanzas(t *testing.T) {
-	outputFileName := "testStanza"
+	dir, err := ioutil.TempDir("", "radishtest")
+	assert.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	outputFileName := dir
 	os.Setenv("SPLUNK_INDEX", "splunkIndex")
 	os.Setenv("POD_NAMESPACE", "podNamespace")
 	os.Setenv("APP_NAME", "appName")
-	os.Setenv("HOST_NAME", "hostName")
+	os.Setenv("HOSTNAME", "hostName")
 
-	GenerateStanzas("", "", "", "", "", outputFileName)
-
-	if _, err := os.Stat(outputFileName); err == nil {
-		t.Logf("%s exists!", outputFileName)
-
-		//clean up after test
-		t.Logf("Deleting %s", outputFileName)
-		err := os.Remove(outputFileName)
-		if err != nil {
-			fmt.Println(err)
-			t.Log(err)
-			return
-		}
-
-	}
-
+	err = GenerateStanzas("", "", "", "", "", outputFileName)
+	assert.NoError(t, err)
 }
 
 func TestReadStanzasTemplate(t *testing.T) {

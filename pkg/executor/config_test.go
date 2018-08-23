@@ -37,4 +37,10 @@ func TestBuildArgline(t *testing.T) {
 	args, err = buildArgline(desc, envFunc, limits)
 	assert.NoError(t, err)
 	assert.Contains(t, args, "-Dtest.tull1 -Dtest2")
+
+	desc.Data.JavaOptions = "-Dtest.tull1 -Dtest2=${DISABLE_JOLOKIA}"
+	args, err = buildArgline(desc, envFunc, limits)
+	assert.NoError(t, err)
+	assert.Contains(t, args, "-Dtest.tull1")
+	assert.Contains(t, args, "-Dtest2=true")
 }

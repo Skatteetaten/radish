@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/drone/envsubst"
 	"github.com/kballard/go-shellquote"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -57,7 +58,22 @@ func buildArgline(descriptor JavaDescriptor, env func(string) (string, bool), cg
 	if len(strings.TrimSpace(descriptor.Data.ApplicationArgs)) != 0 {
 		args = append(args, descriptor.Data.ApplicationArgs)
 	}
-	return args, nil
+
+	argsAfterSubstitution := make([]string, len(args), len(args))
+	for i, arg := range args {
+		substituted, err := envsubst.Eval(arg, func(key string) string {
+			value, _ := env(key)
+			return value
+		})
+		if err != nil {
+			logrus.Warnf("Error substituting in arg %s", arg)
+			argsAfterSubstitution[i] = arg
+		} else {
+			argsAfterSubstitution[i] = substituted
+		}
+
+	}
+	return argsAfterSubstitution, nil
 }
 
 func createClasspath(basedir string, patterns []string) ([]string, error) {

@@ -8,6 +8,16 @@ _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::opens
 host = {{.HostName}}
 # --- end/stanza
 
+# --- start/stanza AUDIT
+[monitor://./logs/*.audit.json]
+disabled = false
+followTail = 0
+sourcetype = _json
+index = $SPLUNK_AUDIT_INDEX
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift logtype::audit
+host = $HOSTNAME
+# --- end/stanza
+
 # --- start/stanza ACCESS_LOG
 [monitor://./logs/*.access]
 disabled = false
