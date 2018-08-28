@@ -15,6 +15,9 @@ import (
 func RunRadish(args []string) {
 	e := executor.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
+	if err != nil {
+		logrus.Fatalf("Unable to load descriptor %s", err)
+	}
 	cmd, err := e.BuildCmd(radishDescriptor)
 	if err != nil {
 		logrus.Fatalf("Unable to start app %s", err)
@@ -40,7 +43,7 @@ func locateRadishDescriptor(args []string) (string, error) {
 		if _, err := os.Stat(args[0]); err == nil {
 			return args[0], nil
 		} else {
-			errors.Wrapf(err, "Error reading %s", args[0])
+			return "", errors.Wrapf(err, "Error reading %s", args[0])
 		}
 	}
 	descriptor, exists := os.LookupEnv("RADISH_DESCRIPTOR")

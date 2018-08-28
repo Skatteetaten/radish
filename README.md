@@ -3,17 +3,20 @@
 For the dozers of Fraggle Rock, radishes are the beginning of everything they build, because dozer sticks are made from it.
 For Aurora, Radish is the beginning of every running java application. 
 
-The first mode of Radish is a small process wrapper that:
+The first task of Radish is a small process wrapper that:
 
 * Forwards signals
 * Reap child processes (PID 1)
 * Rewrites exit codes from JVM
 * Handles crash reports (currently passing to stdout)
+* Generates JVM arguments based on Cgroup-limits and runtime config. See [source](pkg/executor/java_options.go)
 
-The second mode of Radish is a CLI to accomplish a number of tasks.
+The execution is based on a [radish descriptor](pkg/executor/testdata/testconfig.json)
+
+The second task of Radish is a CLI to accomplish a number of tasks.
 
 * generateSplunkStanzas - based on template (optional) and configuration, generate Splunk stanza file where specified.
-* generateStartScript - based on configuration file, generate start script for use in Docker container for the application. The start script would typically use the first mode of radish to start the application java process.
+* generateEnvScript - Prints a script that can be sources into a shell exposing configuration from secrets as env variables
 
 
 # Build:
@@ -26,12 +29,16 @@ Install go dep (https://github.com/golang/dep)
 
 # Usage - Process wrapper mode:
 
-`radish <javaargs> MainClass <args>`
-
 Example:
 
-`radish -XX:+CrashOnOutOfMemoryError -Xmx10m -cp . Main`
+`radish runJava`
 
+Will search for the radish descriptor in the following locations:
+
+* The location given in the optional arg
+* The environment variable RADISH_DESCRIPTOR
+* /u01/app/radish.json
+* /radish.json
 
 # Usage - CLI mode
 
