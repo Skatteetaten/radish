@@ -32,13 +32,14 @@ var ArgumentsModificators = []ArgumentsDeriver{
 	&appDynamicsOptions{},
 	&cpuCoreTuning{},
 	&memoryOptions{},
+	&metaspaceOptions{},
 }
 
 type diagnosticsOptions struct {
 }
 
 func (m *diagnosticsOptions) shouldDeriveArguments(context ArgumentsContext) bool {
-	value, exists := context.Environment("ENABLE_DIAGNOSTICS")
+	value, exists := context.Environment("ENABLE_JAVA_DIAGNOSTICS")
 	return exists && strings.ToUpper(value) == "TRUE"
 }
 
@@ -54,8 +55,8 @@ func (m *diagnosticsOptions) deriveArguments(context ArgumentsContext) []string 
 }
 
 type enableExitOnOom struct {
-
 }
+
 func (m *enableExitOnOom) shouldDeriveArguments(context ArgumentsContext) bool {
 	value, exists := context.Environment("ENABLE_EXIT_ON_OOM")
 	return exists && len(value) > 0
@@ -64,7 +65,6 @@ func (m *enableExitOnOom) shouldDeriveArguments(context ArgumentsContext) bool {
 func (m *enableExitOnOom) deriveArguments(context ArgumentsContext) []string {
 	return append([]string{"-XX:+ExitOnOutOfMemoryError"}, context.Arguments...)
 }
-
 
 type debugOptions struct {
 }
@@ -258,6 +258,41 @@ func (m *memoryOptions) deriveArguments(context ArgumentsContext) []string {
 	if limits.HasMemoryLimit() {
 		args = append([]string{fmt.Sprintf("-Xmx%dm", limits.MemoryFractionInMB(fraction))}, args...)
 		args = append([]string{fmt.Sprintf("-Xms%dm", limits.MemoryFractionInMB(fraction))}, args...)
+	}
+	return args
+}
+
+var metaspaceArguments = []string{"-XX:MaxMetaspaceSize"}
+
+type metaspaceOptions struct {
+}
+
+func (m *metaspaceOptions) shouldDeriveArguments(context ArgumentsContext) bool {
+	if containsArgument(context.Arguments, metaspaceArguments...) {
+		return false
+	}
+	_, exists := context.Environment("JAVA_MAX_METASPACE_RATIO")
+	return exists
+}
+
+func (m *metaspaceOptions) deriveArguments(context ArgumentsContext) []string {
+	args := removeArguments(context.Arguments, metaspaceArguments)
+	memRatio, exists := context.Environment("JAVA_MAX_METASPACE_RATIO")
+	var fraction int
+	if exists {
+		ratioInPercent, err := strconv.Atoi(memRatio)
+		if err != nil {
+			logrus.Warnf("Trying to parse JAVA_MAX_METASPACE_RATIO, but could not parse it %s", err)
+		} else {
+			fraction = 100 / ratioInPercent
+		}
+	} else {
+		//Fraction of 7 is approx 15% as in old scripts
+		fraction = 7
+	}
+	limits := context.CGroupLimits
+	if limits.HasMemoryLimit() {
+		args = append([]string{fmt.Sprintf("-XX:MaxMetaspaceSize=%dm", limits.MemoryFractionInMB(fraction))}, args...)
 	}
 	return args
 }

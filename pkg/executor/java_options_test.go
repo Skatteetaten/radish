@@ -9,7 +9,7 @@ import (
 func TestOptions(t *testing.T) {
 	env := make(map[string]string)
 	env["ENABLE_JOLOKIA"] = "true"
-	env["ENABLE_DIAGNOSTICS"] = "true"
+	env["ENABLE_JAVA_DIAGNOSTICS"] = "true"
 	env["ENABLE_REMOTE_DEBUG"] = "true"
 	env["APPDYNAMICS_AGENT_BASE_DIR"] = "/opt/appdynamics"
 	ctx := createTestContext(env)
@@ -32,7 +32,7 @@ func TestOptions(t *testing.T) {
 func TestOptionsAppDynamics(t *testing.T) {
 	env := make(map[string]string)
 	env["ENABLE_JOLOKIA"] = "true"
-	env["ENABLE_DIAGNOSTICS"] = "false"
+	env["ENABLE_JAVA_DIAGNOSTICS"] = "false"
 	env["ENABLE_REMOTE_DEBUG"] = "false"
 	env["ENABLE_APPDYNAMICS"] = "true"
 	env["APPDYNAMICS_AGENT_BASE_DIR"] = "/opt/appdynamics"
@@ -73,7 +73,24 @@ func TestReadingOfJavaOptionsInEnv(t *testing.T) {
 	args := applyArguments(ArgumentsModificators, ctx)
 	assert.Contains(t, args, "-Xtulleball")
 	assert.Contains(t, args, "-Xjallaball")
+}
 
+func TestJavaDiagnostics(t *testing.T) {
+	env["ENABLE_JAVA_DIAGNOSTICS"] = "true"
+	ctx := createTestContext(env)
+	args := applyArguments(ArgumentsModificators, ctx)
+	diagnostics := []string{"-XX:NativeMemoryTracking=summary",
+		"-XX:+PrintGC",
+		"-XX:+PrintGCDateStamps",
+		"-XX:+PrintGCTimeStamps",
+		"-XX:+UnlockDiagnosticVMOptions"}
+	assert.Subset(t, args, diagnostics)
+	env["ENABLE_JAVA_DIAGNOSTICS"] = "0"
+	ctx = createTestContext(env)
+	args = applyArguments(ArgumentsModificators, ctx)
+	for _, d := range diagnostics {
+		assert.NotContains(t, args, d)
+	}
 }
 
 func TestJavaMaxMemRatio(t *testing.T) {
@@ -88,6 +105,21 @@ func TestJavaMaxMemRatio(t *testing.T) {
 	args = m.deriveArguments(ctx)
 	assert.Contains(t, args, "-Xmx4096m")
 	assert.Contains(t, args, "-Xms4096m")
+}
+
+func TestJavaMaxMetaspaceMemRatio(t *testing.T) {
+	env = make(map[string]string)
+	env["JAVA_MAX_METASPACE_RATIO"] = "5"
+	ctx := createTestContext(env)
+	args := applyArguments(ArgumentsModificators, ctx)
+	assert.Contains(t, args, "-XX:MaxMetaspaceSize=409m")
+	delete(env, "JAVA_MAX_METASPACE_RATIO")
+	ctx = createTestContext(env)
+	args = applyArguments(ArgumentsModificators, ctx)
+	for _, arg := range args {
+		assert.NotRegexp(t, "-XX:MaxMetaspaceSize.*", arg)
+	}
+
 }
 
 func TestExitOnOom(t *testing.T) {
