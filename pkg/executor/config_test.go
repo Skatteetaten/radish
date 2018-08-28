@@ -8,14 +8,17 @@ import (
 	"testing"
 )
 
+var env = make(map[string]string)
+
 func envFunc(key string) (string, bool) {
-	env := make(map[string]string)
 	env["DISABLE_JOLOKIA"] = "true"
+	env["SOME"] = "Jallaball"
+	env["OTHER"] = "Ballejall"
 	k, e := env[key]
 	return k, e
 }
 
-func TestBuildArgline(t *testing.T) {
+func TestBuildArgLineFromDescriptor(t *testing.T) {
 	dat, err := ioutil.ReadFile("testdata/testconfig.json")
 	assert.NoError(t, err)
 	desc, err := unmarshallDescriptor(bytes.NewBuffer(dat))
@@ -28,19 +31,17 @@ func TestBuildArgline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar")
 	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar")
-	desc.Data.JavaOptions = "-Dtest.tull1 -Dtest2"
-	args, err = buildArgline(desc, envFunc, limits)
-	assert.NoError(t, err)
-	assert.Contains(t, args, "-Dtest.tull1")
-	assert.Contains(t, args, "-Dtest2")
-	desc.Data.JavaOptions = "\"-Dtest.tull1 -Dtest2\""
-	args, err = buildArgline(desc, envFunc, limits)
-	assert.NoError(t, err)
-	assert.Contains(t, args, "-Dtest.tull1 -Dtest2")
+}
 
-	desc.Data.JavaOptions = "-Dtest.tull1 -Dtest2=${DISABLE_JOLOKIA}"
-	args, err = buildArgline(desc, envFunc, limits)
+func TestExpanstionOfVariablesAgainstEnv(t *testing.T) {
+	desc := JavaDescriptor{
+		Data: JavaDescriptorData{
+			JavaOptions: "-Dtest=${SOME} -Dtest2=${OTHER} \"this should not be splitt\"",
+		},
+	}
+	args, err := buildArgline(desc, envFunc, util.ReadCGroupLimits())
 	assert.NoError(t, err)
-	assert.Contains(t, args, "-Dtest.tull1")
-	assert.Contains(t, args, "-Dtest2=true")
+	assert.Contains(t, args, "-Dtest=Jallaball")
+	assert.Contains(t, args, "-Dtest2=Ballejall")
+	assert.Contains(t, args, "this should not be splitt")
 }

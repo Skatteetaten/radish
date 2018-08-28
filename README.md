@@ -18,6 +18,16 @@ The second task of Radish is a CLI to accomplish a number of tasks.
 * generateSplunkStanzas - based on template (optional) and configuration, generate Splunk stanza file where specified.
 * generateEnvScript - Prints a script that can be sources into a shell exposing configuration from secrets as env variables
 
+# Config read by Radish
+
+| Environment variable |Description |
+| ---| ---| 
+| JAVA_OPTIONS | Checked for already set options |
+| JAVA_MAX_MEM_RATIO | adjust the ratio in percent of memory set as XMX. Default 25%. Remember that memory is more than heap.|
+| ENABLE_REMOTE_DEBUG| turn on remote debuging on DEBUG_PORT (default 5005) |
+| ENABLE_EXIT_ON_OOM | If set to a non-empty string, the JVM will exit on OutOfMemoryError. Default is off. |
+| ENABLE_JAVA_DIAGNOSTICS | If set to a non-empty string, the JVM is started with diagnostics flags set. Default is off.| 
+| DISABLE_JOLOKIA | Disables the Jolokia-agent if set.|
 
 # Build:
 

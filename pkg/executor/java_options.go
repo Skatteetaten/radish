@@ -2,6 +2,7 @@ package executor
 
 import (
 	"fmt"
+	"github.com/kballard/go-shellquote"
 	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/util"
 	"reflect"
@@ -12,6 +13,7 @@ import (
 type ArgumentsContext struct {
 	Arguments    []string
 	Environment  func(string) (string, bool)
+	Descriptor   JavaDescriptor
 	CGroupLimits util.CGroupLimits
 }
 
@@ -21,6 +23,9 @@ type ArgumentsDeriver interface {
 }
 
 var ArgumentsModificators = []ArgumentsDeriver{
+	&environmentJavaOptionsOverride{},
+	&descriptorJavaOptionsOverride{},
+	&enableExitOnOom{},
 	&debugOptions{},
 	&diagnosticsOptions{},
 	&jolokiaOptions{},
@@ -48,6 +53,19 @@ func (m *diagnosticsOptions) deriveArguments(context ArgumentsContext) []string 
 	return args
 }
 
+type enableExitOnOom struct {
+
+}
+func (m *enableExitOnOom) shouldDeriveArguments(context ArgumentsContext) bool {
+	value, exists := context.Environment("ENABLE_EXIT_ON_OOM")
+	return exists && len(value) > 0
+}
+
+func (m *enableExitOnOom) deriveArguments(context ArgumentsContext) []string {
+	return append([]string{"-XX:+ExitOnOutOfMemoryError"}, context.Arguments...)
+}
+
+
 type debugOptions struct {
 }
 
@@ -66,6 +84,41 @@ func (m *debugOptions) deriveArguments(context ArgumentsContext) []string {
 	}
 	debugArgument := fmt.Sprintf("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%d", port)
 	args = append([]string{debugArgument}, context.Arguments...)
+	return args
+}
+
+type environmentJavaOptionsOverride struct {
+}
+
+func (m *environmentJavaOptionsOverride) shouldDeriveArguments(context ArgumentsContext) bool {
+	_, exists := context.Environment("JAVA_OPTIONS")
+	return exists
+}
+
+func (m *environmentJavaOptionsOverride) deriveArguments(context ArgumentsContext) []string {
+	options, _ := context.Environment("JAVA_OPTIONS")
+	splittedArgs, err := shellquote.Split(options)
+	if err != nil {
+		logrus.Error("Unable to parse JAVA_OPTONS from environment", options, err)
+	}
+	args := append(context.Arguments, splittedArgs...)
+	return args
+}
+
+type descriptorJavaOptionsOverride struct {
+}
+
+func (m *descriptorJavaOptionsOverride) shouldDeriveArguments(context ArgumentsContext) bool {
+	return len(context.Descriptor.Data.JavaOptions) != 0
+}
+
+func (m *descriptorJavaOptionsOverride) deriveArguments(context ArgumentsContext) []string {
+	options := context.Descriptor.Data.JavaOptions
+	splittedArgs, err := shellquote.Split(options)
+	if err != nil {
+		logrus.Error("Unable to parse args from radish descriptor: %s %s", options, err)
+	}
+	args := append(context.Arguments, splittedArgs...)
 	return args
 }
 
@@ -189,10 +242,22 @@ func (m *memoryOptions) shouldDeriveArguments(context ArgumentsContext) bool {
 
 func (m *memoryOptions) deriveArguments(context ArgumentsContext) []string {
 	args := removeArguments(context.Arguments, memoryArguments)
+	memRatio, exists := context.Environment("JAVA_MAX_MEM_RATIO")
+	var fraction int
+	if exists {
+		ratioInPercent, err := strconv.Atoi(memRatio)
+		if err != nil {
+			logrus.Warnf("Trying to parse JAVA_MAX_MEM_RATIO, but could not parse it %s", err)
+		} else {
+			fraction = 100 / ratioInPercent
+		}
+	} else {
+		fraction = 4
+	}
 	limits := context.CGroupLimits
 	if limits.HasMemoryLimit() {
-		args = append([]string{fmt.Sprintf("-Xmx%dm", limits.MemoryFractionInMB(4))}, args...)
-		args = append([]string{fmt.Sprintf("-Xms%dm", limits.MemoryFractionInMB(4))}, args...)
+		args = append([]string{fmt.Sprintf("-Xmx%dm", limits.MemoryFractionInMB(fraction))}, args...)
+		args = append([]string{fmt.Sprintf("-Xms%dm", limits.MemoryFractionInMB(fraction))}, args...)
 	}
 	return args
 }
