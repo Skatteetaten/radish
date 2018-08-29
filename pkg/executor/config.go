@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/drone/envsubst"
-	"github.com/kballard/go-shellquote"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 )
@@ -42,23 +41,21 @@ func buildArgline(descriptor JavaDescriptor, env func(string) (string, bool), cg
 	} else {
 		args = append(args, "-cp", strings.Join(classpath, ":"))
 	}
-	if len(descriptor.Data.JavaOptions) != 0 {
-		splittedArgs, err := shellquote.Split(descriptor.Data.JavaOptions)
-		if err != nil {
-			logrus.Error("Unable to parse args from radish descriptor: %s %s", descriptor.Data.JavaOptions, err)
-		}
-		args = append(args, splittedArgs...)
-	}
 	args = applyArguments(ArgumentsModificators, ArgumentsContext{
 		Arguments:    args,
 		Environment:  env,
 		CGroupLimits: cgl,
+		Descriptor:   descriptor,
 	})
 	args = append(args, descriptor.Data.MainClass)
 	if len(strings.TrimSpace(descriptor.Data.ApplicationArgs)) != 0 {
 		args = append(args, descriptor.Data.ApplicationArgs)
 	}
 
+	return expandArgumentsAgainstEnv(args, env), nil
+}
+
+func expandArgumentsAgainstEnv(args []string, env func(string) (string, bool)) []string {
 	argsAfterSubstitution := make([]string, len(args), len(args))
 	for i, arg := range args {
 		substituted, err := envsubst.Eval(arg, func(key string) string {
@@ -73,7 +70,7 @@ func buildArgline(descriptor JavaDescriptor, env func(string) (string, bool), cg
 		}
 
 	}
-	return argsAfterSubstitution, nil
+	return argsAfterSubstitution
 }
 
 func createClasspath(basedir string, patterns []string) ([]string, error) {
