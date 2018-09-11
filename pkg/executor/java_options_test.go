@@ -31,6 +31,7 @@ func TestOptions(t *testing.T) {
 
 func TestOptionsAppDynamics(t *testing.T) {
 	env := make(map[string]string)
+	env["OPENSHIFT_CLUSTER"] = "test"
 	env["ENABLE_JOLOKIA"] = "true"
 	env["ENABLE_JAVA_DIAGNOSTICS"] = "false"
 	env["ENABLE_REMOTE_DEBUG"] = "false"
@@ -50,7 +51,7 @@ func TestOptionsAppDynamics(t *testing.T) {
 	assert.NotContains(t, modifiedArgs, "-XX:NativeMemoryTracking=summary")
 	assert.NotContains(t, modifiedArgs, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
 	assert.Contains(t, modifiedArgs, "-javaagent:/opt/appdynamics/javaagent.jar")
-	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.applicationName=mynamespace")
+	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.applicationName=mynamespace-test")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.tierName=myappname")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.nodeName=mypodname")
 }

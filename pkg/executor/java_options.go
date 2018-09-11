@@ -191,6 +191,11 @@ func (m *appDynamicsOptions) deriveArguments(context ArgumentsContext) []string 
 		agentAppName = appNameSpace
 	}
 
+	openshiftCluster, exists := context.Environment("OPENSHIFT_CLUSTER")
+	if exists {
+		agentAppName += "-" + openshiftCluster
+	}
+
 	agentTierName, exists := context.Environment("APPDYNAMICS_AGENT_TIER_NAME")
 	if !exists {
 		appName, exists := context.Environment("APP_NAME")
