@@ -8,11 +8,12 @@ import (
 	"github.com/pkg/errors"
 
 	"bytes"
+	"io"
+	"path"
+
 	"github.com/magiconair/properties"
 	"github.com/plaid/go-envvar/envvar"
 	"github.com/sirupsen/logrus"
-	"io"
-	"path"
 )
 
 // local SYMLINK_FOLDER=$1    //=$HOME
@@ -27,7 +28,7 @@ type EnvData struct {
 	AppVersion    string `envvar:"APP_VERSION"`
 }
 
-//generateShellScript :
+//GenerateEnvScript :
 func GenerateEnvScript() (string, error) {
 	vars := EnvData{}
 	if err := envvar.Parse(&vars); err != nil {
@@ -64,15 +65,16 @@ func GenerateEnvScript() (string, error) {
 	}
 
 	buffer := &bytes.Buffer{}
-
 	for _, dir := range configDirs {
 		path := path.Join(dir.basedir, dir.dir)
+		logrus.Debugf("Processing dir: %s", path)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
-			logrus.Debugf("No configdir in %s", path)
+			logrus.Infof("No configdir in %s", path)
 			continue
 		}
 		configVersion, err := findConfigVersion(vars.AppVersion, path)
 		if err != nil {
+			logrus.Debug("Error reading config")
 			return "", errors.Wrap(err, "Error reading config")
 		} else if configVersion == "" {
 			logrus.Infof("No config in %s", dir)
@@ -80,10 +82,13 @@ func GenerateEnvScript() (string, error) {
 		}
 		err = exportPropertiesAsEnvVars(buffer, path+"/"+configVersion+".properties", dir.shouldMask)
 		if err != nil {
+			logrus.Debug("Returning with error after export: %s", err.Error())
 			return "", err
 		}
 	}
-	return buffer.String(), nil
+	result := buffer.String()
+	logrus.Debugf("Result: %s", result)
+	return result, nil
 
 }
 

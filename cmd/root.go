@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/cmd/radish"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 var rootCmd = &cobra.Command{
@@ -24,7 +25,7 @@ var PodNamespace string
 var AppName string
 var HostName string
 
-//BuildCmd :
+//Execute :
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -63,7 +64,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if strings.ToUpper(os.Getenv("DEBUG")) == "TRUE" || strings.ToUpper("RADISH_DEBUG") == "TRUE" {
+	if strings.ToUpper(os.Getenv("DEBUG")) == "TRUE" || strings.ToUpper(os.Getenv("RADISH_DEBUG")) == "TRUE" {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 }
