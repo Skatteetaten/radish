@@ -31,7 +31,7 @@ node {
     }
 
     def deployOpts = '-Durl=' + REPO_URL + 
-        ' -DrepositoryId=' + REPO_ID +
+        ' -DrepositoryId=' + REPO_ID + 
         ' -DgroupId=no.skatteetaten.aurora.openshift -DartifactId=radish -Dversion=' + version +
         ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/amd64/radish.tar.gz'
 
