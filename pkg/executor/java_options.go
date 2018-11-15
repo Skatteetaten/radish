@@ -17,12 +17,12 @@ type ArgumentsContext struct {
 	CGroupLimits util.CGroupLimits
 }
 
-type ArgumentsDeriver interface {
-	shouldDeriveArguments(context ArgumentsContext) bool
-	deriveArguments(context ArgumentsContext) []string
+type ArgumentModificator interface {
+	shouldModifyArguments(context ArgumentsContext) bool
+	modifyArguments(context ArgumentsContext) []string
 }
 
-var ArgumentsModificators = []ArgumentsDeriver{
+var Java8ArgumentsModificators = []ArgumentModificator{
 	&environmentJavaOptionsOverride{},
 	&descriptorJavaOptionsOverride{},
 	&enableExitOnOom{},
@@ -35,15 +35,38 @@ var ArgumentsModificators = []ArgumentsDeriver{
 	&metaspaceOptions{},
 }
 
+var Java11ArgumentsModificators = []ArgumentModificator{
+	&environmentJavaOptionsOverride{},
+	&descriptorJavaOptionsOverride{},
+	&enableExitOnOom{},
+	&debugOptions{},
+	&java11DiagnosticsOptions{},
+	&jolokiaOptions{},
+	&appDynamicsOptions{},
+}
+
+type java11DiagnosticsOptions struct {
+	diagnosticsOptions
+}
+
+func (m *java11DiagnosticsOptions) modifyArguments(context ArgumentsContext) []string {
+	args := make([]string, 0, 3)
+	args = append(args, "-XX:NativeMemoryTracking=summary",
+		"-Xlog:gc",
+		"-XX:+UnlockDiagnosticVMOptions")
+	args = append(args, context.Arguments...)
+	return args
+}
+
 type diagnosticsOptions struct {
 }
 
-func (m *diagnosticsOptions) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *diagnosticsOptions) shouldModifyArguments(context ArgumentsContext) bool {
 	value, exists := context.Environment("ENABLE_JAVA_DIAGNOSTICS")
 	return exists && strings.ToUpper(value) == "TRUE"
 }
 
-func (m *diagnosticsOptions) deriveArguments(context ArgumentsContext) []string {
+func (m *diagnosticsOptions) modifyArguments(context ArgumentsContext) []string {
 	args := make([]string, 0, 3)
 	args = append(args, "-XX:NativeMemoryTracking=summary",
 		"-XX:+PrintGC",
@@ -57,24 +80,24 @@ func (m *diagnosticsOptions) deriveArguments(context ArgumentsContext) []string 
 type enableExitOnOom struct {
 }
 
-func (m *enableExitOnOom) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *enableExitOnOom) shouldModifyArguments(context ArgumentsContext) bool {
 	value, exists := context.Environment("ENABLE_EXIT_ON_OOM")
 	return exists && len(value) > 0
 }
 
-func (m *enableExitOnOom) deriveArguments(context ArgumentsContext) []string {
+func (m *enableExitOnOom) modifyArguments(context ArgumentsContext) []string {
 	return append([]string{"-XX:+ExitOnOutOfMemoryError"}, context.Arguments...)
 }
 
 type debugOptions struct {
 }
 
-func (m *debugOptions) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *debugOptions) shouldModifyArguments(context ArgumentsContext) bool {
 	value, exists := context.Environment("ENABLE_REMOTE_DEBUG")
 	return exists && strings.ToUpper(value) == "TRUE"
 }
 
-func (m *debugOptions) deriveArguments(context ArgumentsContext) []string {
+func (m *debugOptions) modifyArguments(context ArgumentsContext) []string {
 	args := make([]string, 0)
 	portAsString, exists := context.Environment("DEBUG_PORT")
 	var port int
@@ -90,12 +113,12 @@ func (m *debugOptions) deriveArguments(context ArgumentsContext) []string {
 type environmentJavaOptionsOverride struct {
 }
 
-func (m *environmentJavaOptionsOverride) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *environmentJavaOptionsOverride) shouldModifyArguments(context ArgumentsContext) bool {
 	_, exists := context.Environment("JAVA_OPTIONS")
 	return exists
 }
 
-func (m *environmentJavaOptionsOverride) deriveArguments(context ArgumentsContext) []string {
+func (m *environmentJavaOptionsOverride) modifyArguments(context ArgumentsContext) []string {
 	options, _ := context.Environment("JAVA_OPTIONS")
 	splittedArgs, err := shellquote.Split(options)
 	if err != nil {
@@ -108,11 +131,11 @@ func (m *environmentJavaOptionsOverride) deriveArguments(context ArgumentsContex
 type descriptorJavaOptionsOverride struct {
 }
 
-func (m *descriptorJavaOptionsOverride) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *descriptorJavaOptionsOverride) shouldModifyArguments(context ArgumentsContext) bool {
 	return len(context.Descriptor.Data.JavaOptions) != 0
 }
 
-func (m *descriptorJavaOptionsOverride) deriveArguments(context ArgumentsContext) []string {
+func (m *descriptorJavaOptionsOverride) modifyArguments(context ArgumentsContext) []string {
 	options := context.Descriptor.Data.JavaOptions
 	splittedArgs, err := shellquote.Split(options)
 	if err != nil {
@@ -129,11 +152,11 @@ var cpuCoreArguments = []string{"-XX:ParallelGCThreads",
 type cpuCoreTuning struct {
 }
 
-func (m *cpuCoreTuning) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *cpuCoreTuning) shouldModifyArguments(context ArgumentsContext) bool {
 	return !containsArgument(context.Arguments, cpuCoreArguments...) && context.CGroupLimits.HasCoreLimit()
 }
 
-func (m *cpuCoreTuning) deriveArguments(context ArgumentsContext) []string {
+func (m *cpuCoreTuning) modifyArguments(context ArgumentsContext) []string {
 	args := removeArguments(context.Arguments, memoryArguments)
 	limits := context.CGroupLimits
 	if limits.HasCoreLimit() {
@@ -147,12 +170,12 @@ func (m *cpuCoreTuning) deriveArguments(context ArgumentsContext) []string {
 type jolokiaOptions struct {
 }
 
-func (m *jolokiaOptions) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *jolokiaOptions) shouldModifyArguments(context ArgumentsContext) bool {
 	value, exists := context.Environment("DISABLE_JOLOKIA")
 	return !exists || !(strings.ToUpper(value) == "TRUE")
 }
 
-func (m *jolokiaOptions) deriveArguments(context ArgumentsContext) []string {
+func (m *jolokiaOptions) modifyArguments(context ArgumentsContext) []string {
 	jolokiaPath, exists := context.Environment("JOLOKIA_PATH")
 	args := make([]string, 0)
 	if !exists {
@@ -167,12 +190,12 @@ func (m *jolokiaOptions) deriveArguments(context ArgumentsContext) []string {
 type appDynamicsOptions struct {
 }
 
-func (m *appDynamicsOptions) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *appDynamicsOptions) shouldModifyArguments(context ArgumentsContext) bool {
 	value, exists := context.Environment("ENABLE_APPDYNAMICS")
 	return exists && strings.ToUpper(value) == "TRUE"
 }
 
-func (m *appDynamicsOptions) deriveArguments(context ArgumentsContext) []string {
+func (m *appDynamicsOptions) modifyArguments(context ArgumentsContext) []string {
 	appDynamicsBaseDir, exists := context.Environment("APPDYNAMICS_AGENT_BASE_DIR")
 	args := make([]string, 0)
 	if !exists {
@@ -241,11 +264,11 @@ var memoryArguments = []string{"-Xmx", "-XX:+UseCGroupMemoryLimitForHeap", "-Xms
 type memoryOptions struct {
 }
 
-func (m *memoryOptions) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *memoryOptions) shouldModifyArguments(context ArgumentsContext) bool {
 	return !containsArgument(context.Arguments, memoryArguments...)
 }
 
-func (m *memoryOptions) deriveArguments(context ArgumentsContext) []string {
+func (m *memoryOptions) modifyArguments(context ArgumentsContext) []string {
 	args := removeArguments(context.Arguments, memoryArguments)
 	memRatio, exists := context.Environment("JAVA_MAX_MEM_RATIO")
 	var fraction int
@@ -272,7 +295,7 @@ var metaspaceArguments = []string{"-XX:MaxMetaspaceSize"}
 type metaspaceOptions struct {
 }
 
-func (m *metaspaceOptions) shouldDeriveArguments(context ArgumentsContext) bool {
+func (m *metaspaceOptions) shouldModifyArguments(context ArgumentsContext) bool {
 	if containsArgument(context.Arguments, metaspaceArguments...) {
 		return false
 	}
@@ -280,7 +303,7 @@ func (m *metaspaceOptions) shouldDeriveArguments(context ArgumentsContext) bool 
 	return exists
 }
 
-func (m *metaspaceOptions) deriveArguments(context ArgumentsContext) []string {
+func (m *metaspaceOptions) modifyArguments(context ArgumentsContext) []string {
 	args := removeArguments(context.Arguments, metaspaceArguments)
 	memRatio, exists := context.Environment("JAVA_MAX_METASPACE_RATIO")
 	var fraction int
@@ -327,11 +350,11 @@ func containsArgument(arguments []string, argument ...string) bool {
 	return false
 }
 
-func applyArguments(modificators []ArgumentsDeriver, ctx ArgumentsContext) []string {
+func applyArguments(modificators []ArgumentModificator, ctx ArgumentsContext) []string {
 	for _, mod := range modificators {
-		if mod.shouldDeriveArguments(ctx) {
+		if mod.shouldModifyArguments(ctx) {
 			logrus.Debugf("Arguments before modificator %s is %+v", reflect.TypeOf(mod), ctx.Arguments)
-			args := mod.deriveArguments(ctx)
+			args := mod.modifyArguments(ctx)
 			ctx.Arguments = args
 			logrus.Debugf("Arguments after modificator %s is %+v", reflect.TypeOf(mod), ctx.Arguments)
 		}

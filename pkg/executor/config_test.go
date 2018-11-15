@@ -27,7 +27,7 @@ func TestBuildArgLineFromDescriptor(t *testing.T) {
 		MemoryLimitInBytes: 2 * 1024 * 1024 * 1024,
 	}
 	assert.NoError(t, err)
-	args, err := buildArgline(desc, envFunc, limits)
+	args, err := buildArgline(desc, envFunc, Java8ArgumentsModificators, limits)
 	assert.NoError(t, err)
 	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar")
 	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar")
@@ -39,7 +39,7 @@ func TestExpanstionOfVariablesAgainstEnv(t *testing.T) {
 			JavaOptions: "-Dtest=${SOME} -Dtest2=${OTHER} \"this should not be splitt\"",
 		},
 	}
-	args, err := buildArgline(desc, envFunc, util.ReadCGroupLimits())
+	args, err := buildArgline(desc, envFunc, Java8ArgumentsModificators, util.ReadCGroupLimits())
 	assert.NoError(t, err)
 	assert.Contains(t, args, "-Dtest=Jallaball")
 	assert.Contains(t, args, "-Dtest2=Ballejall")

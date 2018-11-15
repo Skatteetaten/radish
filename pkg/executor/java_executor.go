@@ -33,7 +33,8 @@ func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, er
 	if err != nil {
 		return nil, err
 	}
-	args, err := buildArgline(desc, os.LookupEnv, util.ReadCGroupLimits())
+	argumentModificators := resolveArgumentModificators(os.Getenv)
+	args, err := buildArgline(desc, os.LookupEnv, argumentModificators, util.ReadCGroupLimits())
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +43,16 @@ func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, er
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd, nil
+}
+
+func resolveArgumentModificators(env func(string) string) []ArgumentModificator {
+	majorVersion := env("JAVA_VERSION_MAJOR")
+	if majorVersion == "11" {
+		logrus.Debug("Starting Java 11 process")
+		return Java11ArgumentsModificators
+	}
+	logrus.Debug("Starting Java 8 process")
+	return Java8ArgumentsModificators
 }
 
 func (m *javaExitHandler) HandleExit(exitCode int, pid int) int {
