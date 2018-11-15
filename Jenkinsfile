@@ -32,7 +32,7 @@ node {
 
     def deployOpts = '-Durl=' + REPO_URL + 
         ' -DrepositoryId=' + REPO_ID + 
-        ' -DgroupId=ske.aurora.openshift -DartifactId=radish -Dversion=' + version + 
+        ' -DgroupId=no.skatteetaten.aurora.openshift -DartifactId=radish -Dversion=' + version +
         ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/amd64/radish.tar.gz'
 
     maven.setMavenVersion('Maven 3')
