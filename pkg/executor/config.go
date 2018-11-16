@@ -31,7 +31,8 @@ type JavaDescriptor struct {
 	Data JavaDescriptorData
 }
 
-func buildArgline(descriptor JavaDescriptor, env func(string) (string, bool), cgl util.CGroupLimits) ([]string, error) {
+func buildArgline(descriptor JavaDescriptor, env func(string) (string, bool),
+	argumentModificators []ArgumentModificator, cgl util.CGroupLimits) ([]string, error) {
 	args := make([]string, 0, 10)
 	classpath, err := createClasspath(descriptor.Data.Basedir, descriptor.Data.PathsToClassLibraries)
 	if err != nil {
@@ -41,7 +42,7 @@ func buildArgline(descriptor JavaDescriptor, env func(string) (string, bool), cg
 	} else {
 		args = append(args, "-cp", strings.Join(classpath, ":"))
 	}
-	args = applyArguments(ArgumentsModificators, ArgumentsContext{
+	args = applyArguments(argumentModificators, ArgumentsContext{
 		Arguments:    args,
 		Environment:  env,
 		CGroupLimits: cgl,
