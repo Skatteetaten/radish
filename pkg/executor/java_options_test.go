@@ -61,15 +61,18 @@ func TestOptionsNoJolokia(t *testing.T) {
 
 func TestOptionsAppDynamics(t *testing.T) {
 	env := make(map[string]string)
+	env["HOME"] = "/u01"
 	env["OPENSHIFT_CLUSTER"] = "test"
 	env["ENABLE_JOLOKIA"] = "true"
 	env["ENABLE_JAVA_DIAGNOSTICS"] = "false"
 	env["ENABLE_REMOTE_DEBUG"] = "false"
 	env["ENABLE_APPDYNAMICS"] = "true"
+	env["ENABLE_APPDYNAMICS_SPLUNK"] = "true"
 	env["APPDYNAMICS_AGENT_BASE_DIR"] = "/opt/appdynamics"
 	env["POD_NAMESPACE"] = "mynamespace"
 	env["APP_NAME"] = "myappname"
 	env["POD_NAME"] = "mypodname"
+	env["APPDYNAMICS_ANALYTICS_AGENT_URL"] = "/some/url"
 	ctx := createTestContext(env)
 	modifiedArgs := applyArguments(Java8ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-javaagent:jolokia.jar=host=0.0.0.0,port=8778,protocol=https")
@@ -84,6 +87,8 @@ func TestOptionsAppDynamics(t *testing.T) {
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.applicationName=mynamespace-test")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.tierName=myappname")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.nodeName=mypodname")
+	assert.Contains(t, modifiedArgs, "-Dappdynamics.analytics.agent.url=/some/url")
+	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.logs.dir=/u01/logs")
 }
 
 func TestReadingOfJavaOptionsInDescriptor(t *testing.T) {
