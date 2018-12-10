@@ -44,6 +44,21 @@ func TestJava11Options(t *testing.T) {
 	assert.Len(t, modifiedArgs, 7)
 }
 
+func TestOptionsJolokia(t *testing.T) {
+	env := make(map[string]string)
+	env["ENABLE_JOLOKIA"] = "true"
+	ctx := createTestContext(env)
+	modifiedArgs := applyArguments(Java11ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-javaagent:jolokia.jar=host=0.0.0.0,port=8778,protocol=https")
+}
+
+func TestOptionsNoJolokia(t *testing.T) {
+	env := make(map[string]string)
+	ctx := createTestContext(env)
+	modifiedArgs := applyArguments(Java11ArgumentsModificators, ctx)
+	assert.NotContains(t, modifiedArgs, "-javaagent:jolokia.jar=host=0.0.0.0,port=8778,protocol=https")
+}
+
 func TestOptionsAppDynamics(t *testing.T) {
 	env := make(map[string]string)
 	env["OPENSHIFT_CLUSTER"] = "test"

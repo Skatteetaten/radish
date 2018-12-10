@@ -171,8 +171,8 @@ type jolokiaOptions struct {
 }
 
 func (m *jolokiaOptions) shouldModifyArguments(context ArgumentsContext) bool {
-	value, exists := context.Environment("DISABLE_JOLOKIA")
-	return !exists || !(strings.ToUpper(value) == "TRUE")
+	value, exists := context.Environment("ENABLE_JOLOKIA")
+	return exists && (strings.ToUpper(value) == "TRUE")
 }
 
 func (m *jolokiaOptions) modifyArguments(context ArgumentsContext) []string {
@@ -182,7 +182,7 @@ func (m *jolokiaOptions) modifyArguments(context ArgumentsContext) []string {
 		logrus.Warn("Jolokia was supposed to be enabled, but no Jolokia-path found")
 		return context.Arguments
 	}
-	jolokiaArgument := fmt.Sprintf("-javaagent:%s=host=0.0.0.0,port=8778,protocol=https", jolokiaPath)
+	jolokiaArgument := fmt.Sprintf("-javaagent:%s=|host=0.0.0.0,port=8778,protocol=https", jolokiaPath)
 	args = append([]string{jolokiaArgument}, context.Arguments...)
 	return args
 }
