@@ -11,7 +11,7 @@ import (
 var env = make(map[string]string)
 
 func envFunc(key string) (string, bool) {
-	env["DISABLE_JOLOKIA"] = "true"
+	env["ENABLE_JOLOKIA"] = "true"
 	env["SOME"] = "Jallaball"
 	env["OTHER"] = "Ballejall"
 	k, e := env[key]
