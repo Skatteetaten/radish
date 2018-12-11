@@ -1,6 +1,7 @@
 package executor
 
 import (
+	"fmt"
 	"github.com/skatteetaten/radish/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -56,7 +57,10 @@ func TestOptionsNoJolokia(t *testing.T) {
 	env := make(map[string]string)
 	ctx := createTestContext(env)
 	modifiedArgs := applyArguments(Java11ArgumentsModificators, ctx)
-	assert.NotContains(t, modifiedArgs, "jolokia.jar")
+	for _, e := range modifiedArgs {
+		fmt.Errorf("%s", e)
+		assert.NotRegexp(t, ".*jolokia.*", e)
+	}
 }
 
 func TestOptionsAppDynamics(t *testing.T) {
