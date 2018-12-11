@@ -27,7 +27,7 @@ The second task of Radish is a CLI to accomplish a number of tasks.
 | ENABLE_REMOTE_DEBUG| turn on remote debuging on DEBUG_PORT (default 5005) |
 | ENABLE_EXIT_ON_OOM | If set to a non-empty string, the JVM will exit on OutOfMemoryError. Default is off. |
 | ENABLE_JAVA_DIAGNOSTICS | If set to a non-empty string, the JVM is started with diagnostics flags set. Default is off.| 
-| DISABLE_JOLOKIA | Disables the Jolokia-agent if set.|
+| ENABLE_JOLOKIA | Enables the Jolokia-agent if set.|
 
 # Build:
 

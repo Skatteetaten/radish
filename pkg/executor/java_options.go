@@ -171,8 +171,8 @@ type jolokiaOptions struct {
 }
 
 func (m *jolokiaOptions) shouldModifyArguments(context ArgumentsContext) bool {
-	value, exists := context.Environment("DISABLE_JOLOKIA")
-	return !exists || !(strings.ToUpper(value) == "TRUE")
+	value, exists := context.Environment("ENABLE_JOLOKIA")
+	return exists && (strings.ToUpper(value) == "TRUE")
 }
 
 func (m *jolokiaOptions) modifyArguments(context ArgumentsContext) []string {
@@ -214,6 +214,7 @@ func (m *appDynamicsOptions) modifyArguments(context ArgumentsContext) []string 
 		agentAppName = appNameSpace
 	}
 
+	// Two AppD controller clusters represent all OCP clusters. We need at least som unique app_name
 	openshiftCluster, exists := context.Environment("OPENSHIFT_CLUSTER")
 	if exists {
 		agentAppName += "-" + openshiftCluster
@@ -249,11 +250,27 @@ func (m *appDynamicsOptions) modifyArguments(context ArgumentsContext) []string 
 		}
 	}
 
+	// uniqueHostId used to identify POD's by AppD machine agent
 	appDynamicsArgument := fmt.Sprintf("-javaagent:%s/javaagent.jar", appDynamicsBaseDir)
 	args = append([]string{appDynamicsArgument})
 	args = append(args, "-Dappdynamics.agent.applicationName="+agentAppName,
 		"-Dappdynamics.agent.tierName="+agentTierName,
-		"-Dappdynamics.agent.nodeName="+agentNodeName)
+		"-Dappdynamics.agent.nodeName="+agentNodeName,
+		"-Dappdynamics.agent.uniqueHostId="+agentNodeName)
+
+	appDynamicsAnalyticsAgentURL, exists := context.Environment("APPDYNAMICS_ANALYTICS_AGENT_URL")
+	if exists {
+		args = append(args, "-Dappdynamics.analytics.agent.url="+appDynamicsAnalyticsAgentURL)
+	}
+
+	appDynamicsSplunk, exists := context.Environment("ENABLE_APPDYNAMICS_SPLUNK")
+	if exists && strings.ToUpper(appDynamicsSplunk) == "TRUE" {
+		appDynamicsHome, exists := context.Environment("HOME")
+		if exists {
+			args = append(args, "-Dappdynamics.agent.logs.dir="+appDynamicsHome+"/logs")
+		}
+	}
+
 	args = append(args, context.Arguments...)
 
 	return args
