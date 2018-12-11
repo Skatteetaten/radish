@@ -1,7 +1,6 @@
 package executor
 
 import (
-	"fmt"
 	"github.com/skatteetaten/radish/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -58,7 +57,6 @@ func TestOptionsNoJolokia(t *testing.T) {
 	ctx := createTestContext(env)
 	modifiedArgs := applyArguments(Java11ArgumentsModificators, ctx)
 	for _, e := range modifiedArgs {
-		fmt.Errorf("%s", e)
 		assert.NotRegexp(t, ".*jolokia.*", e)
 	}
 }
