@@ -56,7 +56,7 @@ func TestOptionsNoJolokia(t *testing.T) {
 	env := make(map[string]string)
 	ctx := createTestContext(env)
 	modifiedArgs := applyArguments(Java11ArgumentsModificators, ctx)
-	assert.NotContains(t, modifiedArgs, "-javaagent:jolokia.jar=host=0.0.0.0,port=8778,protocol=https")
+	assert.NotContains(t, modifiedArgs, "jolokia.jar")
 }
 
 func TestOptionsAppDynamics(t *testing.T) {
