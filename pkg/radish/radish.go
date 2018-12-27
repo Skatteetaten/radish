@@ -12,6 +12,7 @@ import (
 	"syscall"
 )
 
+//RunRadish :
 func RunRadish(args []string) {
 	e := executor.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
@@ -40,11 +41,12 @@ func RunRadish(args []string) {
 
 func locateRadishDescriptor(args []string) (string, error) {
 	if len(args) > 0 {
-		if _, err := os.Stat(args[0]); err == nil {
+		_, err := os.Stat(args[0])
+		if err == nil {
 			return args[0], nil
-		} else {
-			return "", errors.Wrapf(err, "Error reading %s", args[0])
 		}
+		return "", errors.Wrapf(err, "Error reading %s", args[0])
+
 	}
 	descriptor, exists := os.LookupEnv("RADISH_DESCRIPTOR")
 	if exists {

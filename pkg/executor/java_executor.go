@@ -18,6 +18,7 @@ type generatedJavaExecutor struct {
 	javaExitHandler
 }
 
+//NewJavaExecutor :
 func NewJavaExecutor() Executor {
 	return &generatedJavaExecutor{
 		javaExitHandler: javaExitHandler{},

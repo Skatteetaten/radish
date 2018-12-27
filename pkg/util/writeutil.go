@@ -10,10 +10,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+//FileWriter :
 type FileWriter func(WriterFunc, ...string) error
 
+//WriterFunc :
 type WriterFunc func(io.Writer) error
 
+//NewTemplateWriter :
 func NewTemplateWriter(input interface{}, templatename string, templateString string) WriterFunc {
 	return func(writer io.Writer) error {
 		tmpl, err := template.New(templatename).Parse(templateString)
@@ -28,6 +31,7 @@ func NewTemplateWriter(input interface{}, templatename string, templateString st
 	}
 }
 
+//NewByteWriter :
 func NewByteWriter(data []byte) WriterFunc {
 	return func(writer io.Writer) error {
 		n, err := writer.Write(data)
@@ -38,6 +42,7 @@ func NewByteWriter(data []byte) WriterFunc {
 	}
 }
 
+//NewFileWriter :
 func NewFileWriter(targetFolder string) FileWriter {
 	return func(writerFunc WriterFunc, elem ...string) error {
 		elem = append(elem, "")

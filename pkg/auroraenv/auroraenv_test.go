@@ -6,9 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"path"
+
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"path"
 )
 
 func TestSetAuroraEnv(t *testing.T) {

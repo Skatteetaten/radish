@@ -18,11 +18,13 @@ const (
 	memLimitInBytes        = "/sys/fs/cgroup/memory/memory.limit_in_bytes"
 )
 
+//CGroupLimits :
 type CGroupLimits struct {
 	MaxCoresEstimated  int
 	MemoryLimitInBytes int
 }
 
+//ReadCGroupLimits :
 func ReadCGroupLimits() CGroupLimits {
 
 	ret := CGroupLimits{}
@@ -65,13 +67,17 @@ func readCGroupLimit(cgroupFilePath string) int {
 	return parsed
 }
 
+//HasMemoryLimit :
 func (e CGroupLimits) HasMemoryLimit() bool {
 	return e.MemoryLimitInBytes > 0
 }
 
+//HasCoreLimit :
 func (e CGroupLimits) HasCoreLimit() bool {
 	return e.MaxCoresEstimated > 0
 }
+
+//MemoryFractionInMB :
 func (e CGroupLimits) MemoryFractionInMB(fraction int) interface{} {
 	//If memory limits is above a sensible default (64G), we set it to 1G
 	if e.MemoryLimitInBytes > 2<<37 {

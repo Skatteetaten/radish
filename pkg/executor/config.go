@@ -2,22 +2,26 @@ package executor
 
 import (
 	"encoding/json"
-	"github.com/skatteetaten/radish/pkg/util"
 	"io"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/skatteetaten/radish/pkg/util"
+
+	"io/ioutil"
+
 	"github.com/drone/envsubst"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 )
 
+//Type :
 type Type struct {
 	Type    string `json:"Type"`
 	Version string `json:"Version"`
 }
 
+//JavaDescriptorData :
 type JavaDescriptorData struct {
 	Basedir               string   `json:"Basedir"`
 	PathsToClassLibraries []string `json:"PathsToClassLibraries"`
@@ -26,6 +30,7 @@ type JavaDescriptorData struct {
 	JavaOptions           string   `json:"JavaOptions"`
 }
 
+//JavaDescriptor :
 type JavaDescriptor struct {
 	Type
 	Data JavaDescriptorData
@@ -80,17 +85,17 @@ func createClasspath(basedir string, patterns []string) ([]string, error) {
 		p := path.Join(basedir, pattern)
 		fi, err := os.Stat(p)
 		if os.IsNotExist(err) {
-			logrus.Debugf("Trying to build classpath from %s but it does not exist", p)
+			logrus.Debugf("Trying to build classpath from %s but it does not exist.", p)
 			continue
 		}
 		if err != nil {
-			logrus.Warnf("Trying to build classpath from %s but it was an error", p, err)
+			logrus.Warnf("Trying to build classpath from %s but it was an error: %s", p, err)
 			continue
 		}
 		if fi.IsDir() {
 			files, err := ioutil.ReadDir(p)
 			if err != nil {
-				logrus.Warn("Can not list content of directory %s", p)
+				logrus.Warnf("Can not list content of directory %s", p)
 			}
 			for _, file := range files {
 				if file.Mode().IsRegular() {

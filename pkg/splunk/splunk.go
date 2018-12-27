@@ -1,6 +1,6 @@
 package splunk
 
-//go:generate go-bindata -ignore=.*bindata.go.* -pkg=$GOPACKAGE -o=resources/bindata.go  resources
+//go:generate fileb0x b0x.yaml
 
 import (
 	"io/ioutil"
@@ -56,7 +56,7 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 
 	stanzatemplate, err := readStanzasTemplate(templateFilePath)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to read template file from ", templateFilePath)
+		return errors.Wrapf(err, "Failed to read template file from %s", templateFilePath)
 	}
 
 	fileWriter := util.NewFileWriter(outputFilePath)
@@ -74,7 +74,7 @@ func readStanzasTemplate(templateFilePath string) ([]byte, error) {
 	if len(templateFilePath) > 0 {
 		stanzatemplate, err := ioutil.ReadFile(templateFilePath)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to read template file from ", templateFilePath)
+			return nil, errors.Wrapf(err, "Failed to read template file from %s", templateFilePath)
 		}
 		return stanzatemplate, nil
 	}

@@ -77,12 +77,12 @@ func GenerateEnvScript() (string, error) {
 			logrus.Debug("Error reading config")
 			return "", errors.Wrap(err, "Error reading config")
 		} else if configVersion == "" {
-			logrus.Infof("No config in %s", dir)
+			logrus.Infof("No config in %s", dir.dir)
 			continue
 		}
 		err = exportPropertiesAsEnvVars(buffer, path+"/"+configVersion+".properties", dir.shouldMask)
 		if err != nil {
-			logrus.Debug("Returning with error after export: %s", err.Error())
+			logrus.Debugf("Returning with error after export: %s", err.Error())
 			return "", err
 		}
 	}
@@ -105,7 +105,7 @@ func findConfigVersion(appVersion string, configLocation string) (string, error)
 		minorVersion := splitVersion[0] + "." + splitVersion[1]
 		versions = []string{appVersion, minorVersion, majorVersion, "latest"}
 	}
-	logrus.Debugf("Looking for files in order: ", versions)
+	logrus.Debugf("Looking for files in order: %s", versions)
 	for _, version := range versions {
 		if _, err := os.Stat(configLocation + "/" + version + ".properties"); err == nil {
 			logrus.Debugf("Using version %s", version)

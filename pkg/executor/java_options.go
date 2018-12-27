@@ -2,14 +2,16 @@ package executor
 
 import (
 	"fmt"
-	"github.com/kballard/go-shellquote"
-	"github.com/sirupsen/logrus"
-	"github.com/skatteetaten/radish/pkg/util"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/kballard/go-shellquote"
+	"github.com/sirupsen/logrus"
+	"github.com/skatteetaten/radish/pkg/util"
 )
 
+//ArgumentsContext :
 type ArgumentsContext struct {
 	Arguments    []string
 	Environment  func(string) (string, bool)
@@ -17,11 +19,13 @@ type ArgumentsContext struct {
 	CGroupLimits util.CGroupLimits
 }
 
+//ArgumentModificator :
 type ArgumentModificator interface {
 	shouldModifyArguments(context ArgumentsContext) bool
 	modifyArguments(context ArgumentsContext) []string
 }
 
+//Java8ArgumentsModificators :
 var Java8ArgumentsModificators = []ArgumentModificator{
 	&environmentJavaOptionsOverride{},
 	&descriptorJavaOptionsOverride{},
@@ -35,6 +39,7 @@ var Java8ArgumentsModificators = []ArgumentModificator{
 	&metaspaceOptions{},
 }
 
+//Java11ArgumentsModificators :
 var Java11ArgumentsModificators = []ArgumentModificator{
 	&environmentJavaOptionsOverride{},
 	&descriptorJavaOptionsOverride{},
@@ -139,7 +144,7 @@ func (m *descriptorJavaOptionsOverride) modifyArguments(context ArgumentsContext
 	options := context.Descriptor.Data.JavaOptions
 	splittedArgs, err := shellquote.Split(options)
 	if err != nil {
-		logrus.Error("Unable to parse args from radish descriptor: %s %s", options, err)
+		logrus.Errorf("Unable to parse args from radish descriptor: %s %s", options, err)
 	}
 	args := append(context.Arguments, splittedArgs...)
 	return args

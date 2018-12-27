@@ -1,14 +1,14 @@
 package radish
 
 import (
-	"os"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
 
-	"github.com/skatteetaten/radish/pkg/auroraenv"
-	"github.com/skatteetaten/radish/pkg/splunk"
 	"fmt"
+	"github.com/skatteetaten/radish/pkg/auroraenv"
 	"github.com/skatteetaten/radish/pkg/radish"
+	"github.com/skatteetaten/radish/pkg/splunk"
 )
 
 //GenerateEnvScript : Use to set environment variables from appropriate properties files, based on app- and aurora versions.
@@ -112,7 +112,7 @@ In other words, if the flag is not set, then the environment variable must exist
 	},
 }
 
-var RunJava = &cobra.Command{
+var runJava = &cobra.Command{
 	Use:   "runJava",
 	Short: "Runs a Java process with Radish",
 	Long:  `Runs a Java process with Radish. It automatically detects CGroup limits and some common flags`,
