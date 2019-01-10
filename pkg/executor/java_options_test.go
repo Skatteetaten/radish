@@ -65,9 +65,6 @@ func TestOptionsAppDynamics(t *testing.T) {
 	env := make(map[string]string)
 	env["HOME"] = "/u01"
 	env["OPENSHIFT_CLUSTER"] = "test"
-	env["ENABLE_JOLOKIA"] = "true"
-	env["ENABLE_JAVA_DIAGNOSTICS"] = "false"
-	env["ENABLE_REMOTE_DEBUG"] = "false"
 	env["ENABLE_APPDYNAMICS"] = "true"
 	env["ENABLE_APPDYNAMICS_SPLUNK"] = "true"
 	env["APPDYNAMICS_AGENT_BASE_DIR"] = "/opt/appdynamics"
@@ -77,20 +74,24 @@ func TestOptionsAppDynamics(t *testing.T) {
 	env["APPDYNAMICS_ANALYTICS_AGENT_URL"] = "/some/url"
 	ctx := createTestContext(env)
 	modifiedArgs := applyArguments(Java8ArgumentsModificators, ctx)
-	assert.Contains(t, modifiedArgs, "-javaagent:jolokia.jar=host=0.0.0.0,port=8778,protocol=https")
-	assert.Contains(t, modifiedArgs, "-Xmx2048m")
-	assert.Contains(t, modifiedArgs, "-Xms2048m")
-	assert.Contains(t, modifiedArgs, "-Djava.util.concurrent.ForkJoinPool.common.parallelism=4")
-	assert.Contains(t, modifiedArgs, "-XX:ConcGCThreads=4")
-	assert.Contains(t, modifiedArgs, "-XX:ParallelGCThreads=4")
-	assert.NotContains(t, modifiedArgs, "-XX:NativeMemoryTracking=summary")
-	assert.NotContains(t, modifiedArgs, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
 	assert.Contains(t, modifiedArgs, "-javaagent:/opt/appdynamics/javaagent.jar")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.applicationName=mynamespace-test")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.tierName=myappname")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.nodeName=mypodname")
+	assert.Contains(t, modifiedArgs, "-Dappdynamics.jvm.shutdown.mark.node.as.historical=true")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.analytics.agent.url=/some/url")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.logs.dir=/u01/logs")
+
+	env["APPDYNAMICS_JVM_SHUTDOWN_MARK_NODE_AS_HISTORICAL"] = "false"
+	ctx = createTestContext(env)
+	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-Dappdynamics.jvm.shutdown.mark.node.as.historical=false")
+
+	env["ENABLE_APPDYNAMICS"] = "false"
+	ctx = createTestContext(env)
+	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
+	assert.NotContains(t, modifiedArgs, "-javaagent:/opt/appdynamics/javaagent.jar")
+	assert.NotContains(t, modifiedArgs, "-Dappdynamics")
 }
 
 func TestReadingOfJavaOptionsInDescriptor(t *testing.T) {
