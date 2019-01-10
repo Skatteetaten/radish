@@ -250,13 +250,19 @@ func (m *appDynamicsOptions) modifyArguments(context ArgumentsContext) []string 
 		}
 	}
 
+	agentNodeMarkAsHistorical, exists := context.Environment("APPDYNAMICS_JVM_SHUTDOWN_MARK_NODE_AS_HISTORICAL")
+	if !exists {
+		agentNodeMarkAsHistorical = "true"
+	}
+
 	// uniqueHostId used to identify POD's by AppD machine agent
 	appDynamicsArgument := fmt.Sprintf("-javaagent:%s/javaagent.jar", appDynamicsBaseDir)
 	args = append([]string{appDynamicsArgument})
 	args = append(args, "-Dappdynamics.agent.applicationName="+agentAppName,
 		"-Dappdynamics.agent.tierName="+agentTierName,
 		"-Dappdynamics.agent.nodeName="+agentNodeName,
-		"-Dappdynamics.agent.uniqueHostId="+agentNodeName)
+		"-Dappdynamics.agent.uniqueHostId="+agentNodeName,
+		"-Dappdynamics.jvm.shutdown.mark.node.as.historical="+agentNodeMarkAsHistorical)
 
 	appDynamicsAnalyticsAgentURL, exists := context.Environment("APPDYNAMICS_ANALYTICS_AGENT_URL")
 	if exists {
