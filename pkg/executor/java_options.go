@@ -37,6 +37,7 @@ var Java8ArgumentsModificators = []ArgumentModificator{
 	&cpuCoreTuning{},
 	&memoryOptions{},
 	&metaspaceOptions{},
+	&heapDumpPath{},
 }
 
 //Java11ArgumentsModificators :
@@ -48,6 +49,7 @@ var Java11ArgumentsModificators = []ArgumentModificator{
 	&java11DiagnosticsOptions{},
 	&jolokiaOptions{},
 	&appDynamicsOptions{},
+	&heapDumpPath{},
 }
 
 type java11DiagnosticsOptions struct {
@@ -350,6 +352,27 @@ func (m *metaspaceOptions) modifyArguments(context ArgumentsContext) []string {
 	if limits.HasMemoryLimit() {
 		args = append([]string{fmt.Sprintf("-XX:MaxMetaspaceSize=%dm", limits.MemoryFractionInMB(fraction))}, args...)
 	}
+	return args
+}
+
+var heapdumppathArguments = []string{"-XX:HeapDumpPath"}
+
+type heapDumpPath struct {
+}
+
+func (m *heapDumpPath) shouldModifyArguments(context ArgumentsContext) bool {
+	return !containsArgument(context.Arguments, heapdumppathArguments...)
+}
+
+func (m *heapDumpPath) modifyArguments(context ArgumentsContext) []string {
+	javaHeapDumpPath, exists := context.Environment("JAVA_HEAPDUMP_PATH")
+	args := make([]string, 0)
+	if exists {
+		args = append([]string{fmt.Sprintf("-XX:HeapDumpPath=%s", javaHeapDumpPath)})
+	} else {
+		args = append([]string{"-XX:HeapDumpPath=/tmp"})
+	}
+	args = append(args, context.Arguments...)
 	return args
 }
 
