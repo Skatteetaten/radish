@@ -1,4 +1,4 @@
-module github.com/radish
+module github.com/skatteetaten/radish
 
 require (
 	github.com/UnnoTed/fileb0x v1.1.1 // indirect
@@ -14,7 +14,6 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/plaid/go-envvar v1.1.0
 	github.com/sirupsen/logrus v1.0.6
-	github.com/skatteetaten/radish v1.0.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.2 // indirect
 	github.com/stretchr/testify v1.2.2

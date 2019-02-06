@@ -2,7 +2,7 @@
 # where fileb0x was run at!
 
 # default: main
-pkg: packagename
+pkg: resources
 
 # destination
 dest: "./resources/"

@@ -1,11 +1,13 @@
 package radish
 
 import (
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"os"
 
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"fmt"
+
 	"github.com/skatteetaten/radish/pkg/auroraenv"
 	"github.com/skatteetaten/radish/pkg/radish"
 	"github.com/skatteetaten/radish/pkg/splunk"
@@ -112,8 +114,9 @@ In other words, if the flag is not set, then the environment variable must exist
 	},
 }
 
-var runJava = &cobra.Command{
-	Use:   "runJava",
+//RunJava :
+var RunJava = &cobra.Command{
+	Use:   "RunJava",
 	Short: "Runs a Java process with Radish",
 	Long:  `Runs a Java process with Radish. It automatically detects CGroup limits and some common flags`,
 	Args:  cobra.MaximumNArgs(1),

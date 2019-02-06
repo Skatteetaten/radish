@@ -79,12 +79,7 @@ func readStanzasTemplate(templateFilePath string) ([]byte, error) {
 		return stanzatemplate, nil
 	}
 
-	stanzatemplate, err := splunkresources.Asset("resources/default_stanzas_template")
-	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to read default template file from bindata")
-	}
-	return stanzatemplate, nil
-
+	return splunkresources.FileResourcesDefaultStanzasTemplate, nil
 }
 
 func newSplunkStanzas(template string, data Data) util.WriterFunc {
