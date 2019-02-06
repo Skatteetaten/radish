@@ -116,7 +116,7 @@ In other words, if the flag is not set, then the environment variable must exist
 
 //RunJava :
 var RunJava = &cobra.Command{
-	Use:   "RunJava",
+	Use:   "runJava",
 	Short: "Runs a Java process with Radish",
 	Long:  `Runs a Java process with Radish. It automatically detects CGroup limits and some common flags`,
 	Args:  cobra.MaximumNArgs(1),
