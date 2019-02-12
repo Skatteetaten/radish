@@ -43,7 +43,7 @@ func TestJava11Options(t *testing.T) {
 	assert.Contains(t, modifiedArgs, "-Xlog:gc")
 	assert.Contains(t, modifiedArgs, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
 	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
-	assert.Len(t, modifiedArgs, 8)
+	assert.Len(t, modifiedArgs, 9)
 }
 
 func TestOptionsJolokia(t *testing.T) {
@@ -63,34 +63,50 @@ func TestOptionsNoJolokia(t *testing.T) {
 	}
 }
 
-func TestHeapDumpPath(t *testing.T) {
+func TestHeapDumpOptions(t *testing.T) {
 	env := make(map[string]string)
-	env["JAVA_HEAPDUMP_PATH"] = "/this/will/work"
+	env["JAVA_HEAP_DUMP_PATH"] = "/this/will/work"
 	ctx := createTestContext(env)
 	modifiedArgs := applyArguments(Java8ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/this/will/work")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
 	modifiedArgs = applyArguments(Java11ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/this/will/work")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
 
 	env = make(map[string]string)
 	ctx = createTestContext(env)
 	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
 	modifiedArgs = applyArguments(Java11ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
 
 	env["JAVA_OPTIONS"] = "-XX:HeapDumpPath=/some/other/path -Xtullogtoys"
-	env["JAVA_HEAPDUMP_PATH"] = "/this/will/not/work"
+	env["JAVA_HEAP_DUMP_PATH"] = "/this/will/not/work"
 	ctx = createTestContext(env)
 	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/some/other/path")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
 	assert.Contains(t, modifiedArgs, "-Xtullogtoys")
 
 	env["JAVA_OPTIONS"] = "-XX:HeapDumpPath=/some/other/path -Xtullogtoys"
-	env["JAVA_HEAPDUMP_PATH"] = "/this/will/not/work"
+	env["JAVA_HEAP_DUMP_PATH"] = "/this/will/not/work"
+	env["JAVA_HEAP_DUMP_ON_OUT_OF_MEMORY_ERROR"] = "false"
 	ctx = createTestContext(env)
 	modifiedArgs = applyArguments(Java11ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/some/other/path")
+	assert.NotContains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+	assert.Contains(t, modifiedArgs, "-Xtullogtoys")
+
+	env["JAVA_OPTIONS"] = "-XX:HeapDumpPath=/some/other/path -Xtullogtoys"
+	env["JAVA_HEAP_DUMP_PATH"] = "/this/will/not/work"
+	env["JAVA_HEAP_DUMP_ON_OUT_OF_MEMORY_ERROR"] = "some_other_value_will_enable_heap_dump"
+	ctx = createTestContext(env)
+	modifiedArgs = applyArguments(Java11ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/some/other/path")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
 	assert.Contains(t, modifiedArgs, "-Xtullogtoys")
 }
 

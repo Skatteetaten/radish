@@ -37,7 +37,7 @@ var Java8ArgumentsModificators = []ArgumentModificator{
 	&cpuCoreTuning{},
 	&memoryOptions{},
 	&metaspaceOptions{},
-	&heapDumpPath{},
+	&heapDumpOptions{},
 }
 
 //Java11ArgumentsModificators :
@@ -49,7 +49,7 @@ var Java11ArgumentsModificators = []ArgumentModificator{
 	&java11DiagnosticsOptions{},
 	&jolokiaOptions{},
 	&appDynamicsOptions{},
-	&heapDumpPath{},
+	&heapDumpOptions{},
 }
 
 type java11DiagnosticsOptions struct {
@@ -355,23 +355,41 @@ func (m *metaspaceOptions) modifyArguments(context ArgumentsContext) []string {
 	return args
 }
 
-var heapdumppathArguments = []string{"-XX:HeapDumpPath"}
+var heapDumpPathArgs = []string{"-XX:HeapDumpPath"}
+var heapDumpOnArgs = []string{"-XX:+HeapDumpOnOutOfMemoryError"}
 
-type heapDumpPath struct {
+type heapDumpOptions struct {
 }
 
-func (m *heapDumpPath) shouldModifyArguments(context ArgumentsContext) bool {
-	return !containsArgument(context.Arguments, heapdumppathArguments...)
-}
+func (m *heapDumpOptions) shouldModifyArguments(context ArgumentsContext) bool {
+	isHeapDumpPath := containsArgument(context.Arguments, heapDumpPathArgs...)
+	isHeapDumpOn := containsArgument(context.Arguments, heapDumpOnArgs...)
 
-func (m *heapDumpPath) modifyArguments(context ArgumentsContext) []string {
-	javaHeapDumpPath, exists := context.Environment("JAVA_HEAPDUMP_PATH")
-	args := make([]string, 0)
-	if exists {
-		args = append([]string{fmt.Sprintf("-XX:HeapDumpPath=%s", javaHeapDumpPath)})
-	} else {
-		args = append([]string{"-XX:HeapDumpPath=/tmp"})
+	if isHeapDumpPath && isHeapDumpOn {
+		return false
 	}
+	return true
+}
+
+func (m *heapDumpOptions) modifyArguments(context ArgumentsContext) []string {
+	args := make([]string, 0)
+
+	if !containsArgument(context.Arguments, heapDumpPathArgs...) {
+		javaHeapDumpPath, exists := context.Environment("JAVA_HEAP_DUMP_PATH")
+		if exists {
+			args = append([]string{fmt.Sprintf("-XX:HeapDumpPath=%s", javaHeapDumpPath)})
+		} else {
+			args = append([]string{"-XX:HeapDumpPath=/tmp"})
+		}
+	}
+
+	if !containsArgument(context.Arguments, heapDumpOnArgs...) {
+		javaHeapDumpOnOutOfMemoryError, exists := context.Environment("JAVA_HEAP_DUMP_ON_OUT_OF_MEMORY_ERROR")
+		if !exists || exists && strings.ToUpper(javaHeapDumpOnOutOfMemoryError) != "FALSE" {
+			args = append(args, "-XX:+HeapDumpOnOutOfMemoryError")
+		}
+	}
+
 	args = append(args, context.Arguments...)
 	return args
 }
