@@ -224,8 +224,8 @@ func (m *appDynamicsOptions) modifyArguments(context ArgumentsContext) []string 
 	// Two AppD controller clusters represent all OCP clusters. We need at least som unique app_name
 	openshiftCluster, exists := context.Environment("OPENSHIFT_CLUSTER")
 	if exists {
-		openshiftEnableSufix, exists := context.Environment("APPDYNAMICS_ENABLE_CLUSTER_SUFIX")
-		if !exists || exists && strings.ToUpper(openshiftEnableSufix) != "FALSE" {
+		appDynamicsEnableClusterSufix, exists := context.Environment("APPDYNAMICS_ENABLE_CLUSTER_SUFIX")
+		if !exists || exists && strings.ToUpper(appDynamicsEnableClusterSufix) != "FALSE" {
 			agentAppName += "-" + openshiftCluster
 		}
 	}
