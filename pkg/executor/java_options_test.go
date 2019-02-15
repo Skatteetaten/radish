@@ -143,13 +143,13 @@ func TestOptionsAppDynamics(t *testing.T) {
 	assert.NotContains(t, modifiedArgs, "-Dappdynamics")
 
 	env["ENABLE_APPDYNAMICS"] = "true"
-	env["APPDYNAMICS_ENABLE_CLUSTER_SUFIX"] = "false"
+	env["APPDYNAMICS_ENABLE_CLUSTER_SUFFIX"] = "false"
 	ctx = createTestContext(env)
 	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.applicationName=mynamespace")
 
 	env["ENABLE_APPDYNAMICS"] = "true"
-	env["APPDYNAMICS_ENABLE_CLUSTER_SUFIX"] = "this_is_default"
+	env["APPDYNAMICS_ENABLE_CLUSTER_SUFFIX"] = "this_is_default"
 	ctx = createTestContext(env)
 	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.applicationName=mynamespace-test")
