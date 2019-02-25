@@ -37,6 +37,7 @@ var Java8ArgumentsModificators = []ArgumentModificator{
 	&cpuCoreTuning{},
 	&memoryOptions{},
 	&metaspaceOptions{},
+	&heapDumpOptions{},
 }
 
 //Java11ArgumentsModificators :
@@ -48,6 +49,7 @@ var Java11ArgumentsModificators = []ArgumentModificator{
 	&java11DiagnosticsOptions{},
 	&jolokiaOptions{},
 	&appDynamicsOptions{},
+	&heapDumpOptions{},
 }
 
 type java11DiagnosticsOptions struct {
@@ -222,7 +224,10 @@ func (m *appDynamicsOptions) modifyArguments(context ArgumentsContext) []string 
 	// Two AppD controller clusters represent all OCP clusters. We need at least som unique app_name
 	openshiftCluster, exists := context.Environment("OPENSHIFT_CLUSTER")
 	if exists {
-		agentAppName += "-" + openshiftCluster
+		appDynamicsEnableClusterSuffix, exists := context.Environment("APPDYNAMICS_ENABLE_CLUSTER_SUFFIX")
+		if !exists || exists && strings.ToUpper(appDynamicsEnableClusterSuffix) != "FALSE" {
+			agentAppName += "-" + openshiftCluster
+		}
 	}
 
 	agentTierName, exists := context.Environment("APPDYNAMICS_AGENT_TIER_NAME")
@@ -350,6 +355,45 @@ func (m *metaspaceOptions) modifyArguments(context ArgumentsContext) []string {
 	if limits.HasMemoryLimit() {
 		args = append([]string{fmt.Sprintf("-XX:MaxMetaspaceSize=%dm", limits.MemoryFractionInMB(fraction))}, args...)
 	}
+	return args
+}
+
+var heapDumpPathArgs = []string{"-XX:HeapDumpPath"}
+var heapDumpOnArgs = []string{"-XX:+HeapDumpOnOutOfMemoryError"}
+
+type heapDumpOptions struct {
+}
+
+func (m *heapDumpOptions) shouldModifyArguments(context ArgumentsContext) bool {
+	isHeapDumpPath := containsArgument(context.Arguments, heapDumpPathArgs...)
+	isHeapDumpOn := containsArgument(context.Arguments, heapDumpOnArgs...)
+
+	if isHeapDumpPath && isHeapDumpOn {
+		return false
+	}
+	return true
+}
+
+func (m *heapDumpOptions) modifyArguments(context ArgumentsContext) []string {
+	args := make([]string, 0)
+
+	if !containsArgument(context.Arguments, heapDumpPathArgs...) {
+		javaHeapDumpPath, exists := context.Environment("JAVA_HEAP_DUMP_PATH")
+		if exists {
+			args = append([]string{fmt.Sprintf("-XX:HeapDumpPath=%s", javaHeapDumpPath)})
+		} else {
+			args = append([]string{"-XX:HeapDumpPath=/tmp"})
+		}
+	}
+
+	if !containsArgument(context.Arguments, heapDumpOnArgs...) {
+		javaHeapDumpOnOutOfMemoryError, exists := context.Environment("JAVA_HEAP_DUMP_ON_OUT_OF_MEMORY_ERROR")
+		if !exists || exists && strings.ToUpper(javaHeapDumpOnOutOfMemoryError) != "FALSE" {
+			args = append(args, "-XX:+HeapDumpOnOutOfMemoryError")
+		}
+	}
+
+	args = append(args, context.Arguments...)
 	return args
 }
 

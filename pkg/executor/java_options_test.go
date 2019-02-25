@@ -25,6 +25,7 @@ func TestJava8Options(t *testing.T) {
 	assert.Contains(t, modifiedArgs, "-XX:+PrintGCDateStamps")
 	assert.Contains(t, modifiedArgs, "-XX:+PrintGCTimeStamps")
 	assert.Contains(t, modifiedArgs, "-XX:+UnlockDiagnosticVMOptions")
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
 	assert.Contains(t, modifiedArgs, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
 	assert.NotContains(t, modifiedArgs, "-javaagent:/opt/appdynamics/javaagent.jar")
 }
@@ -41,7 +42,8 @@ func TestJava11Options(t *testing.T) {
 	assert.Contains(t, modifiedArgs, "-XX:NativeMemoryTracking=summary")
 	assert.Contains(t, modifiedArgs, "-Xlog:gc")
 	assert.Contains(t, modifiedArgs, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
-	assert.Len(t, modifiedArgs, 7)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
+	assert.Len(t, modifiedArgs, 9)
 }
 
 func TestOptionsJolokia(t *testing.T) {
@@ -59,6 +61,53 @@ func TestOptionsNoJolokia(t *testing.T) {
 	for _, e := range modifiedArgs {
 		assert.NotRegexp(t, ".*jolokia.*", e)
 	}
+}
+
+func TestHeapDumpOptions(t *testing.T) {
+	env := make(map[string]string)
+	env["JAVA_HEAP_DUMP_PATH"] = "/this/will/work"
+	ctx := createTestContext(env)
+	modifiedArgs := applyArguments(Java8ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/this/will/work")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+	modifiedArgs = applyArguments(Java11ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/this/will/work")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+
+	env = make(map[string]string)
+	ctx = createTestContext(env)
+	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+	modifiedArgs = applyArguments(Java11ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+
+	env["JAVA_OPTIONS"] = "-XX:HeapDumpPath=/some/other/path -Xtullogtoys"
+	env["JAVA_HEAP_DUMP_PATH"] = "/this/will/not/work"
+	ctx = createTestContext(env)
+	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/some/other/path")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+	assert.Contains(t, modifiedArgs, "-Xtullogtoys")
+
+	env["JAVA_OPTIONS"] = "-XX:HeapDumpPath=/some/other/path -Xtullogtoys"
+	env["JAVA_HEAP_DUMP_PATH"] = "/this/will/not/work"
+	env["JAVA_HEAP_DUMP_ON_OUT_OF_MEMORY_ERROR"] = "false"
+	ctx = createTestContext(env)
+	modifiedArgs = applyArguments(Java11ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/some/other/path")
+	assert.NotContains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+	assert.Contains(t, modifiedArgs, "-Xtullogtoys")
+
+	env["JAVA_OPTIONS"] = "-XX:HeapDumpPath=/some/other/path -Xtullogtoys"
+	env["JAVA_HEAP_DUMP_PATH"] = "/this/will/not/work"
+	env["JAVA_HEAP_DUMP_ON_OUT_OF_MEMORY_ERROR"] = "some_other_value_will_enable_heap_dump"
+	ctx = createTestContext(env)
+	modifiedArgs = applyArguments(Java11ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/some/other/path")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+	assert.Contains(t, modifiedArgs, "-Xtullogtoys")
 }
 
 func TestOptionsAppDynamics(t *testing.T) {
@@ -92,6 +141,18 @@ func TestOptionsAppDynamics(t *testing.T) {
 	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
 	assert.NotContains(t, modifiedArgs, "-javaagent:/opt/appdynamics/javaagent.jar")
 	assert.NotContains(t, modifiedArgs, "-Dappdynamics")
+
+	env["ENABLE_APPDYNAMICS"] = "true"
+	env["APPDYNAMICS_ENABLE_CLUSTER_SUFFIX"] = "false"
+	ctx = createTestContext(env)
+	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.applicationName=mynamespace")
+
+	env["ENABLE_APPDYNAMICS"] = "true"
+	env["APPDYNAMICS_ENABLE_CLUSTER_SUFFIX"] = "this_is_default"
+	ctx = createTestContext(env)
+	modifiedArgs = applyArguments(Java8ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.applicationName=mynamespace-test")
 }
 
 func TestReadingOfJavaOptionsInDescriptor(t *testing.T) {
