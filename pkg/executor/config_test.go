@@ -45,3 +45,26 @@ func TestExpanstionOfVariablesAgainstEnv(t *testing.T) {
 	assert.Contains(t, args, "-Dtest2=Ballejall")
 	assert.Contains(t, args, "this should not be splitt")
 }
+
+func TestTokenizationOfShellQuotedArgs(t *testing.T) {
+	desc := JavaDescriptor{
+		Data: JavaDescriptorData{
+			ApplicationArgs: "arg1 arg2 \"this should not be splitt\"",
+			MainClass:       "Class",
+		},
+	}
+	args, err := buildArgline(desc, envFunc, []ArgumentModificator{}, util.ReadCGroupLimits())
+	assert.NoError(t, err)
+	assert.Len(t, args, 4)
+	assert.Equal(t, args[0], "Class")
+	assert.Equal(t, args[1], "arg1")
+	assert.Equal(t, args[2], "arg2")
+	assert.Equal(t, args[3], "this should not be splitt")
+
+	desc.Data.ApplicationArgs = "arg1"
+	args, err = buildArgline(desc, envFunc, []ArgumentModificator{}, util.ReadCGroupLimits())
+	assert.NoError(t, err)
+	assert.Len(t, args, 2)
+	assert.Equal(t, args[0], "Class")
+	assert.Equal(t, args[1], "arg1")
+}
