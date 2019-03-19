@@ -2,6 +2,7 @@ package executor
 
 import (
 	"encoding/json"
+	"github.com/kballard/go-shellquote"
 	"io"
 	"os"
 	"path"
@@ -55,7 +56,13 @@ func buildArgline(descriptor JavaDescriptor, env func(string) (string, bool),
 	})
 	args = append(args, descriptor.Data.MainClass)
 	if len(strings.TrimSpace(descriptor.Data.ApplicationArgs)) != 0 {
-		args = append(args, descriptor.Data.ApplicationArgs)
+		splittedArgs, err := shellquote.Split(descriptor.Data.ApplicationArgs)
+		if err == nil {
+			args = append(args, splittedArgs...)
+		} else {
+			logrus.Warnf("Error parsing args: %s", err)
+			args = append(args, descriptor.Data.ApplicationArgs)
+		}
 	}
 
 	return expandArgumentsAgainstEnv(args, env), nil
