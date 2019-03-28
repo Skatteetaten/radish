@@ -1,7 +1,6 @@
 module github.com/skatteetaten/radish
 
 require (
-	github.com/UnnoTed/fileb0x v1.1.1 // indirect
 	github.com/drone/envsubst v0.0.0-20171016184023-f4d1a8ef8670
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/karrick/godirwalk v1.7.7 // indirect

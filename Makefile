@@ -19,7 +19,7 @@ M = $(shell printf "\033[34;1m▶\033[0m")
 export GO111MODULE=on
 
 .PHONY: all
-all: generate fmt lint test-xml $(BIN) ; $(info $(M) building executable…) @ ## Build program binary
+all: fmt lint test-xml $(BIN) ; $(info $(M) building executable…) @ ## Build program binary
 	$Q $(GO) build \
 		-tags release \
 		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
@@ -38,8 +38,8 @@ $(BIN)/%: | $(BIN) ; $(info $(M) building $(REPOSITORY)…)
 GOLINT = $(BIN)/golint
 $(BIN)/golint: REPOSITORY=golang.org/x/lint/golint
 
-GOBOX = $(BIN)/fileb0x
-$(BIN)/fileb0x: REPOSITORY=github.com/UnnoTed/fileb0x
+#GOBOX = $(BIN)/fileb0x
+#$(BIN)/fileb0x: REPOSITORY=github.com/UnnoTed/fileb0x
 
 GOCOVMERGE = $(BIN)/gocovmerge
 $(BIN)/gocovmerge: REPOSITORY=github.com/wadey/gocovmerge
@@ -116,5 +116,5 @@ help:
 version:
 	@echo $(VERSION)
 
-generate: | $(GOBOX); $(info $(M) running gobox..) @
-	@go generate -x ./pkg/splunk
+#generate: | $(GOBOX); $(info $(M) running gobox..) @
+#	@go generate -x ./pkg/splunk
