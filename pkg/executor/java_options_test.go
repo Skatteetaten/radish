@@ -115,7 +115,6 @@ func TestOptionsAppDynamics(t *testing.T) {
 	env["HOME"] = "/u01"
 	env["OPENSHIFT_CLUSTER"] = "test"
 	env["ENABLE_APPDYNAMICS"] = "true"
-	env["ENABLE_APPDYNAMICS_SPLUNK"] = "true"
 	env["APPDYNAMICS_AGENT_BASE_DIR"] = "/opt/appdynamics"
 	env["POD_NAMESPACE"] = "mynamespace"
 	env["APP_NAME"] = "myappname"
@@ -129,7 +128,7 @@ func TestOptionsAppDynamics(t *testing.T) {
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.nodeName=mypodname")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.jvm.shutdown.mark.node.as.historical=true")
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.analytics.agent.url=/some/url")
-	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.logs.dir=/u01/logs")
+	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.logs.dir=/u01/logs/appdynamics")
 
 	env["APPDYNAMICS_JVM_SHUTDOWN_MARK_NODE_AS_HISTORICAL"] = "false"
 	ctx = createTestContext(env)

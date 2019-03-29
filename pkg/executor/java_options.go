@@ -279,12 +279,9 @@ func (m *appDynamicsOptions) modifyArguments(context ArgumentsContext) []string 
 		args = append(args, "-Dappdynamics.analytics.agent.url="+appDynamicsAnalyticsAgentURL)
 	}
 
-	appDynamicsSplunk, exists := context.Environment("ENABLE_APPDYNAMICS_SPLUNK")
-	if exists && strings.ToUpper(appDynamicsSplunk) == "TRUE" {
-		appDynamicsHome, exists := context.Environment("HOME")
-		if exists {
-			args = append(args, "-Dappdynamics.agent.logs.dir="+appDynamicsHome+"/logs")
-		}
+	appDynamicsLogDir, exists := context.Environment("HOME")
+	if exists {
+		args = append(args, "-Dappdynamics.agent.logs.dir="+appDynamicsLogDir+"/logs/appdynamics")
 	}
 
 	args = append(args, context.Arguments...)
