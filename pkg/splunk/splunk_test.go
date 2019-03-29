@@ -46,7 +46,6 @@ func TestGenerateStanzasCustomFile(t *testing.T) {
 	assert.True(t, generalStanzaFormat(stanzaFileOutput, 1))
 	assert.True(t, strings.Contains(stanzaFileOutput, "# --- start/stanza CUSTOMIZED"))
 	assert.True(t, strings.Count(stanzaFileOutput, "index = "+splunkIndex) == 1)
-	t.Log(stanzaFileOutput)
 }
 
 func TestGenerateStanzasAll(t *testing.T) {
@@ -72,7 +71,6 @@ func TestGenerateStanzasAll(t *testing.T) {
 	os.Setenv("APP_NAME", appName)
 	os.Setenv("HOSTNAME", hostName)
 
-	t.Log(outputFileName)
 	err = GenerateStanzas("", "", "", "", "", outputFileName)
 	assert.NoError(t, err)
 	stanzaFileOutput := readFile(outputFileName + "/application.splunk")
@@ -85,7 +83,6 @@ func TestGenerateStanzasAll(t *testing.T) {
 	assert.True(t, strings.Count(stanzaFileOutput, "# --- start/stanza ATS") == 2)
 	assert.True(t, strings.Count(stanzaFileOutput, "index = "+splunkIndex) == 3)
 	assert.True(t, strings.Count(stanzaFileOutput, "index = "+splunkAuditIndex) == 1)
-	t.Log(stanzaFileOutput)
 
 	// But without AppDynamics
 	os.Setenv("SPLUNK_AUDIT_INDEX", "")
@@ -135,7 +132,6 @@ func TestGenerateStanzasNoApp(t *testing.T) {
 	assert.True(t, strings.Contains(stanzaFileOutput, "# --- start/stanza APPDYNAMICS"))
 	assert.True(t, strings.Contains(stanzaFileOutput, "index = "+splunkAppDynamicsIndex))
 	assert.True(t, strings.Contains(stanzaFileOutput, "index = "+splunkAuditIndex))
-	t.Log(stanzaFileOutput)
 }
 
 func TestGenerateNoStanzas(t *testing.T) {

@@ -35,32 +35,6 @@ func NewTemplateWriter(input interface{}, templatename string, templateString st
 	}
 }
 
-//NewTemplateByteWriter :
-func NewTemplateByteWriter(input interface{}, templatename string, templateString string) ByteFunc {
-	return func(bytes bytes.Buffer) error {
-		tmpl, err := template.New(templatename).Parse(templateString)
-		if err != nil {
-			return errors.Wrap(err, "Error parsing template")
-		}
-		err = tmpl.Execute(&bytes, input)
-		if err != nil {
-			return errors.Wrap(err, "Error processing template")
-		}
-		return nil
-	}
-}
-
-//NewByteWriter :
-/*func NewByteWriter(data []byte) WriterFunc {
-	return func(writer io.Writer) error {
-		n, err := writer.Write(data)
-		if err != nil {
-			return errors.Wrapf(err, "Could not write data. Wrote %d bytes", n)
-		}
-		return nil
-	}
-}*/
-
 //NewFileWriter :
 func NewFileWriter(targetFolder string) FileWriter {
 	return func(writerFunc WriterFunc, elem ...string) error {
