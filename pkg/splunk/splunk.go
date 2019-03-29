@@ -44,7 +44,7 @@ const atsSplunkStanza string = `# --- start/stanza ATS CUSTOM
 disabled = false
 followTail = 0
 sourcetype = ats:eval:xml
-index = {{.SplunkIndex}}
+index = {{.SplunkAtsIndex}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
@@ -54,7 +54,7 @@ host = {{.HostName}}
 disabled = false
 followTail = 0
 sourcetype = evalevent_xml
-index = {{.SplunkIndex}}
+index = {{.SplunkAtsIndex}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
@@ -84,12 +84,13 @@ host = {{.HostName}}
 
 //Data : Struct for the required elements in the configuration json
 type Data struct {
-	SplunkIndex             string `envvar:"SPLUNK_INDEX" default:""`
-	SplunkAuditIndex        string `envvar:"SPLUNK_AUDIT_INDEX" default:""`
-	SplunkAppdynamicsIndex  string `envvar:"SPLUNK_APPDYNAMICS_INDEX" default:""`
-	PodNamespace            string `envvar:"POD_NAMESPACE" default:""`
-	AppName                 string `envvar:"APP_NAME" default:""`
-	HostName                string `envvar:"HOSTNAME" default:""`
+	SplunkIndex            string `envvar:"SPLUNK_INDEX" default:""`
+	SplunkAtsIndex         string `envvar:"SPLUNK_ATS_INDEX" default:""`
+	SplunkAuditIndex       string `envvar:"SPLUNK_AUDIT_INDEX" default:""`
+	SplunkAppdynamicsIndex string `envvar:"SPLUNK_APPDYNAMICS_INDEX" default:""`
+	PodNamespace           string `envvar:"POD_NAMESPACE" default:""`
+	AppName                string `envvar:"APP_NAME" default:""`
+	HostName               string `envvar:"HOSTNAME" default:""`
 }
 
 //GenerateStanzas :
@@ -130,6 +131,15 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 		splunkStanza = splunkStanza + appdynamicsSplunkStanza
 	}
 
+	if vars.SplunkAtsIndex == "" {
+		logrus.Debug("No SPLUNK_ATS_INDEX env variable present")
+	} else {
+		if splunkStanza != "" {
+			splunkStanza = splunkStanza + "\n"
+		}
+		splunkStanza = splunkStanza + atsSplunkStanza
+	}
+
 	if splunkStanza == "" {
 		logrus.Info("No Splunk stanza will be created.")
 		return nil
@@ -151,7 +161,7 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 		return errors.New("No HostName present as flag or environment variable")
 	}
 
-	if  len(templateFilePath) > 0 {
+	if len(templateFilePath) > 0 {
 		logrus.Infof("Using template %s to generate splunk stanza file.", templateFilePath)
 		stanzatemplate, err := readStanzasTemplate(templateFilePath)
 		if err != nil {
