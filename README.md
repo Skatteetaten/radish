@@ -28,6 +28,10 @@ The second task of Radish is a CLI to accomplish a number of tasks.
 | ENABLE_EXIT_ON_OOM | If set to a non-empty string, the JVM will exit on OutOfMemoryError. Default is off. |
 | ENABLE_JAVA_DIAGNOSTICS | If set to a non-empty string, the JVM is started with diagnostics flags set. Default is off.| 
 | ENABLE_JOLOKIA | Enables the Jolokia-agent if set.|
+| SPLUNK_INDEX | Splunk Index to use for application logging.|
+| SPLUNK_AUDIT_INDEX | Splunk Index for audit logs.|
+| SPLUNK_APPDYNAMICS_INDEX | Splunk Index for APM logs.|
+| SPLUNK_ATS_INDEX | Splunk Index for ATS/STS logs.|
 
 # Build:
 
