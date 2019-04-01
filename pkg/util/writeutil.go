@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"bytes"
 	"github.com/pkg/errors"
 )
 
@@ -15,6 +16,9 @@ type FileWriter func(WriterFunc, ...string) error
 
 //WriterFunc :
 type WriterFunc func(io.Writer) error
+
+//ByteFunc :
+type ByteFunc func(bytes.Buffer) error
 
 //NewTemplateWriter :
 func NewTemplateWriter(input interface{}, templatename string, templateString string) WriterFunc {
@@ -26,17 +30,6 @@ func NewTemplateWriter(input interface{}, templatename string, templateString st
 		err = tmpl.Execute(writer, input)
 		if err != nil {
 			return errors.Wrap(err, "Error processing template")
-		}
-		return nil
-	}
-}
-
-//NewByteWriter :
-func NewByteWriter(data []byte) WriterFunc {
-	return func(writer io.Writer) error {
-		n, err := writer.Write(data)
-		if err != nil {
-			return errors.Wrapf(err, "Could not write data. Wrote %d bytes", n)
 		}
 		return nil
 	}

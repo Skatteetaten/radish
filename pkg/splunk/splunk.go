@@ -1,25 +1,96 @@
 package splunk
 
-//go:generate fileb0x b0x.yaml
-
 import (
-	"io/ioutil"
-
-	"github.com/sirupsen/logrus"
-
 	"github.com/pkg/errors"
-
 	"github.com/plaid/go-envvar/envvar"
-	splunkresources "github.com/skatteetaten/radish/pkg/splunk/resources"
+	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/util"
+	"io/ioutil"
 )
+
+const applicationSplunkStanza string = `# --- start/stanza STDOUT
+[monitor://./logs/*.log]
+disabled = false
+followTail = 0
+sourcetype = log4j
+index = {{.SplunkIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
+host = {{.HostName}}
+# --- end/stanza
+
+# --- start/stanza ACCESS_LOG
+[monitor://./logs/*.access]
+disabled = false
+followTail = 0
+sourcetype = access_combined
+index = {{.SplunkIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
+host = {{.HostName}}
+# --- end/stanza
+
+# --- start/stanza GC LOG
+[monitor://./logs/*.gc]
+disabled = false
+followTail = 0
+sourcetype = gc_log
+index = {{.SplunkIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
+host = {{.HostName}}
+# --- end/stanza
+`
+
+const atsSplunkStanza string = `# --- start/stanza ATS CUSTOM
+[monitor://./logs/ats/*.custom.xml]
+disabled = false
+followTail = 0
+sourcetype = ats:eval:xml
+index = {{.SplunkAtsIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
+host = {{.HostName}}
+# --- end/stanza
+
+# --- start/stanza ATS DEFAULT
+[monitor://./logs/ats/*.default.xml]
+disabled = false
+followTail = 0
+sourcetype = evalevent_xml
+index = {{.SplunkAtsIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
+host = {{.HostName}}
+# --- end/stanza
+`
+
+const auditSplunkStanza string = `# --- start/stanza AUDIT
+[monitor://./logs/*.audit.json]
+disabled = false
+followTail = 0
+sourcetype = _json
+index = {{.SplunkAuditIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift logtype::audit
+host = {{.HostName}}
+# --- end/stanza
+`
+
+const appdynamicsSplunkStanza string = `# --- start/stanza APPDYNAMICS
+[monitor://./logs/appdynamics/*.log]
+disabled = false
+followTail = 0
+sourcetype = log4j
+index = {{.SplunkAppdynamicsIndex}}
+_meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
+host = {{.HostName}}
+# --- end/stanza
+`
 
 //Data : Struct for the required elements in the configuration json
 type Data struct {
-	SplunkIndex  string `envvar:"SPLUNK_INDEX" default:""`
-	PodNamespace string `envvar:"POD_NAMESPACE" default:""`
-	AppName      string `envvar:"APP_NAME" default:""`
-	HostName     string `envvar:"HOSTNAME" default:""`
+	SplunkIndex            string `envvar:"SPLUNK_INDEX" default:""`
+	SplunkAtsIndex         string `envvar:"SPLUNK_ATS_INDEX" default:""`
+	SplunkAuditIndex       string `envvar:"SPLUNK_AUDIT_INDEX" default:""`
+	SplunkAppdynamicsIndex string `envvar:"SPLUNK_APPDYNAMICS_INDEX" default:""`
+	PodNamespace           string `envvar:"POD_NAMESPACE" default:""`
+	AppName                string `envvar:"APP_NAME" default:""`
+	HostName               string `envvar:"HOSTNAME" default:""`
 }
 
 //GenerateStanzas :
@@ -30,14 +101,50 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 		logrus.Fatal(err)
 	}
 
+	var splunkStanza string
+
 	if splunkIndexFlag != "" {
 		vars.SplunkIndex = splunkIndexFlag
 	}
 
 	if vars.SplunkIndex == "" {
 		logrus.Debug("No SPLUNK_INDEX env variable present")
+	} else {
+		splunkStanza = applicationSplunkStanza
+	}
+
+	if vars.SplunkAuditIndex == "" {
+		logrus.Debug("No SPLUNK_AUDIT_INDEX env variable present")
+	} else {
+		if splunkStanza != "" {
+			splunkStanza = splunkStanza + "\n"
+		}
+		splunkStanza = splunkStanza + auditSplunkStanza
+	}
+
+	if vars.SplunkAppdynamicsIndex == "" {
+		logrus.Debug("No SPLUNK_APPDYNAMICS_INDEX env variable present")
+	} else {
+		if splunkStanza != "" {
+			splunkStanza = splunkStanza + "\n"
+		}
+		splunkStanza = splunkStanza + appdynamicsSplunkStanza
+	}
+
+	if vars.SplunkAtsIndex == "" {
+		logrus.Debug("No SPLUNK_ATS_INDEX env variable present")
+	} else {
+		if splunkStanza != "" {
+			splunkStanza = splunkStanza + "\n"
+		}
+		splunkStanza = splunkStanza + atsSplunkStanza
+	}
+
+	if splunkStanza == "" {
+		logrus.Info("No Splunk stanza will be created.")
 		return nil
 	}
+
 	if podNamespaceFlag != "" {
 		vars.PodNamespace = podNamespaceFlag
 	} else if vars.PodNamespace == "" {
@@ -54,14 +161,18 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 		return errors.New("No HostName present as flag or environment variable")
 	}
 
-	stanzatemplate, err := readStanzasTemplate(templateFilePath)
-	if err != nil {
-		return errors.Wrapf(err, "Failed to read template file from %s", templateFilePath)
+	if len(templateFilePath) > 0 {
+		logrus.Infof("Using template %s to generate splunk stanza file.", templateFilePath)
+		stanzatemplate, err := readStanzasTemplate(templateFilePath)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to read template file from %s", templateFilePath)
+		}
+		splunkStanza = string(stanzatemplate)
 	}
 
 	fileWriter := util.NewFileWriter(outputFilePath)
 
-	if err := fileWriter(newSplunkStanzas(string(stanzatemplate), vars), "application.splunk"); err != nil {
+	if err := fileWriter(newSplunkStanzas(splunkStanza, vars), "application.splunk"); err != nil {
 		return errors.Wrap(err, "Failed to write Splunk stanzas")
 	}
 
@@ -70,16 +181,11 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 }
 
 func readStanzasTemplate(templateFilePath string) ([]byte, error) {
-
-	if len(templateFilePath) > 0 {
-		stanzatemplate, err := ioutil.ReadFile(templateFilePath)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to read template file from %s", templateFilePath)
-		}
-		return stanzatemplate, nil
+	stanzatemplate, err := ioutil.ReadFile(templateFilePath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to read template file from %s", templateFilePath)
 	}
-
-	return splunkresources.FileResourcesDefaultStanzasTemplate, nil
+	return stanzatemplate, nil
 }
 
 func newSplunkStanzas(template string, data Data) util.WriterFunc {

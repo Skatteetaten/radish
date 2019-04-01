@@ -1,7 +1,7 @@
 module github.com/skatteetaten/radish
 
 require (
-	github.com/UnnoTed/fileb0x v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/drone/envsubst v0.0.0-20171016184023-f4d1a8ef8670
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/karrick/godirwalk v1.7.7 // indirect
@@ -13,6 +13,7 @@ require (
 	github.com/nsf/termbox-go v0.0.0-20181027232701-60ab7e3d12ed // indirect
 	github.com/pkg/errors v0.8.0
 	github.com/plaid/go-envvar v1.1.0
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.0.6
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.2 // indirect
