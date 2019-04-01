@@ -279,9 +279,9 @@ func (m *appDynamicsOptions) modifyArguments(context ArgumentsContext) []string 
 		args = append(args, "-Dappdynamics.analytics.agent.url="+appDynamicsAnalyticsAgentURL)
 	}
 
-	appDynamicsLogDir, exists := context.Environment("HOME")
+	appHomeDir, exists := context.Environment("HOME")
 	if exists {
-		args = append(args, "-Dappdynamics.agent.logs.dir="+appDynamicsLogDir+"/logs/appdynamics")
+		args = append(args, "-Dappdynamics.agent.logs.dir="+appHomeDir+"/logs/appdynamics")
 	}
 
 	args = append(args, context.Arguments...)
