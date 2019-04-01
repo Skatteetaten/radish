@@ -38,9 +38,6 @@ $(BIN)/%: | $(BIN) ; $(info $(M) building $(REPOSITORY)…)
 GOLINT = $(BIN)/golint
 $(BIN)/golint: REPOSITORY=golang.org/x/lint/golint
 
-#GOBOX = $(BIN)/fileb0x
-#$(BIN)/fileb0x: REPOSITORY=github.com/UnnoTed/fileb0x
-
 GOCOVMERGE = $(BIN)/gocovmerge
 $(BIN)/gocovmerge: REPOSITORY=github.com/wadey/gocovmerge
 
@@ -115,6 +112,3 @@ help:
 .PHONY: version
 version:
 	@echo $(VERSION)
-
-#generate: | $(GOBOX); $(info $(M) running gobox..) @
-#	@go generate -x ./pkg/splunk
