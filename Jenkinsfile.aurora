@@ -16,6 +16,11 @@ node {
     go.buildGoWithJenkinsSh("Go 1.11")
   }
 
+  stage('Sonar') {
+    def sonarPath = tool 'Sonar 4'
+    sh "${sonarPath}/bin/sonar-scanner"
+  }
+
   stage('Deploy to Nexus'){
     def isMaster = env.BRANCH_NAME == 'master'
     
