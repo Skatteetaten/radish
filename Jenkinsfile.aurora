@@ -18,7 +18,7 @@ node {
 
   stage('Sonar') {
     def sonarPath = tool 'Sonar 4'
-    sh "${sonarPath}/bin/sonar-scanner"
+    sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
   }
 
   stage('Deploy to Nexus'){
