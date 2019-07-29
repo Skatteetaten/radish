@@ -23,12 +23,17 @@ func TestSetAuroraEnv(t *testing.T) {
 	defer os.RemoveAll(testdir)
 	filepath := path.Join(secretPath, "/1.2.properties")
 	ioutil.WriteFile(filepath, []byte(`
-key1=value1
-key2=val2
+validkey1=value1
+1notvalidkey=value1
+1not_valid_key=value1
+not.valid.key=value1
+validkey2=value2
+valid_key_3=value3
 `), 0644)
 
-	expectedEnvScript := `export key1=value1
-export key2=val2
+	expectedEnvScript := `export validkey1=value1
+export validkey2=value2
+export valid_key_3=value3
 `
 	envscript, err := GenerateEnvScript()
 	assert.NoError(t, err)
