@@ -1,6 +1,7 @@
 package executor
 
 import (
+	"github.com/stretchr/testify/assert"
 	"syscall"
 	"testing"
 )
@@ -26,4 +27,16 @@ func TestHandleExit(t *testing.T) {
 		t.Errorf("Handler returned wrong value. Got %d, want %d", sigIntHandled, 0)
 	}
 
+}
+
+func TestBuildClasspath(t *testing.T) {
+	executor := NewJavaExecutor()
+	descriptor := "testdata/testconfig.json"
+	cp, err := executor.BuildClasspath(descriptor)
+	assert.NoError(t, err)
+	assert.Equal(
+		t,
+		"testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar:testdata/lib/lib3/lib4/lib6.jar:testdata/lib/lib3/lib5/lib7.jar:testdata/lib/lib3/lib5/lib8.jar:testdata/lib/lib3/lib5.jar",
+		cp,
+	)
 }
