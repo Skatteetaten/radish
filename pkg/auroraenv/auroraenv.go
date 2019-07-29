@@ -2,10 +2,10 @@ package auroraenv
 
 import (
 	"fmt"
-	"os"
-	"strings"
-
 	"github.com/pkg/errors"
+	"os"
+	"regexp"
+	"strings"
 
 	"bytes"
 	"io"
@@ -124,12 +124,17 @@ func exportPropertiesAsEnvVars(writer io.Writer, filepath string, maskValue bool
 		return errors.Wrap(err, "Error reading properties file")
 	}
 	for _, key := range p.Keys() {
-		val := p.MustGetString(key)
-		fmt.Fprintf(writer, "export %s=%s\n", key, val)
-		if maskValue {
-			logrus.Debugf("export %s=******\n", key)
+		m, err := regexp.MatchString(`^[_[:alpha:]][_[:alpha:][:digit:]]*$`, strings.TrimSpace(key))
+		if err == nil && m == true {
+			val := p.MustGetString(key)
+			fmt.Fprintf(writer, "export %s=%s\n", key, val)
+			if maskValue {
+				logrus.Debugf("export %s=******\n", key)
+			} else {
+				logrus.Debugf("export %s=%s\n", key, val)
+			}
 		} else {
-			logrus.Debugf("export %s=%s\n", key, val)
+			logrus.Warnf("Variable %s does not validate and will not be exported", key)
 		}
 		//TODO need to handle panic? can't I think.. must check conditions before calling if so
 	}
