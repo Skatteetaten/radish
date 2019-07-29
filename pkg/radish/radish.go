@@ -1,6 +1,7 @@
 package radish
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/executor"
@@ -37,6 +38,20 @@ func RunRadish(args []string) {
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
 	os.Exit(int(exitCode))
+}
+
+//PrintRadishCP :
+func PrintRadishCP(args []string) {
+	e := executor.NewJavaExecutor()
+	radishDescriptor, err := locateRadishDescriptor(args)
+	if err != nil {
+		logrus.Fatalf("Unable to load descriptor %s", err)
+	}
+	cp, err := e.BuildClasspath(radishDescriptor)
+	if err != nil {
+		logrus.Fatalf("Failed to build classpath %s", err)
+	}
+	fmt.Print(cp)
 }
 
 func locateRadishDescriptor(args []string) (string, error) {
