@@ -42,6 +42,9 @@ export valid_key_3=value3
 
 func TestFindConfigVersion(t *testing.T) {
 	appVersion := "1.2.0"
+	splitVersion := strings.Split(appVersion, ".")
+	var versions []string
+	versions = []string{appVersion, splitVersion[0] + "." + splitVersion[1], splitVersion[0], "latest"}
 	testdir, err := ioutil.TempDir("", "radish")
 	assert.NoError(t, err)
 	defer os.RemoveAll(testdir)
@@ -50,7 +53,7 @@ func TestFindConfigVersion(t *testing.T) {
 	filepath := configLocation + "/" + appVersion + ".properties"
 	ioutil.WriteFile(filepath, []byte("test text"), 0644)
 
-	version, err := findConfigVersion(appVersion, configLocation)
+	version, err := findConfigVersion(versions, configLocation)
 	assert.NoError(t, err)
 
 	assert.True(t, strings.HasPrefix(version, appVersion))

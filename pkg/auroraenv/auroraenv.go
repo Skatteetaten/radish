@@ -14,6 +14,7 @@ import (
 	"github.com/magiconair/properties"
 	"github.com/plaid/go-envvar/envvar"
 	"github.com/sirupsen/logrus"
+	"github.com/skatteetaten/radish/pkg/util"
 )
 
 // local SYMLINK_FOLDER=$1    //=$HOME
@@ -63,6 +64,20 @@ func GenerateEnvScript() (string, error) {
 			dir:        "configmap",
 		},
 	}
+	//appVersion example: 1.2.0
+	//configLocation example: /u01/config/secrets
+	var versions []string
+	// If match we have a semantic version with minor and patch with optional meta
+	if util.IsFullSemanticVersion(vars.AppVersion) {
+		appVersion := util.GetVersionWithoutMetadata(vars.AppVersion)
+		splitVersion := strings.Split(appVersion, ".")
+		majorVersion := splitVersion[0]
+		minorVersion := splitVersion[0] + "." + splitVersion[1]
+		versions = []string{appVersion, minorVersion, majorVersion}
+	}
+
+	versions = append(versions, "latest")
+	logrus.Infof("Looking for config files in order: %s", versions)
 
 	buffer := &bytes.Buffer{}
 	for _, dir := range configDirs {
@@ -72,7 +87,7 @@ func GenerateEnvScript() (string, error) {
 			logrus.Infof("No configdir in %s", path)
 			continue
 		}
-		configVersion, err := findConfigVersion(vars.AppVersion, path)
+		configVersion, err := findConfigVersion(versions, path)
 		if err != nil {
 			logrus.Debug("Error reading config")
 			return "", errors.Wrap(err, "Error reading config")
@@ -92,20 +107,7 @@ func GenerateEnvScript() (string, error) {
 
 }
 
-func findConfigVersion(appVersion string, configLocation string) (string, error) {
-	//appVersion example: 1.2.0
-	//configLocation example: /u01/config/secrets
-	var versions []string
-	if appVersion == "" {
-		logrus.Info("App version is empty. Only look for latest.properties")
-		versions = []string{"latest"}
-	} else {
-		splitVersion := strings.Split(appVersion, ".")
-		majorVersion := splitVersion[0]
-		minorVersion := splitVersion[0] + "." + splitVersion[1]
-		versions = []string{appVersion, minorVersion, majorVersion, "latest"}
-	}
-	logrus.Debugf("Looking for files in order: %s", versions)
+func findConfigVersion(versions []string, configLocation string) (string, error) {
 	for _, version := range versions {
 		if _, err := os.Stat(configLocation + "/" + version + ".properties"); err == nil {
 			logrus.Debugf("Using version %s", version)
