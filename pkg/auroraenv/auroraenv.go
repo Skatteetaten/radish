@@ -14,7 +14,6 @@ import (
 	"github.com/magiconair/properties"
 	"github.com/plaid/go-envvar/envvar"
 	"github.com/sirupsen/logrus"
-	"github.com/skatteetaten/radish/pkg/util"
 )
 
 // local SYMLINK_FOLDER=$1    //=$HOME
@@ -68,23 +67,27 @@ func GenerateEnvScript() (string, error) {
 	//configLocation example: /u01/config/secrets
 	var versions []string
 	// If match we have a semantic version with minor and patch with optional meta
-	if util.IsFullSemanticVersion(vars.AppVersion) {
-		appVersion := util.GetVersionWithoutMetadata(vars.AppVersion)
+	if isFullSemanticVersion(vars.AppVersion) {
+		appVersion := getVersionOnly(vars.AppVersion)
+		if appVersion != vars.AppVersion {
+			logrus.Infof("Only using version info ^d+.d+.d+ from version %s for config files check", vars.AppVersion)
+		}
 		splitVersion := strings.Split(appVersion, ".")
 		majorVersion := splitVersion[0]
 		minorVersion := splitVersion[0] + "." + splitVersion[1]
 		versions = []string{appVersion, minorVersion, majorVersion}
+	} else {
+		logrus.Infof("No valid version in form ^d+.d+.d+ found in version %s. Using latest prefix for config file check", vars.AppVersion)
 	}
-
 	versions = append(versions, "latest")
-	logrus.Infof("Looking for config files in order: %s", versions)
+	logrus.Infof("Looking for config files in version order prefix: %s", versions)
 
 	buffer := &bytes.Buffer{}
 	for _, dir := range configDirs {
 		path := path.Join(dir.basedir, dir.dir)
 		logrus.Debugf("Processing dir: %s", path)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
-			logrus.Infof("No configdir in %s", path)
+			logrus.Infof("No configdir %s", path)
 			continue
 		}
 		configVersion, err := findConfigVersion(versions, path)
@@ -102,7 +105,6 @@ func GenerateEnvScript() (string, error) {
 		}
 	}
 	result := buffer.String()
-	logrus.Debugf("Result: %s", result)
 	return result, nil
 
 }
@@ -110,7 +112,6 @@ func GenerateEnvScript() (string, error) {
 func findConfigVersion(versions []string, configLocation string) (string, error) {
 	for _, version := range versions {
 		if _, err := os.Stat(configLocation + "/" + version + ".properties"); err == nil {
-			logrus.Debugf("Using version %s", version)
 			return version, nil
 		} else if !os.IsNotExist(err) {
 			return "", errors.Wrap(err, "Error finding configfile")
@@ -126,14 +127,13 @@ func exportPropertiesAsEnvVars(writer io.Writer, filepath string, maskValue bool
 		return errors.Wrap(err, "Error reading properties file")
 	}
 	for _, key := range p.Keys() {
-		m, err := regexp.MatchString(`^[_[:alpha:]][_[:alpha:][:digit:]]*$`, strings.TrimSpace(key))
-		if err == nil && m == true {
+		if isValidEnvironmentVariable(key) {
 			val := p.MustGetString(key)
 			fmt.Fprintf(writer, "export %s=%s\n", key, val)
 			if maskValue {
-				logrus.Debugf("export %s=******\n", key)
+				logrus.Debugf("export %s=******", key)
 			} else {
-				logrus.Debugf("export %s=%s\n", key, val)
+				logrus.Debugf("export %s=%s", key, val)
 			}
 		} else {
 			logrus.Warnf("Variable %s does not validate and will not be exported", key)
@@ -141,4 +141,24 @@ func exportPropertiesAsEnvVars(writer io.Writer, filepath string, maskValue bool
 		//TODO need to handle panic? can't I think.. must check conditions before calling if so
 	}
 	return nil
+}
+
+var validEnvironmentVariable = regexp.MustCompile(`^[_[:alpha:]][_[:alpha:][:digit:]]*$`)
+
+func isValidEnvironmentVariable(envVar string) bool {
+	return validEnvironmentVariable.MatchString(envVar)
+}
+
+var versionWithMinorAndPatch = regexp.MustCompile(`^([0-9]+\.[0-9]+\.[0-9]+$|^[0-9]+\.[0-9]+\.[0-9]+).*`)
+
+func isFullSemanticVersion(versionString string) bool {
+	return versionWithMinorAndPatch.MatchString(versionString)
+}
+
+func getVersionOnly(versionString string) string {
+	matches := versionWithMinorAndPatch.FindStringSubmatch(versionString)
+	if matches == nil {
+		return versionString
+	}
+	return matches[1]
 }
