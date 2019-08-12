@@ -126,6 +126,7 @@ func exportPropertiesAsEnvVars(writer io.Writer, filepath string, maskValue bool
 	if err != nil {
 		return errors.Wrap(err, "Error reading properties file")
 	}
+	envCounter := 0
 	for _, key := range p.Keys() {
 		if isValidEnvironmentVariable(key) {
 			val := p.MustGetString(key)
@@ -135,10 +136,14 @@ func exportPropertiesAsEnvVars(writer io.Writer, filepath string, maskValue bool
 			} else {
 				logrus.Debugf("export %s=%s", key, val)
 			}
+			envCounter++
 		} else {
 			logrus.Warnf("Variable %s does not validate and will not be exported", key)
 		}
 		//TODO need to handle panic? can't I think.. must check conditions before calling if so
+	}
+	if envCounter > 0 {
+		logrus.Infof("Exported %d environment variables from %s", envCounter, filepath)
 	}
 	return nil
 }
