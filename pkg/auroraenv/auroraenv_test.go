@@ -23,12 +23,17 @@ func TestSetAuroraEnv(t *testing.T) {
 	defer os.RemoveAll(testdir)
 	filepath := path.Join(secretPath, "/1.2.properties")
 	ioutil.WriteFile(filepath, []byte(`
-key1=value1
-key2=val2
+validkey1=value1
+1notvalidkey=value1
+1not_valid_key=value1
+not.valid.key=value1
+validkey2=value2
+valid_key_3=value3
 `), 0644)
 
-	expectedEnvScript := `export key1=value1
-export key2=val2
+	expectedEnvScript := `export validkey1=value1
+export validkey2=value2
+export valid_key_3=value3
 `
 	envscript, err := GenerateEnvScript()
 	assert.NoError(t, err)
@@ -37,6 +42,9 @@ export key2=val2
 
 func TestFindConfigVersion(t *testing.T) {
 	appVersion := "1.2.0"
+	splitVersion := strings.Split(appVersion, ".")
+	var versions []string
+	versions = []string{appVersion, splitVersion[0] + "." + splitVersion[1], splitVersion[0], "latest"}
 	testdir, err := ioutil.TempDir("", "radish")
 	assert.NoError(t, err)
 	defer os.RemoveAll(testdir)
@@ -45,7 +53,7 @@ func TestFindConfigVersion(t *testing.T) {
 	filepath := configLocation + "/" + appVersion + ".properties"
 	ioutil.WriteFile(filepath, []byte("test text"), 0644)
 
-	version, err := findConfigVersion(appVersion, configLocation)
+	version, err := findConfigVersion(versions, configLocation)
 	assert.NoError(t, err)
 
 	assert.True(t, strings.HasPrefix(version, appVersion))
