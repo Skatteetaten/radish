@@ -46,7 +46,7 @@ All jar files in folder lib (not subdirectories) will be included on classpath
 ```json
 ...
     "PathsToClassLibraries": [
-      "lib/lib3/***"
+      "lib/lib3/**"
     ]
 ...
 ```
