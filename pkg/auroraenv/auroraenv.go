@@ -2,10 +2,10 @@ package auroraenv
 
 import (
 	"fmt"
-	"os"
-	"strings"
-
 	"github.com/pkg/errors"
+	"os"
+	"regexp"
+	"strings"
 
 	"bytes"
 	"io"
@@ -63,16 +63,34 @@ func GenerateEnvScript() (string, error) {
 			dir:        "configmap",
 		},
 	}
+	//appVersion example: 1.2.0
+	//configLocation example: /u01/config/secrets
+	var versions []string
+	// If match we have a semantic version with minor and patch with optional meta
+	if isFullSemanticVersion(vars.AppVersion) {
+		appVersion := getVersionOnly(vars.AppVersion)
+		if appVersion != vars.AppVersion {
+			logrus.Infof("Only using version info ^d+.d+.d+ from version %s for config files check", vars.AppVersion)
+		}
+		splitVersion := strings.Split(appVersion, ".")
+		majorVersion := splitVersion[0]
+		minorVersion := splitVersion[0] + "." + splitVersion[1]
+		versions = []string{appVersion, minorVersion, majorVersion}
+	} else {
+		logrus.Infof("No valid version in form ^d+.d+.d+ found in version %s. Using latest prefix for config file check", vars.AppVersion)
+	}
+	versions = append(versions, "latest")
+	logrus.Infof("Looking for config files in version order prefix: %s", versions)
 
 	buffer := &bytes.Buffer{}
 	for _, dir := range configDirs {
 		path := path.Join(dir.basedir, dir.dir)
 		logrus.Debugf("Processing dir: %s", path)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
-			logrus.Infof("No configdir in %s", path)
+			logrus.Infof("No configdir %s", path)
 			continue
 		}
-		configVersion, err := findConfigVersion(vars.AppVersion, path)
+		configVersion, err := findConfigVersion(versions, path)
 		if err != nil {
 			logrus.Debug("Error reading config")
 			return "", errors.Wrap(err, "Error reading config")
@@ -87,28 +105,13 @@ func GenerateEnvScript() (string, error) {
 		}
 	}
 	result := buffer.String()
-	logrus.Debugf("Result: %s", result)
 	return result, nil
 
 }
 
-func findConfigVersion(appVersion string, configLocation string) (string, error) {
-	//appVersion example: 1.2.0
-	//configLocation example: /u01/config/secrets
-	var versions []string
-	if appVersion == "" {
-		logrus.Info("App version is empty. Only look for latest.properties")
-		versions = []string{"latest"}
-	} else {
-		splitVersion := strings.Split(appVersion, ".")
-		majorVersion := splitVersion[0]
-		minorVersion := splitVersion[0] + "." + splitVersion[1]
-		versions = []string{appVersion, minorVersion, majorVersion, "latest"}
-	}
-	logrus.Debugf("Looking for files in order: %s", versions)
+func findConfigVersion(versions []string, configLocation string) (string, error) {
 	for _, version := range versions {
 		if _, err := os.Stat(configLocation + "/" + version + ".properties"); err == nil {
-			logrus.Debugf("Using version %s", version)
 			return version, nil
 		} else if !os.IsNotExist(err) {
 			return "", errors.Wrap(err, "Error finding configfile")
@@ -123,15 +126,44 @@ func exportPropertiesAsEnvVars(writer io.Writer, filepath string, maskValue bool
 	if err != nil {
 		return errors.Wrap(err, "Error reading properties file")
 	}
+	envCounter := 0
 	for _, key := range p.Keys() {
-		val := p.MustGetString(key)
-		fmt.Fprintf(writer, "export %s=%s\n", key, val)
-		if maskValue {
-			logrus.Debugf("export %s=******\n", key)
+		if isValidEnvironmentVariable(key) {
+			val := p.MustGetString(key)
+			fmt.Fprintf(writer, "export %s=%s\n", key, val)
+			if maskValue {
+				logrus.Debugf("export %s=******", key)
+			} else {
+				logrus.Debugf("export %s=%s", key, val)
+			}
+			envCounter++
 		} else {
-			logrus.Debugf("export %s=%s\n", key, val)
+			logrus.Warnf("Variable %s does not validate and will not be exported", key)
 		}
 		//TODO need to handle panic? can't I think.. must check conditions before calling if so
 	}
+	if envCounter > 0 {
+		logrus.Infof("Exported %d environment variables from %s", envCounter, filepath)
+	}
 	return nil
+}
+
+var validEnvironmentVariable = regexp.MustCompile(`^[_[:alpha:]][_[:alpha:][:digit:]]*$`)
+
+func isValidEnvironmentVariable(envVar string) bool {
+	return validEnvironmentVariable.MatchString(envVar)
+}
+
+var versionWithMinorAndPatch = regexp.MustCompile(`^([0-9]+\.[0-9]+\.[0-9]+$|^[0-9]+\.[0-9]+\.[0-9]+).*`)
+
+func isFullSemanticVersion(versionString string) bool {
+	return versionWithMinorAndPatch.MatchString(versionString)
+}
+
+func getVersionOnly(versionString string) string {
+	matches := versionWithMinorAndPatch.FindStringSubmatch(versionString)
+	if matches == nil {
+		return versionString
+	}
+	return matches[1]
 }
