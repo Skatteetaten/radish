@@ -36,6 +36,18 @@ func TestBuildClasspath(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
+		"testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar",
+		cp,
+	)
+}
+
+func TestBuildClasspathSubpath(t *testing.T) {
+	executor := NewJavaExecutor()
+	descriptor := "testdata/testconfig-subpath.json"
+	cp, err := executor.BuildClasspath(descriptor)
+	assert.NoError(t, err)
+	assert.Equal(
+		t,
 		"testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar:testdata/lib/lib3/lib4/lib6.jar:testdata/lib/lib3/lib5/lib7.jar:testdata/lib/lib3/lib5/lib8.jar:testdata/lib/lib3/lib5.jar",
 		cp,
 	)
