@@ -1,0 +1,47 @@
+hash: 6dba971b7d0dca1f741452cdfe54e6b2449775f1b13ac9eea12c3d6df64cc146
+updated: 2019-09-10T13:53:22.856971896+02:00
+imports:
+- name: github.com/drone/envsubst
+  version: 5a78055244d6b899c2a2eb158c8454f548af9ab2
+  subpackages:
+  - parse
+  - path
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/kballard/go-shellquote
+  version: 95032a82bc518f77982ea72343cc1ade730072f0
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
+- name: github.com/magiconair/properties
+  version: de8848e004dd33dc07a2947b3d76f618a7fc7ef1
+- name: github.com/pkg/errors
+  version: ba968bfe8b2f7e042a574c888954fccecfa385b4
+- name: github.com/plaid/go-envvar
+  version: 9426fece058e5c4d8715f543a76b361e3156435a
+  subpackages:
+  - envvar
+- name: github.com/sirupsen/logrus
+  version: 839c75faf7f98a33d445d181f3018b5c3409a45e
+- name: github.com/spf13/cobra
+  version: f2b07da1e2c38d5f12845a4f607e2e1018cbb1f5
+- name: github.com/spf13/pflag
+  version: 24fa6976df40757dce6aea913e7b81ade90530e1
+- name: golang.org/x/sys
+  version: 41f3e6584952bb034a481797859f6ab34b6803bd
+  subpackages:
+  - unix
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 221dbe5ed46703ee255b1da0dec05086f5035f62
+  subpackages:
+  - assert
+- name: gopkg.in/yaml.v2
+  version: 51d6538a90f86fe93ac480b35f37b2be17fef232
