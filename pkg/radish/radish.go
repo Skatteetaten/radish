@@ -3,7 +3,8 @@ package radish
 import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/skatteetaten/radish/pkg/executor"
+	"github.com/skatteetaten/radish/pkg/executor/java"
+	"github.com/skatteetaten/radish/pkg/executor/nodejs"
 	"github.com/skatteetaten/radish/pkg/reaper"
 	"github.com/skatteetaten/radish/pkg/signaler"
 	"os"
@@ -14,7 +15,7 @@ import (
 
 //RunRadish :
 func RunRadish(args []string) {
-	e := executor.NewJavaExecutor()
+	e := java.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
 	if err != nil {
 		logrus.Fatalf("Unable to load descriptor %s", err)
@@ -59,4 +60,22 @@ func locateRadishDescriptor(args []string) (string, error) {
 		return "/radish.json", nil
 	}
 	return "", errors.New("No radish descriptor found")
+}
+
+func buildNginx(args []string) {
+	if len(args) > 1 {
+		_, err := os.Stat(args[0])
+		if err == nil {
+			return args[0], nil
+		}
+		return "", errors.Wrapf(err, "Error reading %s", args[0])
+
+		_, err := os.Stat(args[1])
+		if err == nil {
+			return args[1], nil
+		}
+		return "", errors.Wrapf(err, "Error reading %s", args[1])
+
+	}
+	nodejs.buildNginx(args[0], args[1])
 }
