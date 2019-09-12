@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
 	"os"
@@ -19,7 +20,7 @@ type generatedJavaExecutor struct {
 }
 
 //NewJavaExecutor :
-func NewJavaExecutor() Executor {
+func NewJavaExecutor() executor.Executor {
 	return &generatedJavaExecutor{
 		javaExitHandler: javaExitHandler{},
 	}
@@ -30,12 +31,12 @@ func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, er
 	if err != nil {
 		return nil, err
 	}
-	desc, err := unmarshallDescriptor(bytes.NewBuffer(dat))
+	desc, err := UnmarshallDescriptor(bytes.NewBuffer(dat))
 	if err != nil {
 		return nil, err
 	}
 	argumentModificators := resolveArgumentModificators(os.Getenv)
-	args, err := buildArgline(desc, os.LookupEnv, argumentModificators, util.ReadCGroupLimits())
+	args, err := BuildArgline(desc, os.LookupEnv, argumentModificators, util.ReadCGroupLimits())
 	if err != nil {
 		return nil, err
 	}

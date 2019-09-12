@@ -62,7 +62,8 @@ func locateRadishDescriptor(args []string) (string, error) {
 	return "", errors.New("No radish descriptor found")
 }
 
-func buildNginx(args []string) {
+//BuildNginx :
+func BuildNginx(args []string) {
 	if len(args) > 1 {
 		_, err := os.Stat(args[0])
 		if err == nil {
@@ -77,5 +78,5 @@ func buildNginx(args []string) {
 		return "", errors.Wrapf(err, "Error reading %s", args[1])
 
 	}
-	nodejs.buildNginx(args[0], args[1])
+	nodejs.BuildNginx(args[0], args[1])
 }
