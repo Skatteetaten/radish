@@ -114,6 +114,31 @@ In other words, if the flag is not set, then the environment variable must exist
 	},
 }
 
+//GenerateNginxConfiguration : Use to generate Nginx configuration files.
+var GenerateNginxConfiguration = &cobra.Command{
+	Use:   "generateNginxConfiguration",
+	Short: "Use to generate Nginx configuration files based on Radish descriptor",
+	Long: `For generating Nginx configuration files. 
+
+Takes a number of flags:
+
+1. radishDescriptor - 
+
+2. nginxPath - optional - template variable. Overrides environment variable SPLUNK_INDEX
+
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		radishDescriptor := cmd.Flag("radishDescriptor").Value.String()
+		nginxPath := cmd.Flag("nginxPath").Value.String()
+
+		err := radish.GenerateNginxConfiguration(radishDescriptor, nginxPath)
+		if err != nil {
+			logrus.Fatalf("Nginx config generation failed: %s", err)
+			os.Exit(1)
+		}
+	},
+}
+
 //RunJava :
 var RunJava = &cobra.Command{
 	Use:   "runJava",

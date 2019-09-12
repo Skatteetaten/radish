@@ -1,13 +1,12 @@
 package nodejs
 
 import (
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
-	"github.com/stretchr/testify/assert"
 )
 
-const ninxConfigFile = 
-`
+const ninxConfigFile = `
 worker_processes  1;
 error_log stderr;
 
@@ -50,13 +49,13 @@ http {
 }
 `
 
-func TestBuildNginxConfig(t *testing.T) {
-	err := BuildNginxConfig("testdata/testconfig.json", "testdata/")
+func TestGenerateNginxConfiguration(t *testing.T) {
+	err := GenerateNginxConfiguration("testdata/testconfig.json", "testdata/")
 	assert.Equal(t, nil, err)
 
 	data, err := ioutil.ReadFile("testdata/nginx.conf")
 	assert.Equal(t, nil, err)
-	
+
 	s := string(data[:])
 	assert.Equal(t, s, ninxConfigFile)
 }

@@ -62,7 +62,7 @@ func locateRadishDescriptor(args []string) (string, error) {
 	return "", errors.New("No radish descriptor found")
 }
 
-//BuildNginxConfig :
-func BuildNginxConfig(args []string) error {
-	return nodejs.BuildNginxConfig(args[0], args[1])
+//GenerateNginxConfiguration :
+func GenerateNginxConfiguration(radishDescriptor string, nginxPath string) error {
+	return nodejs.GenerateNginxConfiguration(radishDescriptor, nginxPath)
 }
