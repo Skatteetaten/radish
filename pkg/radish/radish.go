@@ -63,20 +63,6 @@ func locateRadishDescriptor(args []string) (string, error) {
 }
 
 //BuildNginx :
-func BuildNginx(args []string) {
-	if len(args) > 1 {
-		_, err := os.Stat(args[0])
-		if err == nil {
-			return args[0], nil
-		}
-		return "", errors.Wrapf(err, "Error reading %s", args[0])
-
-		_, err := os.Stat(args[1])
-		if err == nil {
-			return args[1], nil
-		}
-		return "", errors.Wrapf(err, "Error reading %s", args[1])
-
-	}
-	nodejs.BuildNginx(args[0], args[1])
+func BuildNginx(args []string) error {
+	return nodejs.BuildNginx(args[0], args[1])
 }

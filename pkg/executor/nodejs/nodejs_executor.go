@@ -2,13 +2,13 @@ package nodejs
 
 import (
 	"bytes"
-	"fmt"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
-	"os"
-	"os/exec"
-	"syscall"
+	"regexp"
+	"strings"
 )
 
 const nginxConfigTemplate string = `
@@ -59,94 +59,63 @@ http {
 `
 
 //BuildNginx :
-func BuildNginx(radishDescriptor string, nginxPath string) {
+func BuildNginx(radishDescriptor string, nginxPath string) error {
 	dat, err := ioutil.ReadFile(radishDescriptor)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	completeDockerName := baseImage.GetCompleteDockerTagName()
-	input, err := mapOpenShiftJSONToTemplateInput(dockerSpec, v, completeDockerName, imageBuildTime, auroraVersion)
+	desc, err := UnmarshallDescriptor(bytes.NewBuffer(dat))
+	if err != nil {
+		return err
+	}
 
-	err = util.NewTemplateWriter(input, "NgnixConfiguration", nginxConfigTemplate, nginxPath)
+	input, err := mapDataDescToTemplateInput(desc)
+	if err != nil {
+		return errors.Wrap(err, "Error mapping data to template")
+	}
+
+	fileWriter := util.NewFileWriter(nginxPath)
+	err = fileWriter(util.NewTemplateWriter(input, "nginx.conf", nginxConfigTemplate))
 	if err != nil {
 		return errors.Wrap(err, "Error creating nginx configuration")
 	}
+
+	return nil
 }
 
-func mapOpenShiftJSONToTemplateInput(dockerSpec config.DockerSpec, v *openshiftJson, completeDockerName string, imageBuildTime string, auroraVersion *runtime.AuroraVersion) (*templateInput, error) {
-	labels := make(map[string]string)
-	if v.DockerMetadata.Labels != nil {
-		for k, v := range v.DockerMetadata.Labels {
-			labels[k] = v
-		}
-	}
-	labels["version"] = string(auroraVersion.GetAppVersion())
-	labels["maintainer"] = findMaintainer(v.DockerMetadata)
-
+func mapDataDescToTemplateInput(descriptor Descriptor) (*executor.TemplateInput, error) {
 	path := "/"
-	if v.Aurora.Webapp != nil && len(strings.TrimPrefix(v.Aurora.Webapp.Path, "/")) > 0 {
-		path = "/" + strings.TrimPrefix(v.Aurora.Webapp.Path, "/")
-	} else if len(strings.TrimPrefix(v.Aurora.Path, "/")) > 0 {
-		logrus.Warnf("web.path in openshift.json is deprecated. Please use web.webapp.path when setting path: %s", v.Aurora.Path)
-		path = "/" + strings.TrimPrefix(v.Aurora.Path, "/")
+	if len(strings.TrimPrefix(descriptor.Data.WebappPath, "/")) > 0 {
+		path = "/" + strings.TrimPrefix(descriptor.Data.WebappPath, "/")
+	} else if len(strings.TrimPrefix(descriptor.Data.Path, "/")) > 0 {
+		logrus.Warnf("web.path in openshift.json is deprecated. Please use web.webapp.path when setting path: %s", descriptor.Data.Path)
+		path = "/" + strings.TrimPrefix(descriptor.Data.Path, "/")
 	}
 
 	if !strings.HasSuffix(path, "/") {
 		path = path + "/"
 	}
 
-	var nodejsMainfile string
-	var overrides map[string]string
-	var err error
-	if v.Aurora.NodeJS != nil {
-		nodejsMainfile = strings.TrimSpace(v.Aurora.NodeJS.Main)
-		overrides = v.Aurora.NodeJS.Overrides
-		err = whitelistOverrides(overrides)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	var static string
-	var spa bool
-	var extraHeaders map[string]string
-
-	if v.Aurora.Webapp == nil {
-		static = v.Aurora.Static
-		spa = v.Aurora.SPA
-		extraHeaders = nil
-
-	} else {
-		static = v.Aurora.Webapp.StaticContent
-		spa = v.Aurora.Webapp.DisableTryfiles == false
-		extraHeaders = v.Aurora.Webapp.Headers
+	overrides := descriptor.Data.NodeJSOverrides
+	err := whitelistOverrides(overrides)
+	if err != nil {
+		return nil, err
 	}
 
 	env := make(map[string]string)
-	env["MAIN_JAVASCRIPT_FILE"] = "/u01/application/" + nodejsMainfile
+	env["MAIN_JAVASCRIPT_FILE"] = "/u01/application/" + strings.TrimSpace(descriptor.Data.NodeJSMain)
 	env["PROXY_PASS_HOST"] = "localhost"
 	env["PROXY_PASS_PORT"] = "9090"
-	env[docker.IMAGE_BUILD_TIME] = imageBuildTime
-	env[docker.ENV_APP_VERSION] = string(auroraVersion.GetAppVersion())
-	env[docker.ENV_AURORA_VERSION] = string(auroraVersion.GetCompleteVersion())
-	env[docker.ENV_PUSH_EXTRA_TAGS] = dockerSpec.PushExtraTags.ToStringValue()
-	if auroraVersion.Snapshot {
-		env[docker.ENV_SNAPSHOT_TAG] = auroraVersion.GetGivenVersion()
-	}
 
-	return &templateInput{
-		Baseimage:            completeDockerName,
-		HasNodeJSApplication: len(nodejsMainfile) != 0,
+	return &executor.TemplateInput{
+		HasNodeJSApplication: true,
 		NginxOverrides:       overrides,
-		ConfigurableProxy:    v.Aurora.ConfigurableProxy,
-		Static:               static,
-		ExtraStaticHeaders:   extraHeaders,
-		SPA:                  spa,
+		ConfigurableProxy:    descriptor.Data.ConfigurableProxy,
+		ExtraStaticHeaders:   descriptor.Data.ExtraHeaders,
+		SPA:                  descriptor.Data.SPA,
 		Path:                 path,
-		Labels:               labels,
 		Env:                  env,
-		PackageDirectory:     "package",
 	}, nil
 }
 
