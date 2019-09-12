@@ -14,11 +14,8 @@ type Type struct {
 //DescriptorData :
 type DescriptorData struct {
 	AppVersion        string            `json:"AppVersion"`
-	Labels            map[string]string `json:"Labels"`
-	Maintainer        string            `json:"Maintainer"`
 	WebappPath        string            `json:"WebappPath"`
 	Path              string            `json:"Path"`
-	NodeJSMain        string            `json:"NodeJSMain"`
 	NodeJSOverrides   map[string]string `json:"NodeJSOverrides"`
 	Static            string            `json:"Static"`
 	ExtraHeaders      map[string]string `json:"ExtraHeaders"`

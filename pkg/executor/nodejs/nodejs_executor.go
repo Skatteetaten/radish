@@ -58,8 +58,8 @@ http {
 }
 `
 
-//BuildNginx :
-func BuildNginx(radishDescriptor string, nginxPath string) error {
+//BuildNginxConfig :
+func BuildNginxConfig(radishDescriptor string, nginxPath string) error {
 	dat, err := ioutil.ReadFile(radishDescriptor)
 	if err != nil {
 		return err
@@ -75,12 +75,13 @@ func BuildNginx(radishDescriptor string, nginxPath string) error {
 		return errors.Wrap(err, "Error mapping data to template")
 	}
 
-	fileWriter := util.NewFileWriter(nginxPath)
-	err = fileWriter(util.NewTemplateWriter(input, "nginx.conf", nginxConfigTemplate))
-	if err != nil {
+	writer := util.NewTemplateWriter(input, "nginx.conf", nginxConfigTemplate)
+	if writer == nil {
 		return errors.Wrap(err, "Error creating nginx configuration")
 	}
 
+	fileWriter := util.NewFileWriter(nginxPath + "nginx.conf")
+	fileWriter(writer)
 	return nil
 }
 
@@ -104,7 +105,6 @@ func mapDataDescToTemplateInput(descriptor Descriptor) (*executor.TemplateInput,
 	}
 
 	env := make(map[string]string)
-	env["MAIN_JAVASCRIPT_FILE"] = "/u01/application/" + strings.TrimSpace(descriptor.Data.NodeJSMain)
 	env["PROXY_PASS_HOST"] = "localhost"
 	env["PROXY_PASS_PORT"] = "9090"
 

@@ -1,0 +1,13 @@
+{
+    "Type": "NodeJSDescriptor",
+    "Version": "1",
+    "Data": {
+        "AppVersion": "1.0",
+        "WebappPath": "/web",
+        "Path": "/",    
+        "NodeJSOverrides": {"client_max_body_size":"10m"},
+        "Static": "Dummy",      
+        "SPA": false,
+        "ConfigurableProxy": true
+    }
+  }
