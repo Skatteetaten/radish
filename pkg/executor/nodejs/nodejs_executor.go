@@ -59,10 +59,16 @@ http {
 `
 
 //GenerateNginxConfiguration :
-func GenerateNginxConfiguration(radishDescriptorPath string, nginxPath string) error {
-	dat, err := ioutil.ReadFile(radishDescriptorPath)
-	if err != nil {
-		return err
+func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor string, nginxPath string) error {
+	var err error
+	var dat []byte
+	if radishDescriptorPath != "" {
+		dat, err = ioutil.ReadFile(radishDescriptorPath)
+		if err != nil {
+			return err
+		}
+	} else if radishDescriptor != "" {
+		dat = []byte(radishDescriptor)
 	}
 
 	desc, err := UnmarshallDescriptor(bytes.NewBuffer(dat))

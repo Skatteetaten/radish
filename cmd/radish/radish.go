@@ -122,7 +122,9 @@ var GenerateNginxConfiguration = &cobra.Command{
 
 Takes a number of flags:
 
-1. radishDescriptorPath - Path to the descriptor file. The file is a JSON document which holds the configuration values for the nginx.conf file.
+You must include either the radishDescriptorPath or the radishDescriptor.
+
+1. radishDescriptorPath - optional - Path to the descriptor file. The file is a JSON document which holds the configuration values for the nginx.conf file.
 	Descriptor file example:
 
 	{
@@ -139,14 +141,17 @@ Takes a number of flags:
 	  }
 	}
 
+2. radishDescriptor - optional - The descriptor file content
+
 2. nginxPath - This command will generate an nginx.conf file. The nginxPath is the location where the file is saved. 
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		radishDescriptorPath := cmd.Flag("radishDescriptorPath").Value.String()
+		radishDescriptor := cmd.Flag("radishDescriptor").Value.String()
 		nginxPath := cmd.Flag("nginxPath").Value.String()
 
-		err := radish.GenerateNginxConfiguration(radishDescriptorPath, nginxPath)
+		err := radish.GenerateNginxConfiguration(radishDescriptorPath, radishDescriptor, nginxPath)
 		if err != nil {
 			logrus.Fatalf("Nginx config generation failed: %s", err)
 			os.Exit(1)
