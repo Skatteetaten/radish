@@ -59,8 +59,8 @@ http {
 `
 
 //GenerateNginxConfiguration :
-func GenerateNginxConfiguration(radishDescriptor string, nginxPath string) error {
-	dat, err := ioutil.ReadFile(radishDescriptor)
+func GenerateNginxConfiguration(radishDescriptorPath string, nginxPath string) error {
+	dat, err := ioutil.ReadFile(radishDescriptorPath)
 	if err != nil {
 		return err
 	}
