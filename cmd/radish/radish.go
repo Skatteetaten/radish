@@ -117,14 +117,27 @@ In other words, if the flag is not set, then the environment variable must exist
 //GenerateNginxConfiguration : Use to generate Nginx configuration files.
 var GenerateNginxConfiguration = &cobra.Command{
 	Use:   "generateNginxConfiguration",
-	Short: "Use to generate Nginx configuration files based on Radish descriptor",
+	Short: "Use to generate Nginx configuration files based on a Radish descriptor",
 	Long: `For generating Nginx configuration files. 
 
 Takes a number of flags:
 
-1. radishDescriptor - 
+1. radishDescriptor - The radish descriptor is a JSON file which holds the configuration values for the nginx.conf file.
+	{
+	  "Type": "NodeJSDescriptor",
+	  "Version": "1",
+	  "Data": {
+	    "AppVersion": "1.0",
+	    "WebappPath": "/web",
+	    "Path": "/",    
+	    "NodeJSOverrides": {"client_max_body_size":"10m"},
+	    "Static": "Dummy",      
+	    "SPA": false,
+	    "ConfigurableProxy": true
+	  }
+	}
 
-2. nginxPath - optional - template variable. Overrides environment variable SPLUNK_INDEX
+2. nginxPath - This command will generate an nginx.conf file. The nginxPath is the location where the file is saved. 
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
