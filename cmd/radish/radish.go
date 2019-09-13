@@ -122,7 +122,7 @@ var GenerateNginxConfiguration = &cobra.Command{
 
 Takes a number of flags:
 
-1. radishDescriptor - The radish descriptor is a JSON file which holds the configuration values for the nginx.conf file.
+1. radishDescriptor - The radish descriptor is a JSON document which holds the configuration values for the nginx.conf file.
 	{
 	  "Type": "NodeJSDescriptor",
 	  "Version": "1",
