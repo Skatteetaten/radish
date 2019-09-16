@@ -147,9 +147,24 @@ You must include either the radishDescriptorPath or the radishDescriptor.
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		radishDescriptorPath := cmd.Flag("radishDescriptorPath").Value.String()
-		radishDescriptor := cmd.Flag("radishDescriptor").Value.String()
-		nginxPath := cmd.Flag("nginxPath").Value.String()
+		radishDescriptorPath := ""
+		if cmd.Flag("radishDescriptorPath") != nil {
+			radishDescriptorPath = cmd.Flag("radishDescriptorPath").Value.String()
+		}
+
+		radishDescriptor := ""
+		if cmd.Flag("radishDescriptor") != nil {
+			radishDescriptor = cmd.Flag("radishDescriptor").Value.String()
+		}
+
+		nginxPath := ""
+		if cmd.Flag("nginxPath") != nil {
+			nginxPath = cmd.Flag("nginxPath").Value.String()
+		}
+
+		fmt.Print(radishDescriptorPath)
+		fmt.Print(radishDescriptor)
+		fmt.Print(nginxPath)
 
 		err := radish.GenerateNginxConfiguration(radishDescriptorPath, radishDescriptor, nginxPath)
 		if err != nil {

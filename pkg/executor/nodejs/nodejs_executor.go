@@ -2,6 +2,7 @@ package nodejs
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/executor"
@@ -61,7 +62,8 @@ http {
 //GenerateNginxConfiguration :
 func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor string, nginxPath string) error {
 	var err error
-	var dat []byte
+	var dat []byte = nil
+
 	if radishDescriptorPath != "" {
 		dat, err = ioutil.ReadFile(radishDescriptorPath)
 		if err != nil {
@@ -71,6 +73,10 @@ func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor st
 		dat = []byte(radishDescriptor)
 	}
 
+	if dat == nil {
+		return fmt.Errorf("Either radishDescriptorPath or radishDescriptor param is required")
+	}
+
 	desc, err := UnmarshallDescriptor(bytes.NewBuffer(dat))
 	if err != nil {
 		return err
@@ -78,7 +84,7 @@ func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor st
 
 	input, err := mapDataDescToTemplateInput(desc)
 	if err != nil {
-		return errors.Wrap(err, "Error mapping data to template")
+		return fmt.Errorf("Error mapping data to template")
 	}
 
 	writer := util.NewTemplateWriter(input, "nginx.conf", nginxConfigTemplate)
@@ -110,7 +116,6 @@ func mapDataDescToTemplateInput(descriptor Descriptor) (*executor.TemplateInput,
 	if !strings.HasSuffix(path, "/") {
 		path = path + "/"
 	}
-
 	overrides := descriptor.Data.NodeJSOverrides
 	err := whitelistOverrides(overrides)
 	if err != nil {

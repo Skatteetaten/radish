@@ -71,3 +71,8 @@ func TestGenerateNginxConfigurationFromContent(t *testing.T) {
 	s := string(data[:])
 	assert.Equal(t, s, ninxConfigFile)
 }
+
+func TestGenerateNginxConfigurationNoContent(t *testing.T) {
+	err := GenerateNginxConfiguration("", "", "testdata/")
+	assert.Equal(t, "Either radishDescriptorPath or radishDescriptor param is required", err.Error())
+}

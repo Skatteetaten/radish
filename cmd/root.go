@@ -25,6 +25,10 @@ var podNamespace string
 var appName string
 var hostName string
 
+var radishDescriptorPath string
+var radishDescriptor string
+var nginxPath string
+
 //Execute :
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
@@ -37,7 +41,11 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(radish.RunJava)
+
 	rootCmd.AddCommand(radish.GenerateNginxConfiguration)
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptorPath, "radishDescriptorPath", "", "", "")
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptorPath, "radishDescriptor", "", "", "")
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptorPath, "nginxPath", "", "", "")
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&templateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")
