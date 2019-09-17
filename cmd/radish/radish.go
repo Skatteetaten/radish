@@ -162,10 +162,6 @@ You must include either the radishDescriptorPath or the radishDescriptor.
 			nginxPath = cmd.Flag("nginxPath").Value.String()
 		}
 
-		fmt.Print(radishDescriptorPath)
-		fmt.Print(radishDescriptor)
-		fmt.Print(nginxPath)
-
 		err := radish.GenerateNginxConfiguration(radishDescriptorPath, radishDescriptor, nginxPath)
 		if err != nil {
 			logrus.Fatalf("Nginx config generation failed: %s", err)

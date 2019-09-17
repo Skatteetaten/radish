@@ -65,6 +65,7 @@ func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor st
 	var dat []byte = nil
 
 	if radishDescriptorPath != "" {
+		fmt.Println("delete called4")
 		dat, err = ioutil.ReadFile(radishDescriptorPath)
 		if err != nil {
 			return err
@@ -93,7 +94,7 @@ func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor st
 	}
 
 	path := ""
-	if nginxPath == "" || strings.HasSuffix(nginxPath, "/") {
+	if nginxPath != "" || !strings.HasSuffix(nginxPath, "/") {
 		path = nginxPath + "nginx.conf"
 	} else {
 		path = nginxPath + "/nginx.conf"

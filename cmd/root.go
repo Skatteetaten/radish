@@ -43,9 +43,9 @@ func init() {
 	rootCmd.AddCommand(radish.RunJava)
 
 	rootCmd.AddCommand(radish.GenerateNginxConfiguration)
-	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptorPath, "radishDescriptorPath", "", "", "")
-	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptorPath, "radishDescriptor", "", "", "")
-	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptorPath, "nginxPath", "", "", "")
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptorPath, "radishDescriptorPath", "", "", "Path to radish descriptor")
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptor, "radishDescriptor", "", "", "Radish descriptor JSON")
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&nginxPath, "nginxPath", "", "", "Path where the nginx.conf file is stored")
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&templateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")
