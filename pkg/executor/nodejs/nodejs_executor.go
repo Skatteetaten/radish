@@ -127,7 +127,7 @@ func mapDataDescToTemplateInput(descriptor Descriptor) (*executor.TemplateInput,
 	env["PROXY_PASS_PORT"] = "9090"
 
 	return &executor.TemplateInput{
-		HasNodeJSApplication: true,
+		HasNodeJSApplication: descriptor.Data.HasNodeJSApplication,
 		NginxOverrides:       overrides,
 		ConfigurableProxy:    descriptor.Data.ConfigurableProxy,
 		ExtraStaticHeaders:   descriptor.Data.ExtraHeaders,

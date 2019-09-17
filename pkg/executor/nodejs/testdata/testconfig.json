@@ -6,8 +6,9 @@
         "WebappPath": "/web",
         "Path": "/",    
         "NodeJSOverrides": {"client_max_body_size":"10m"},
-        "Static": "Dummy",      
+        "Static": "Dummy",    
+        "HasNodeJSApplication": true,  
         "SPA": false,
-        "ConfigurableProxy": true
+        "ConfigurableProxy": false
     }
   }

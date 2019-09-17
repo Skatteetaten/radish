@@ -13,14 +13,15 @@ type Type struct {
 
 //DescriptorData :
 type DescriptorData struct {
-	AppVersion        string            `json:"AppVersion"`
-	WebappPath        string            `json:"WebappPath"`
-	Path              string            `json:"Path"`
-	NodeJSOverrides   map[string]string `json:"NodeJSOverrides"`
-	Static            string            `json:"Static"`
-	ExtraHeaders      map[string]string `json:"ExtraHeaders"`
-	SPA               bool              `json:"SPA"`
-	ConfigurableProxy bool              `json:"ConfigurableProxy"`
+	HasNodeJSApplication bool              `json:"HasNodeJSApplication"`
+	AppVersion           string            `json:"AppVersion"`
+	WebappPath           string            `json:"WebappPath"`
+	Path                 string            `json:"Path"`
+	NodeJSOverrides      map[string]string `json:"NodeJSOverrides"`
+	Static               string            `json:"Static"`
+	ExtraHeaders         map[string]string `json:"ExtraHeaders"`
+	SPA                  bool              `json:"SPA"`
+	ConfigurableProxy    bool              `json:"ConfigurableProxy"`
 }
 
 //Descriptor :
