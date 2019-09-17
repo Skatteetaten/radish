@@ -3,6 +3,7 @@ package nodejs
 import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -49,8 +50,29 @@ http {
 }
 `
 
+func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
+	os.Setenv("NODEJS_APP", "true")
+	os.Setenv("CONFIGURABLE_PROXY", "true")
+	os.Setenv("WEB_APP_PATH", "/web")
+	os.Setenv("NODEJS_OVERRIDES", "{\"client_max_body_size\":\"10m\"}")
+
+	err := GenerateNginxConfiguration("", "", "testdata/nginx.conf")
+	assert.Equal(t, nil, err)
+
+	data, err := ioutil.ReadFile("testdata/nginx.conf")
+	assert.Equal(t, nil, err)
+
+	s := string(data[:])
+	assert.Equal(t, s, ninxConfigFile)
+}
+
 func TestGenerateNginxConfigurationFromFile(t *testing.T) {
-	err := GenerateNginxConfiguration("testdata/testconfig.json", "", "testdata/nginx.conf")
+	os.Setenv("NODEJS_APP", "true")
+	os.Setenv("CONFIGURABLE_PROXY", "true")
+	os.Setenv("WEB_APP_PATH", "/web")
+	os.Setenv("NODEJS_OVERRIDES", "{\"client_max_body_size\":\"10m\"}")
+
+	err := GenerateNginxConfiguration("testdata/testconfig.template", "", "testdata/nginx.conf")
 	assert.Equal(t, nil, err)
 
 	data, err := ioutil.ReadFile("testdata/nginx.conf")
@@ -61,7 +83,12 @@ func TestGenerateNginxConfigurationFromFile(t *testing.T) {
 }
 
 func TestGenerateNginxConfigurationFromContent(t *testing.T) {
-	data, err := ioutil.ReadFile("testdata/testconfig.json")
+	os.Setenv("NODEJS_APP", "true")
+	os.Setenv("CONFIGURABLE_PROXY", "true")
+	os.Setenv("WEB_APP_PATH", "/web")
+	os.Setenv("NODEJS_OVERRIDES", "{\"client_max_body_size\":\"10m\"}")
+
+	data, err := ioutil.ReadFile("testdata/testconfig.template")
 	err = GenerateNginxConfiguration("", string(data[:]), "testdata/nginx.conf2")
 	assert.Equal(t, nil, err)
 
@@ -74,5 +101,5 @@ func TestGenerateNginxConfigurationFromContent(t *testing.T) {
 
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {
 	err := GenerateNginxConfiguration("", "", "testdata/nginx.conf")
-	assert.Equal(t, "Either radishDescriptorPath or radishDescriptor param is required", err.Error())
+	assert.True(t, err == nil)
 }

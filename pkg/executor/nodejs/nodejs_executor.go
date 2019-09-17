@@ -1,9 +1,10 @@
 package nodejs
 
 import (
-	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/plaid/go-envvar/envvar"
 	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/util"
@@ -63,6 +64,12 @@ http {
 func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor string, nginxPath string) error {
 	var err error
 	var dat []byte = nil
+	var template string = nginxConfigTemplate
+
+	descriptor := Descriptor{}
+	if err := envvar.Parse(&descriptor); err != nil {
+		return errors.Wrap(err, "Couldn't parse environment variables")
+	}
 
 	if radishDescriptorPath != "" {
 		dat, err = ioutil.ReadFile(radishDescriptorPath)
@@ -73,21 +80,18 @@ func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor st
 		dat = []byte(radishDescriptor)
 	}
 
-	if dat == nil {
-		return fmt.Errorf("Either radishDescriptorPath or radishDescriptor param is required")
+	if dat != nil {
+		template = string(dat[:])
+	} else {
+		fmt.Println("No template added, using default")
 	}
 
-	desc, err := UnmarshallDescriptor(bytes.NewBuffer(dat))
-	if err != nil {
-		return err
-	}
-
-	input, err := mapDataDescToTemplateInput(desc)
+	input, err := mapDataDescToTemplateInput(descriptor)
 	if err != nil {
 		return fmt.Errorf("Error mapping data to template")
 	}
 
-	writer := util.NewTemplateWriter(input, "nginx.conf", nginxConfigTemplate)
+	writer := util.NewTemplateWriter(input, "nginx.conf", template)
 	if writer == nil {
 		return errors.Wrap(err, "Error creating nginx configuration")
 	}
@@ -109,8 +113,24 @@ func mapDataDescToTemplateInput(descriptor Descriptor) (*executor.TemplateInput,
 	if !strings.HasSuffix(path, "/") {
 		path = path + "/"
 	}
+
+	extraHeaders := descriptor.Data.ExtraHeaders
+	extraHeadersMap := make(map[string]string)
+	err := json.Unmarshal([]byte(extraHeaders), &extraHeadersMap)
+	if err != nil {
+		logrus.Warnf("Could not convert ExtraHeaders to hashmap, proceed without overrides.")
+		extraHeadersMap = make(map[string]string)
+	}
+
 	overrides := descriptor.Data.NodeJSOverrides
-	err := whitelistOverrides(overrides)
+	overridesMap := make(map[string]string)
+	err = json.Unmarshal([]byte(overrides), &overridesMap)
+	if err != nil {
+		logrus.Warnf("Could not convert NodeJSOverrides to hashmap, proceed without overrides.")
+		overridesMap = make(map[string]string)
+	}
+
+	err = whitelistOverrides(overridesMap)
 	if err != nil {
 		return nil, err
 	}
@@ -121,9 +141,9 @@ func mapDataDescToTemplateInput(descriptor Descriptor) (*executor.TemplateInput,
 
 	return &executor.TemplateInput{
 		HasNodeJSApplication: descriptor.Data.HasNodeJSApplication,
-		NginxOverrides:       overrides,
+		NginxOverrides:       overridesMap,
 		ConfigurableProxy:    descriptor.Data.ConfigurableProxy,
-		ExtraStaticHeaders:   descriptor.Data.ExtraHeaders,
+		ExtraStaticHeaders:   extraHeadersMap,
 		SPA:                  descriptor.Data.SPA,
 		Path:                 path,
 		Env:                  env,

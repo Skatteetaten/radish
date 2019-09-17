@@ -7,21 +7,21 @@ import (
 
 //Type :
 type Type struct {
-	Type    string `json:"Type"`
-	Version string `json:"Version"`
+	Type    string `envvar:"TYPE" default:"NodeJS"`
+	Version string `envvar:"NODEJS_VERSION" default:""`
 }
 
 //DescriptorData :
 type DescriptorData struct {
-	HasNodeJSApplication bool              `json:"HasNodeJSApplication"`
-	AppVersion           string            `json:"AppVersion"`
-	WebappPath           string            `json:"WebappPath"`
-	Path                 string            `json:"Path"`
-	NodeJSOverrides      map[string]string `json:"NodeJSOverrides"`
-	Static               string            `json:"Static"`
-	ExtraHeaders         map[string]string `json:"ExtraHeaders"`
-	SPA                  bool              `json:"SPA"`
-	ConfigurableProxy    bool              `json:"ConfigurableProxy"`
+	HasNodeJSApplication bool   `envvar:"NODEJS_APP" default:"false"`
+	AppVersion           string `envvar:"APP_VERSION" default:""`
+	WebappPath           string `envvar:"WEB_APP_PATH" default:""`
+	Path                 string `envvar:"PATH" default:""`
+	NodeJSOverrides      string `envvar:"NODEJS_OVERRIDES" default:"{}"`
+	Static               string `envvar:"STATIC" default:""`
+	ExtraHeaders         string `envvar:"EXTRA_HEADERS" default:"{}"`
+	SPA                  bool   `envvar:"SPA" default:"false"`
+	ConfigurableProxy    bool   `envvar:"CONFIGURABLE_PROXY" default:"false"`
 }
 
 //Descriptor :
