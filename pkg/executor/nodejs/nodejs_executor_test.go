@@ -50,7 +50,7 @@ http {
 `
 
 func TestGenerateNginxConfigurationFromFile(t *testing.T) {
-	err := GenerateNginxConfiguration("testdata/testconfig.json", "", "testdata/")
+	err := GenerateNginxConfiguration("testdata/testconfig.json", "", "testdata/nginx.conf")
 	assert.Equal(t, nil, err)
 
 	data, err := ioutil.ReadFile("testdata/nginx.conf")
@@ -62,10 +62,10 @@ func TestGenerateNginxConfigurationFromFile(t *testing.T) {
 
 func TestGenerateNginxConfigurationFromContent(t *testing.T) {
 	data, err := ioutil.ReadFile("testdata/testconfig.json")
-	err = GenerateNginxConfiguration("", string(data[:]), "testdata/")
+	err = GenerateNginxConfiguration("", string(data[:]), "testdata/nginx.conf2")
 	assert.Equal(t, nil, err)
 
-	data, err = ioutil.ReadFile("testdata/nginx.conf")
+	data, err = ioutil.ReadFile("testdata/nginx.conf2")
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
@@ -73,6 +73,6 @@ func TestGenerateNginxConfigurationFromContent(t *testing.T) {
 }
 
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {
-	err := GenerateNginxConfiguration("", "", "testdata/")
+	err := GenerateNginxConfiguration("", "", "testdata/nginx.conf")
 	assert.Equal(t, "Either radishDescriptorPath or radishDescriptor param is required", err.Error())
 }

@@ -92,14 +92,7 @@ func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor st
 		return errors.Wrap(err, "Error creating nginx configuration")
 	}
 
-	path := ""
-	if nginxPath != "" || !strings.HasSuffix(nginxPath, "/") {
-		path = nginxPath + "nginx.conf"
-	} else {
-		path = nginxPath + "/nginx.conf"
-	}
-
-	fileWriter := util.NewFileWriter(path)
+	fileWriter := util.NewFileWriter(nginxPath)
 	fileWriter(writer)
 	return nil
 }

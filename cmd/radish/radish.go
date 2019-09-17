@@ -143,7 +143,7 @@ You must include either the radishDescriptorPath or the radishDescriptor.
 
 2. radishDescriptor - optional - The descriptor file content
 
-2. nginxPath - This command will generate an nginx.conf file. The nginxPath is the location where the file is saved. 
+2. nginxPath - This command will generate an nginx configuration file. The nginxPath is the location (including file name) where the file is saved. 
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
