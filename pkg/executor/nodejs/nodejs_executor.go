@@ -65,7 +65,6 @@ func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor st
 	var dat []byte = nil
 
 	if radishDescriptorPath != "" {
-		fmt.Println("delete called4")
 		dat, err = ioutil.ReadFile(radishDescriptorPath)
 		if err != nil {
 			return err
