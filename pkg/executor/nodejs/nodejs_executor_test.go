@@ -51,10 +51,10 @@ http {
 `
 
 func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
-	os.Setenv("NODEJS_APP", "true")
-	os.Setenv("CONFIGURABLE_PROXY", "true")
-	os.Setenv("WEB_APP_PATH", "/web")
-	os.Setenv("NODEJS_OVERRIDES", "{\"client_max_body_size\":\"10m\"}")
+	os.Setenv("RADISH_NODEJS_APP", "true")
+	os.Setenv("RADISH_CONFIGURABLE_PROXY", "true")
+	os.Setenv("RADISH_WEB_APP_PATH", "/web")
+	os.Setenv("RADISH_NODEJS_OVERRIDES", "{\"client_max_body_size\":\"10m\"}")
 
 	err := GenerateNginxConfiguration("", "", "testdata/nginx.conf")
 	assert.Equal(t, nil, err)
@@ -67,10 +67,10 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 }
 
 func TestGenerateNginxConfigurationFromFile(t *testing.T) {
-	os.Setenv("NODEJS_APP", "true")
-	os.Setenv("CONFIGURABLE_PROXY", "true")
-	os.Setenv("WEB_APP_PATH", "/web")
-	os.Setenv("NODEJS_OVERRIDES", "{\"client_max_body_size\":\"10m\"}")
+	os.Setenv("RADISH_NODEJS_APP", "true")
+	os.Setenv("RADISH_CONFIGURABLE_PROXY", "true")
+	os.Setenv("RADISH_WEB_APP_PATH", "/web")
+	os.Setenv("RADISH_NODEJS_OVERRIDES", "{\"client_max_body_size\":\"10m\"}")
 
 	err := GenerateNginxConfiguration("testdata/testconfig.template", "", "testdata/nginx.conf")
 	assert.Equal(t, nil, err)
@@ -83,10 +83,10 @@ func TestGenerateNginxConfigurationFromFile(t *testing.T) {
 }
 
 func TestGenerateNginxConfigurationFromContent(t *testing.T) {
-	os.Setenv("NODEJS_APP", "true")
-	os.Setenv("CONFIGURABLE_PROXY", "true")
-	os.Setenv("WEB_APP_PATH", "/web")
-	os.Setenv("NODEJS_OVERRIDES", "{\"client_max_body_size\":\"10m\"}")
+	os.Setenv("RADISH_NODEJS_APP", "true")
+	os.Setenv("RADISH_CONFIGURABLE_PROXY", "true")
+	os.Setenv("RADISH_WEB_APP_PATH", "/web")
+	os.Setenv("RADISH_NODEJS_OVERRIDES", "{\"client_max_body_size\":\"10m\"}")
 
 	data, err := ioutil.ReadFile("testdata/testconfig.template")
 	err = GenerateNginxConfiguration("", string(data[:]), "testdata/nginx.conf2")

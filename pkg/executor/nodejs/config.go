@@ -13,15 +13,15 @@ type Type struct {
 
 //DescriptorData :
 type DescriptorData struct {
-	HasNodeJSApplication bool   `envvar:"NODEJS_APP" default:"false"`
-	AppVersion           string `envvar:"APP_VERSION" default:""`
-	WebappPath           string `envvar:"WEB_APP_PATH" default:""`
-	Path                 string `envvar:"PATH" default:""`
-	NodeJSOverrides      string `envvar:"NODEJS_OVERRIDES" default:"{}"`
-	Static               string `envvar:"STATIC" default:""`
-	ExtraHeaders         string `envvar:"EXTRA_HEADERS" default:"{}"`
-	SPA                  bool   `envvar:"SPA" default:"false"`
-	ConfigurableProxy    bool   `envvar:"CONFIGURABLE_PROXY" default:"false"`
+	HasNodeJSApplication bool   `envvar:"RADISH_NODEJS_APP" default:"false"`
+	AppVersion           string `envvar:"RADISH_APP_VERSION" default:""`
+	WebappPath           string `envvar:"RADISH_WEB_APP_PATH" default:""`
+	Path                 string `envvar:"RADISH_PATH" default:""`
+	NodeJSOverrides      string `envvar:"RADISH_NODEJS_OVERRIDES" default:"{}"`
+	Static               string `envvar:"RADISH_STATIC" default:""`
+	ExtraHeaders         string `envvar:"RADISH_EXTRA_HEADERS" default:"{}"`
+	SPA                  bool   `envvar:"RADISH_SPA" default:"false"`
+	ConfigurableProxy    bool   `envvar:"RADISH_CONFIGURABLE_PROXY" default:"false"`
 }
 
 //Descriptor :
