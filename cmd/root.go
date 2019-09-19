@@ -25,8 +25,8 @@ var podNamespace string
 var appName string
 var hostName string
 
+var nginxTemplatePath string
 var radishDescriptorPath string
-var radishDescriptor string
 var nginxPath string
 
 //Execute :
@@ -43,8 +43,8 @@ func init() {
 	rootCmd.AddCommand(radish.RunJava)
 
 	rootCmd.AddCommand(radish.GenerateNginxConfiguration)
-	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptorPath, "radishDescriptorPath", "", "", "Path to radish descriptor")
-	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptor, "radishDescriptor", "", "", "Radish descriptor JSON")
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&nginxTemplatePath, "nginxTemplatePath", "", "", "Path to nginx template")
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&radishDescriptorPath, "radishDescriptorPath", "", "", "path to Radish descriptor")
 	radish.GenerateNginxConfiguration.Flags().StringVarP(&nginxPath, "nginxPath", "", "", "The nginxPath is the location (including file name) where the file is saved.")
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)

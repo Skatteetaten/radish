@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/plaid/go-envvar/envvar"
-	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
@@ -61,32 +59,34 @@ http {
 `
 
 //GenerateNginxConfiguration :
-func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor string, nginxPath string) error {
-	var err error
-	var dat []byte = nil
+func GenerateNginxConfiguration(nginxTemplatePath string, radishDescriptorPath string, nginxPath string) error {
+	var openshiftConfig map[string]interface{}
 	var template string = nginxConfigTemplate
 
-	descriptor := Descriptor{}
-	if err := envvar.Parse(&descriptor); err != nil {
-		return errors.Wrap(err, "Couldn't parse environment variables")
-	}
-
-	if radishDescriptorPath != "" {
-		dat, err = ioutil.ReadFile(radishDescriptorPath)
+	if nginxTemplatePath != "" {
+		templatePathDat, err := ioutil.ReadFile(nginxTemplatePath)
 		if err != nil {
 			return err
 		}
-	} else if radishDescriptor != "" {
-		dat = []byte(radishDescriptor)
+
+		if templatePathDat != nil {
+			template = string(templatePathDat[:])
+		} else {
+			fmt.Println("No template added, using default")
+		}
 	}
 
-	if dat != nil {
-		template = string(dat[:])
+	if radishDescriptorPath != "" {
+		descriptorPathDat, err := ioutil.ReadFile(radishDescriptorPath)
+		err = json.Unmarshal(descriptorPathDat, &openshiftConfig)
+		if err != nil {
+			return fmt.Errorf("Error mapping descriptor to json")
+		}
 	} else {
-		fmt.Println("No template added, using default")
+		return fmt.Errorf("Radish descriptor is missing")
 	}
 
-	input, err := mapDataDescToTemplateInput(descriptor)
+	input, err := mapDataDescToTemplateInput(openshiftConfig)
 	if err != nil {
 		return fmt.Errorf("Error mapping data to template")
 	}
@@ -101,36 +101,65 @@ func GenerateNginxConfiguration(radishDescriptorPath string, radishDescriptor st
 	return nil
 }
 
-func mapDataDescToTemplateInput(descriptor Descriptor) (*executor.TemplateInput, error) {
+func mapDataDescToTemplateInput(openshiftConfig map[string]interface{}) (*executor.TemplateInput, error) {
+	var spa = false
+	var hasNodeJSApplication = false
+	var openshiftConfigPath string = ""
+	var extraStaticHeaders = make(map[string]string)
+	var openshiftConfigNodeJSOverrides = make(map[string]string)
+
+	if openshiftConfig["web"] == nil {
+		return nil, fmt.Errorf("No web element in openshift.json file")
+	}
+
+	if openshiftConfig["web"].(map[string]interface{})["webapp"] == nil {
+		return nil, fmt.Errorf("No web.webapp element in openshift.json file")
+	}
+
+	if openshiftConfig["web"].(map[string]interface{})["nodejs"] == nil {
+		return nil, fmt.Errorf("No web.nodejs element in openshift.json file")
+	}
+
+	configurableProxy := false
+	for key, value := range openshiftConfig["web"].(map[string]interface{}) {
+		if key == "configurableProxy" {
+			configurableProxy = value.(bool)
+			break
+		}
+	}
+
+	for key, value := range openshiftConfig["web"].(map[string]interface{})["webapp"].(map[string]interface{}) {
+		if key == "path" {
+			openshiftConfigPath = value.(string)
+		} else if key == "headers" {
+			for k, v := range value.(map[string]interface{}) {
+				extraStaticHeaders[k] = v.(string)
+			}
+		}
+	}
+
+	for key, value := range openshiftConfig["web"].(map[string]interface{})["nodejs"].(map[string]interface{}) {
+		if key == "disableTryfiles" {
+			spa = value.(bool)
+		} else if key == "main" {
+			hasNodeJSApplication = true
+		} else if key == "overrides" {
+			for k, v := range value.(map[string]interface{}) {
+				openshiftConfigNodeJSOverrides[k] = v.(string)
+			}
+		}
+	}
+
 	path := "/"
-	if len(strings.TrimPrefix(descriptor.Data.WebappPath, "/")) > 0 {
-		path = "/" + strings.TrimPrefix(descriptor.Data.WebappPath, "/")
-	} else if len(strings.TrimPrefix(descriptor.Data.Path, "/")) > 0 {
-		logrus.Warnf("web.path in openshift.json is deprecated. Please use web.webapp.path when setting path: %s", descriptor.Data.Path)
-		path = "/" + strings.TrimPrefix(descriptor.Data.Path, "/")
+	if len(strings.TrimPrefix(openshiftConfigPath, "/")) > 0 {
+		path = "/" + strings.TrimPrefix(openshiftConfigPath, "/")
 	}
 
 	if !strings.HasSuffix(path, "/") {
 		path = path + "/"
 	}
 
-	extraHeaders := descriptor.Data.ExtraHeaders
-	extraHeadersMap := make(map[string]string)
-	err := json.Unmarshal([]byte(extraHeaders), &extraHeadersMap)
-	if err != nil {
-		logrus.Warnf("Could not convert ExtraHeaders to hashmap, proceed without overrides.")
-		extraHeadersMap = make(map[string]string)
-	}
-
-	overrides := descriptor.Data.NodeJSOverrides
-	overridesMap := make(map[string]string)
-	err = json.Unmarshal([]byte(overrides), &overridesMap)
-	if err != nil {
-		logrus.Warnf("Could not convert NodeJSOverrides to hashmap, proceed without overrides.")
-		overridesMap = make(map[string]string)
-	}
-
-	err = whitelistOverrides(overridesMap)
+	err := whitelistOverrides(openshiftConfigNodeJSOverrides)
 	if err != nil {
 		return nil, err
 	}
@@ -140,11 +169,11 @@ func mapDataDescToTemplateInput(descriptor Descriptor) (*executor.TemplateInput,
 	env["PROXY_PASS_PORT"] = "9090"
 
 	return &executor.TemplateInput{
-		HasNodeJSApplication: descriptor.Data.HasNodeJSApplication,
-		NginxOverrides:       overridesMap,
-		ConfigurableProxy:    descriptor.Data.ConfigurableProxy,
-		ExtraStaticHeaders:   extraHeadersMap,
-		SPA:                  descriptor.Data.SPA,
+		HasNodeJSApplication: hasNodeJSApplication,
+		NginxOverrides:       openshiftConfigNodeJSOverrides,
+		ConfigurableProxy:    configurableProxy,
+		ExtraStaticHeaders:   extraStaticHeaders,
+		SPA:                  spa,
 		Path:                 path,
 		Env:                  env,
 	}, nil

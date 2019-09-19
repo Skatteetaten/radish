@@ -7,21 +7,21 @@ import (
 
 //Type :
 type Type struct {
-	Type    string `envvar:"TYPE" default:"NodeJS"`
-	Version string `envvar:"NODEJS_VERSION" default:""`
+	Type    string `json:"Type"`
+	Version string `json:"Version"`
 }
 
 //DescriptorData :
 type DescriptorData struct {
-	HasNodeJSApplication bool   `envvar:"RADISH_NODEJS_APP" default:"false"`
-	AppVersion           string `envvar:"RADISH_APP_VERSION" default:""`
-	WebappPath           string `envvar:"RADISH_WEB_APP_PATH" default:""`
-	Path                 string `envvar:"RADISH_PATH" default:""`
-	NodeJSOverrides      string `envvar:"RADISH_NODEJS_OVERRIDES" default:"{}"`
-	Static               string `envvar:"RADISH_STATIC" default:""`
-	ExtraHeaders         string `envvar:"RADISH_EXTRA_HEADERS" default:"{}"`
-	SPA                  bool   `envvar:"RADISH_SPA" default:"false"`
-	ConfigurableProxy    bool   `envvar:"RADISH_CONFIGURABLE_PROXY" default:"false"`
+	HasNodeJSApplication bool              `json:"HasNodeJSApplication"`
+	AppVersion           string            `json:"AppVersion"`
+	WebappPath           string            `json:"WebappPath"`
+	Path                 string            `json:"Path"`
+	NodeJSOverrides      map[string]string `json:"NodeJSOverrides"`
+	Static               string            `json:"Static"`
+	ExtraHeaders         map[string]string `json:"ExtraHeaders"`
+	SPA                  bool              `json:"SPA"`
+	ConfigurableProxy    bool              `json:"ConfigurableProxy"`
 }
 
 //Descriptor :
