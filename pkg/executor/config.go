@@ -134,7 +134,7 @@ func walkClasspath(path string) ([]string, error) {
 			if err != nil {
 				return err
 			}
-			if !info.IsDir() && strings.HasSuffix(info.Name(), ".jar") && !strings.HasSuffix(info.Name(), "-exec.jar") {
+			if !info.IsDir() && strings.HasSuffix(info.Name(), ".jar") {
 				jarfiles = append(jarfiles, subpath)
 			}
 			return nil
