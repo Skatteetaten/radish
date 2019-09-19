@@ -43,7 +43,7 @@ func TestBuildArgLineFromDescriptorSubpath(t *testing.T) {
 	assert.NoError(t, err)
 	args, err := buildArgline(desc, envFunc, Java8ArgumentsModificators, limits)
 	assert.NoError(t, err)
-	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar:testdata/lib/lib3/lib4/lib6.jar:testdata/lib/lib3/lib5/lib7.jar:testdata/lib/lib3/lib5/lib8.jar:testdata/lib/lib3/lib5.jar")
+	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar:testdata/lib/lib3/lib4/lib6.jar:testdata/lib/lib3/lib5/lib7.jar:testdata/lib/lib3/lib5/lib8.jar:testdata/lib/lib3/lib5/lib9-exec.jar:testdata/lib/lib3/lib5.jar")
 }
 
 func TestExpanstionOfVariablesAgainstEnv(t *testing.T) {
