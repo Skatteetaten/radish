@@ -1,7 +1,7 @@
 package nodejs
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/skatteetaten/radish/pkg/executor"
@@ -59,8 +59,8 @@ http {
 `
 
 //GenerateNginxConfiguration :
-func GenerateNginxConfiguration(nginxTemplatePath string, radishDescriptorPath string, nginxPath string) error {
-	var openshiftConfig map[string]interface{}
+func GenerateNginxConfiguration(nginxTemplatePath string, openshiftConfigPath string, nginxPath string) error {
+	var openshiftConfig OpenshiftConfig
 	var template string = nginxConfigTemplate
 
 	if nginxTemplatePath != "" {
@@ -76,14 +76,18 @@ func GenerateNginxConfiguration(nginxTemplatePath string, radishDescriptorPath s
 		}
 	}
 
-	if radishDescriptorPath != "" {
-		descriptorPathDat, err := ioutil.ReadFile(radishDescriptorPath)
-		err = json.Unmarshal(descriptorPathDat, &openshiftConfig)
+	if openshiftConfigPath != "" {
+		data, err := ioutil.ReadFile(openshiftConfigPath)
 		if err != nil {
-			return fmt.Errorf("Error mapping descriptor to json")
+			return fmt.Errorf("Error reading file: " + openshiftConfigPath)
+		}
+
+		openshiftConfig, err = UnmarshallOpenshiftConfig(bytes.NewBuffer(data))
+		if err != nil {
+			return fmt.Errorf("Error mapping openshift json to internal structure")
 		}
 	} else {
-		return fmt.Errorf("Radish descriptor is missing")
+		return fmt.Errorf("openshiftConfigPath is missing")
 	}
 
 	input, err := mapDataDescToTemplateInput(openshiftConfig)
@@ -101,65 +105,18 @@ func GenerateNginxConfiguration(nginxTemplatePath string, radishDescriptorPath s
 	return nil
 }
 
-func mapDataDescToTemplateInput(openshiftConfig map[string]interface{}) (*executor.TemplateInput, error) {
-	var spa = false
-	var hasNodeJSApplication = false
-	var openshiftConfigPath string = ""
-	var extraStaticHeaders = make(map[string]string)
-	var openshiftConfigNodeJSOverrides = make(map[string]string)
-
-	if openshiftConfig["web"] == nil {
-		return nil, fmt.Errorf("No web element in openshift.json file")
-	}
-
-	if openshiftConfig["web"].(map[string]interface{})["webapp"] == nil {
-		return nil, fmt.Errorf("No web.webapp element in openshift.json file")
-	}
-
-	if openshiftConfig["web"].(map[string]interface{})["nodejs"] == nil {
-		return nil, fmt.Errorf("No web.nodejs element in openshift.json file")
-	}
-
-	configurableProxy := false
-	for key, value := range openshiftConfig["web"].(map[string]interface{}) {
-		if key == "configurableProxy" {
-			configurableProxy = value.(bool)
-			break
-		}
-	}
-
-	for key, value := range openshiftConfig["web"].(map[string]interface{})["webapp"].(map[string]interface{}) {
-		if key == "path" {
-			openshiftConfigPath = value.(string)
-		} else if key == "headers" {
-			for k, v := range value.(map[string]interface{}) {
-				extraStaticHeaders[k] = v.(string)
-			}
-		}
-	}
-
-	for key, value := range openshiftConfig["web"].(map[string]interface{})["nodejs"].(map[string]interface{}) {
-		if key == "disableTryfiles" {
-			spa = value.(bool)
-		} else if key == "main" {
-			hasNodeJSApplication = true
-		} else if key == "overrides" {
-			for k, v := range value.(map[string]interface{}) {
-				openshiftConfigNodeJSOverrides[k] = v.(string)
-			}
-		}
-	}
+func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.TemplateInput, error) {
 
 	path := "/"
-	if len(strings.TrimPrefix(openshiftConfigPath, "/")) > 0 {
-		path = "/" + strings.TrimPrefix(openshiftConfigPath, "/")
+	if len(strings.TrimPrefix(openshiftConfig.Web.WebApp.Path, "/")) > 0 {
+		path = "/" + strings.TrimPrefix(openshiftConfig.Web.WebApp.Path, "/")
 	}
 
 	if !strings.HasSuffix(path, "/") {
 		path = path + "/"
 	}
 
-	err := whitelistOverrides(openshiftConfigNodeJSOverrides)
+	err := whitelistOverrides(openshiftConfig.Web.Nodejs.Overrides)
 	if err != nil {
 		return nil, err
 	}
@@ -169,11 +126,11 @@ func mapDataDescToTemplateInput(openshiftConfig map[string]interface{}) (*execut
 	env["PROXY_PASS_PORT"] = "9090"
 
 	return &executor.TemplateInput{
-		HasNodeJSApplication: hasNodeJSApplication,
-		NginxOverrides:       openshiftConfigNodeJSOverrides,
-		ConfigurableProxy:    configurableProxy,
-		ExtraStaticHeaders:   extraStaticHeaders,
-		SPA:                  spa,
+		HasNodeJSApplication: openshiftConfig.Web.Nodejs.Main != "",
+		NginxOverrides:       openshiftConfig.Web.Nodejs.Overrides,
+		ConfigurableProxy:    openshiftConfig.Web.ConfigurableProxy,
+		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
+		SPA:                  openshiftConfig.Web.WebApp.DisableTryfiles,
 		Path:                 path,
 		Env:                  env,
 	}, nil

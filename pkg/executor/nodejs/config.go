@@ -5,34 +5,42 @@ import (
 	"io"
 )
 
-//Type :
-type Type struct {
-	Type    string `json:"Type"`
-	Version string `json:"Version"`
+//Docker :
+type Docker struct {
+	Maintainer string            `json:"maintainer"`
+	Labels     map[string]string `json:"labels"`
 }
 
-//DescriptorData :
-type DescriptorData struct {
-	HasNodeJSApplication bool              `json:"HasNodeJSApplication"`
-	AppVersion           string            `json:"AppVersion"`
-	WebappPath           string            `json:"WebappPath"`
-	Path                 string            `json:"Path"`
-	NodeJSOverrides      map[string]string `json:"NodeJSOverrides"`
-	Static               string            `json:"Static"`
-	ExtraHeaders         map[string]string `json:"ExtraHeaders"`
-	SPA                  bool              `json:"SPA"`
-	ConfigurableProxy    bool              `json:"ConfigurableProxy"`
+//Web :
+type Web struct {
+	ConfigurableProxy bool   `json:"configurableProxy"`
+	Nodejs            Nodejs `json:"nodejs"`
+	WebApp            WebApp `json:"webapp"`
 }
 
-//Descriptor :
-type Descriptor struct {
-	Type
-	Data DescriptorData
+//Nodejs :
+type Nodejs struct {
+	Main      string            `json:"main"`
+	Overrides map[string]string `json:"overrides"`
 }
 
-//UnmarshallDescriptor :
-func UnmarshallDescriptor(buffer io.Reader) (Descriptor, error) {
-	var data Descriptor
+//WebApp :
+type WebApp struct {
+	Content         string            `json:"content"`
+	Path            string            `json:"path"`
+	DisableTryfiles bool              `json:"disableTryfiles"`
+	Headers         map[string]string `json:"headers"`
+}
+
+//OpenshiftConfig :
+type OpenshiftConfig struct {
+	Docker Docker `json:"docker"`
+	Web    Web    `json:"web"`
+}
+
+//UnmarshallOpenshiftConfig :
+func UnmarshallOpenshiftConfig(buffer io.Reader) (OpenshiftConfig, error) {
+	var data OpenshiftConfig
 	err := json.NewDecoder(buffer).Decode(&data)
 	return data, err
 }

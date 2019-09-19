@@ -126,22 +126,35 @@ You must include either the radishDescriptorPath or the radishDescriptor.
 
 1. nginxTemplatePath - optional - Path to the nginx template
 
-2. radishDescriptorPath - Path to the descriptor file. The file is a JSON document which holds the configuration values for the final nginx.conf file.
-	Descriptor file example:
+2. openshiftConfigPath - Path to the openshift.json file in the container. The file content is used to extract data for the nginx.conf file.
+	Openshift.json file example:
 
 	{
-	  "Type": "NodeJSDescriptor",
-	  "Version": "1",
-	  "Data": {
-	    "AppVersion": "1.0",
-	    "WebappPath": "/web",
-	    "Path": "/",    
-	    "NodeJSOverrides": {"client_max_body_size":"10m"},
-	    "Static": "Dummy",      
-	    "SPA": false,
-	    "ConfigurableProxy": true
+		"docker": {
+		  "maintainer": "Aurora OpenShift Utvikling <utvpaas@skatteetaten.no>",
+		  "labels": {
+			"io.k8s.description": "Demo application with React on Openshift.",
+			"io.openshift.tags": "openshift,react,nodejs"
+		  }
+		},
+		"web": {
+			"configurableProxy": false,
+			"nodejs": {
+				"main": "api/server.js",
+				"overrides": {
+					"client_max_body_size": "10m"
+				}
+			},
+			"webapp": {
+			   "content": "build",
+			   "path": "/web",
+			   "disableTryfiles": false,
+			   "headers": {
+				  "SomeHeader": "SomeValue"
+				}
+			}
+		}
 	  }
-	}
 
 3. nginxPath - This command will generate an nginx configuration file. The nginxPath is the location (including file name) where the file is saved. 
 
@@ -152,9 +165,9 @@ You must include either the radishDescriptorPath or the radishDescriptor.
 			nginxTemplatePath = cmd.Flag("nginxTemplatePath").Value.String()
 		}
 
-		radishDescriptorPath := ""
-		if cmd.Flag("radishDescriptorPath") != nil {
-			radishDescriptorPath = cmd.Flag("radishDescriptorPath").Value.String()
+		openshiftConfigPath := ""
+		if cmd.Flag("openshiftConfigPath") != nil {
+			openshiftConfigPath = cmd.Flag("openshiftConfigPath").Value.String()
 		}
 
 		nginxPath := ""
@@ -162,7 +175,7 @@ You must include either the radishDescriptorPath or the radishDescriptor.
 			nginxPath = cmd.Flag("nginxPath").Value.String()
 		}
 
-		err := radish.GenerateNginxConfiguration(nginxTemplatePath, radishDescriptorPath, nginxPath)
+		err := radish.GenerateNginxConfiguration(nginxTemplatePath, openshiftConfigPath, nginxPath)
 		if err != nil {
 			logrus.Fatalf("Nginx config generation failed: %s", err)
 			os.Exit(1)

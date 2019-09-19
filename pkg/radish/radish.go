@@ -63,6 +63,6 @@ func locateRadishDescriptor(args []string) (string, error) {
 }
 
 //GenerateNginxConfiguration :
-func GenerateNginxConfiguration(nginxTemplatePath string, radishDescriptorPath string, nginxPath string) error {
-	return nodejs.GenerateNginxConfiguration(nginxTemplatePath, radishDescriptorPath, nginxPath)
+func GenerateNginxConfiguration(nginxTemplatePath string, openshiftConfigPath string, nginxPath string) error {
+	return nodejs.GenerateNginxConfiguration(nginxTemplatePath, openshiftConfigPath, nginxPath)
 }
