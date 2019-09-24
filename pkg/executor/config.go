@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/skatteetaten/radish/pkg/util"
@@ -90,30 +91,55 @@ func createClasspath(basedir string, patterns []string) ([]string, error) {
 	cp := make([]string, 0, 10)
 	for _, pattern := range patterns {
 		p := path.Join(basedir, pattern)
-		fi, err := os.Stat(p)
-		if os.IsNotExist(err) {
-			logrus.Debugf("Trying to build classpath from %s but it does not exist.", p)
-			continue
-		}
-		if err != nil {
-			logrus.Warnf("Trying to build classpath from %s but it was an error: %s", p, err)
-			continue
-		}
-		if fi.IsDir() {
-			files, err := ioutil.ReadDir(p)
+		if strings.HasSuffix(p, "/**") {
+			wcp, err := walkClasspath(strings.TrimSuffix(p, "/**"))
 			if err != nil {
-				logrus.Warnf("Can not list content of directory %s", p)
+				logrus.Warnf("Can not walk directory %s", p)
+				continue
 			}
-			for _, file := range files {
-				if file.Mode().IsRegular() {
-					cp = append(cp, path.Join(p, file.Name()))
+			cp = append(cp, wcp...)
+		} else {
+			fi, err := os.Stat(p)
+			if os.IsNotExist(err) {
+				logrus.Debugf("Trying to build classpath from %s but it does not exist.", p)
+				continue
+			}
+			if err != nil {
+				logrus.Warnf("Trying to build classpath from %s but it was an error: %s", p, err)
+				continue
+			}
+			if fi.IsDir() {
+				files, err := ioutil.ReadDir(p)
+				if err != nil {
+					logrus.Warnf("Can not list content of directory %s", p)
 				}
+				for _, file := range files {
+					if file.Mode().IsRegular() {
+						cp = append(cp, path.Join(p, file.Name()))
+					}
+				}
+			} else if fi.Mode().IsRegular() {
+				cp = append(cp, p)
 			}
-		} else if fi.Mode().IsRegular() {
-			cp = append(cp, p)
 		}
 	}
 	return cp, nil
+}
+
+func walkClasspath(path string) ([]string, error) {
+	var jarfiles []string
+
+	err := filepath.Walk(path,
+		func(subpath string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && strings.HasSuffix(info.Name(), ".jar") {
+				jarfiles = append(jarfiles, subpath)
+			}
+			return nil
+		})
+	return jarfiles, err
 }
 
 func unmarshallDescriptor(buffer io.Reader) (JavaDescriptor, error) {
