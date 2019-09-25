@@ -13,4 +13,9 @@ type Executor interface {
 	Handles exit code and rewrites exit code
 	*/
 	HandleExit(exitCode int, pid int) int
+
+	/**
+	Build classpath based on radish descriptor
+	*/
+	BuildClasspath(string) (string, error)
 }

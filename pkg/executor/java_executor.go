@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 )
 
@@ -44,6 +45,22 @@ func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, er
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd, nil
+}
+
+func (m *generatedJavaExecutor) BuildClasspath(radishDescriptor string) (string, error) {
+	dat, err := ioutil.ReadFile(radishDescriptor)
+	if err != nil {
+		return "", err
+	}
+	desc, err := unmarshallDescriptor(bytes.NewBuffer(dat))
+	if err != nil {
+		return "", err
+	}
+	jars, err := createClasspath(desc.Data.Basedir, desc.Data.PathsToClassLibraries)
+	if err != nil {
+		return "", err
+	}
+	return strings.Join(jars, ":"), nil
 }
 
 func resolveArgumentModificators(env func(string) string) []ArgumentModificator {

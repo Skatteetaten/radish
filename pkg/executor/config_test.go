@@ -30,7 +30,20 @@ func TestBuildArgLineFromDescriptor(t *testing.T) {
 	args, err := buildArgline(desc, envFunc, Java8ArgumentsModificators, limits)
 	assert.NoError(t, err)
 	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar")
-	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar")
+}
+
+func TestBuildArgLineFromDescriptorSubpath(t *testing.T) {
+	dat, err := ioutil.ReadFile("testdata/testconfig-subpath.json")
+	assert.NoError(t, err)
+	desc, err := unmarshallDescriptor(bytes.NewBuffer(dat))
+	limits := util.CGroupLimits{
+		MaxCoresEstimated:  2,
+		MemoryLimitInBytes: 2 * 1024 * 1024 * 1024,
+	}
+	assert.NoError(t, err)
+	args, err := buildArgline(desc, envFunc, Java8ArgumentsModificators, limits)
+	assert.NoError(t, err)
+	assert.Contains(t, args, "testdata/lib/lib1.jar:testdata/lib/lib2.jar:testdata/lib/lib2/lib4.jar:testdata/lib/lib3/lib4/lib6.jar:testdata/lib/lib3/lib5/lib7.jar:testdata/lib/lib3/lib5/lib8.jar:testdata/lib/lib3/lib5.jar")
 }
 
 func TestExpanstionOfVariablesAgainstEnv(t *testing.T) {
