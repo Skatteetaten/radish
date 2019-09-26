@@ -122,8 +122,6 @@ var GenerateNginxConfiguration = &cobra.Command{
 
 Takes a number of flags:
 
-You must include either the radishDescriptorPath or the radishDescriptor.
-
 1. nginxTemplatePath - optional - Path to the nginx template
 
 2. openshiftConfigPath - Path to the openshift.json file in the container. The file content is used to extract data for the nginx.conf file.

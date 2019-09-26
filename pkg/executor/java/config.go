@@ -16,32 +16,23 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Type :
-type Type struct {
-	Type    string `json:"Type"`
-	Version string `json:"Version"`
+type descriptorData struct {
+	Basedir               string
+	PathsToClassLibraries []string
+	MainClass             string
+	ApplicationArgs       string
+	JavaOptions           string
 }
 
-//DescriptorData :
-type DescriptorData struct {
-	Basedir               string   `json:"Basedir"`
-	PathsToClassLibraries []string `json:"PathsToClassLibraries"`
-	MainClass             string   `json:"MainClass"`
-	ApplicationArgs       string   `json:"ApplicationArgs"`
-	JavaOptions           string   `json:"JavaOptions"`
+type descriptor struct {
+	Type string
+	Data descriptorData
 }
 
-//Descriptor :
-type Descriptor struct {
-	Type
-	Data DescriptorData
-}
-
-//BuildArgline :
-func BuildArgline(descriptor Descriptor, env func(string) (string, bool),
+func buildArgline(desc descriptor, env func(string) (string, bool),
 	argumentModificators []ArgumentModificator, cgl util.CGroupLimits) ([]string, error) {
 	args := make([]string, 0, 10)
-	classpath, err := createClasspath(descriptor.Data.Basedir, descriptor.Data.PathsToClassLibraries)
+	classpath, err := createClasspath(desc.Data.Basedir, desc.Data.PathsToClassLibraries)
 	if err != nil {
 		return nil, err
 	} else if len(classpath) == 0 {
@@ -53,16 +44,16 @@ func BuildArgline(descriptor Descriptor, env func(string) (string, bool),
 		Arguments:    args,
 		Environment:  env,
 		CGroupLimits: cgl,
-		Descriptor:   descriptor,
+		Descriptor:   desc,
 	})
-	args = append(args, descriptor.Data.MainClass)
-	if len(strings.TrimSpace(descriptor.Data.ApplicationArgs)) != 0 {
-		splittedArgs, err := shellquote.Split(descriptor.Data.ApplicationArgs)
+	args = append(args, desc.Data.MainClass)
+	if len(strings.TrimSpace(desc.Data.ApplicationArgs)) != 0 {
+		splittedArgs, err := shellquote.Split(desc.Data.ApplicationArgs)
 		if err == nil {
 			args = append(args, splittedArgs...)
 		} else {
 			logrus.Warnf("Error parsing args: %s", err)
-			args = append(args, descriptor.Data.ApplicationArgs)
+			args = append(args, desc.Data.ApplicationArgs)
 		}
 	}
 
@@ -117,9 +108,8 @@ func createClasspath(basedir string, patterns []string) ([]string, error) {
 	return cp, nil
 }
 
-//UnmarshallDescriptor :
-func UnmarshallDescriptor(buffer io.Reader) (Descriptor, error) {
-	var data Descriptor
+func umarshallDescriptor(buffer io.Reader) (descriptor, error) {
+	var data descriptor
 	err := json.NewDecoder(buffer).Decode(&data)
 	return data, err
 }

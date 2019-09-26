@@ -15,7 +15,7 @@ import (
 type ArgumentsContext struct {
 	Arguments    []string
 	Environment  func(string) (string, bool)
-	Descriptor   Descriptor
+	Descriptor   descriptor
 	CGroupLimits util.CGroupLimits
 }
 

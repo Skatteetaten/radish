@@ -31,12 +31,12 @@ func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, er
 	if err != nil {
 		return nil, err
 	}
-	desc, err := UnmarshallDescriptor(bytes.NewBuffer(dat))
+	desc, err := umarshallDescriptor(bytes.NewBuffer(dat))
 	if err != nil {
 		return nil, err
 	}
 	argumentModificators := resolveArgumentModificators(os.Getenv)
-	args, err := BuildArgline(desc, os.LookupEnv, argumentModificators, util.ReadCGroupLimits())
+	args, err := buildArgline(desc, os.LookupEnv, argumentModificators, util.ReadCGroupLimits())
 	if err != nil {
 		return nil, err
 	}
