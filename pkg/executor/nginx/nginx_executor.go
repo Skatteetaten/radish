@@ -128,7 +128,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		proxyPassHost = "localhost"
 	}
 
-	proxyPassPort := os.Getenv("PROXY_PASS_HOST")
+	proxyPassPort := os.Getenv("PROXY_PASS_PORT")
 	if proxyPassPort == "" {
 		proxyPassPort = "9090"
 	}
