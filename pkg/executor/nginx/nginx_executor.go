@@ -1,4 +1,4 @@
-package nodejs
+package nginx
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -122,8 +123,18 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 	}
 
 	env := make(map[string]string)
-	env["PROXY_PASS_HOST"] = "localhost"
-	env["PROXY_PASS_PORT"] = "9090"
+	proxyPassHost := os.Getenv("PROXY_PASS_HOST")
+	if proxyPassHost == "" {
+		proxyPassHost = "localhost"
+	}
+
+	proxyPassPort := os.Getenv("PROXY_PASS_HOST")
+	if proxyPassPort == "" {
+		proxyPassPort = "9090"
+	}
+
+	env["PROXY_PASS_HOST"] = proxyPassHost
+	env["PROXY_PASS_PORT"] = proxyPassPort
 
 	return &executor.TemplateInput{
 		HasNodeJSApplication: openshiftConfig.Web.Nodejs.Main != "",

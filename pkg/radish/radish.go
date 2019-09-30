@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/executor/java"
-	"github.com/skatteetaten/radish/pkg/executor/nodejs"
+	"github.com/skatteetaten/radish/pkg/executor/nginx"
 	"github.com/skatteetaten/radish/pkg/reaper"
 	"github.com/skatteetaten/radish/pkg/signaler"
 	"os"
@@ -64,5 +64,5 @@ func locateRadishDescriptor(args []string) (string, error) {
 
 //GenerateNginxConfiguration :
 func GenerateNginxConfiguration(nginxTemplatePath string, openshiftConfigPath string, nginxPath string) error {
-	return nodejs.GenerateNginxConfiguration(nginxTemplatePath, openshiftConfigPath, nginxPath)
+	return nginx.GenerateNginxConfiguration(nginxTemplatePath, openshiftConfigPath, nginxPath)
 }

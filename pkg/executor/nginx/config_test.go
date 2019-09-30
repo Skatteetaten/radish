@@ -1,4 +1,4 @@
-package nodejs
+package nginx
 
 import ()
 
