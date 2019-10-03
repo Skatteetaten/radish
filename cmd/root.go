@@ -25,7 +25,6 @@ var podNamespace string
 var appName string
 var hostName string
 
-var nginxTemplatePath string
 var openshiftConfigPath string
 var nginxPath string
 
@@ -43,7 +42,6 @@ func init() {
 	rootCmd.AddCommand(radish.RunJava)
 
 	rootCmd.AddCommand(radish.GenerateNginxConfiguration)
-	radish.GenerateNginxConfiguration.Flags().StringVarP(&nginxTemplatePath, "nginxTemplatePath", "", "", "Path to nginx template")
 	radish.GenerateNginxConfiguration.Flags().StringVarP(&openshiftConfigPath, "openshiftConfigPath", "", "", "path to the openshift.json file")
 	radish.GenerateNginxConfiguration.Flags().StringVarP(&nginxPath, "nginxPath", "", "", "The nginxPath is the location (including file name) where the file is saved.")
 

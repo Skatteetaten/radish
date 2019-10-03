@@ -122,9 +122,7 @@ var GenerateNginxConfiguration = &cobra.Command{
 
 Takes a number of flags:
 
-1. nginxTemplatePath - optional - Path to the nginx template
-
-2. openshiftConfigPath - Path to the openshift.json file in the container. The file content is used to extract data for the nginx.conf file.
+1. openshiftConfigPath - Path to the openshift.json file in the container. The file content is used to extract data for the nginx.conf file.
 	Openshift.json file example:
 
 	{
@@ -154,15 +152,10 @@ Takes a number of flags:
 		}
 	  }
 
-3. nginxPath - This command will generate an nginx configuration file. The nginxPath is the location (including file name) where the file is saved. 
+2. nginxPath - This command will generate an nginx configuration file. The nginxPath is the location (including file name) where the file is saved. 
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		nginxTemplatePath := ""
-		if cmd.Flag("nginxTemplatePath") != nil {
-			nginxTemplatePath = cmd.Flag("nginxTemplatePath").Value.String()
-		}
-
 		openshiftConfigPath := ""
 		if cmd.Flag("openshiftConfigPath") != nil {
 			openshiftConfigPath = cmd.Flag("openshiftConfigPath").Value.String()
@@ -173,7 +166,7 @@ Takes a number of flags:
 			nginxPath = cmd.Flag("nginxPath").Value.String()
 		}
 
-		err := radish.GenerateNginxConfiguration(nginxTemplatePath, openshiftConfigPath, nginxPath)
+		err := radish.GenerateNginxConfiguration(openshiftConfigPath, nginxPath)
 		if err != nil {
 			logrus.Fatalf("Nginx config generation failed: %s", err)
 			os.Exit(1)

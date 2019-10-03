@@ -44,7 +44,7 @@ http {
        listen 8080;
 
        location /api {
-          {{if or .HasNodeJSApplication .ConfigurableProxy}}proxy_pass http://${PROXY_PASS_HOST}:${PROXY_PASS_PORT};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
+          {{if or .HasNodeJSApplication .ConfigurableProxy}}proxy_pass http://{{.Env.PROXY_PASS_HOST}}:{{.Env.PROXY_PASS_PORT}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
           {{$key}} {{$value}};{{end}}
        }
 {{if .SPA}}
@@ -60,22 +60,9 @@ http {
 `
 
 //GenerateNginxConfiguration :
-func GenerateNginxConfiguration(nginxTemplatePath string, openshiftConfigPath string, nginxPath string) error {
+func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
 	var openshiftConfig OpenshiftConfig
 	var template string = nginxConfigTemplate
-
-	if nginxTemplatePath != "" {
-		templatePathDat, err := ioutil.ReadFile(nginxTemplatePath)
-		if err != nil {
-			return err
-		}
-
-		if templatePathDat != nil {
-			template = string(templatePathDat[:])
-		} else {
-			fmt.Println("No template added, using default")
-		}
-	}
 
 	if openshiftConfigPath != "" {
 		data, err := ioutil.ReadFile(openshiftConfigPath)
