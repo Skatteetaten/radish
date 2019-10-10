@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/skatteetaten/radish/pkg/executor"
+	"github.com/skatteetaten/radish/pkg/executor/java"
+	"github.com/skatteetaten/radish/pkg/executor/nginx"
 	"github.com/skatteetaten/radish/pkg/reaper"
 	"github.com/skatteetaten/radish/pkg/signaler"
 	"os"
@@ -15,7 +16,7 @@ import (
 
 //RunRadish :
 func RunRadish(args []string) {
-	e := executor.NewJavaExecutor()
+	e := java.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
 	if err != nil {
 		logrus.Fatalf("Unable to load descriptor %s", err)
@@ -42,7 +43,7 @@ func RunRadish(args []string) {
 
 //PrintRadishCP :
 func PrintRadishCP(args []string) {
-	e := executor.NewJavaExecutor()
+	e := java.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
 	if err != nil {
 		logrus.Fatalf("Unable to load descriptor %s", err)
@@ -74,4 +75,9 @@ func locateRadishDescriptor(args []string) (string, error) {
 		return "/radish.json", nil
 	}
 	return "", errors.New("No radish descriptor found")
+}
+
+//GenerateNginxConfiguration :
+func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
+	return nginx.GenerateNginxConfiguration(openshiftConfigPath, nginxPath)
 }

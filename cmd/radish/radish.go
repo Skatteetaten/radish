@@ -114,6 +114,66 @@ In other words, if the flag is not set, then the environment variable must exist
 	},
 }
 
+//GenerateNginxConfiguration : Use to generate Nginx configuration files.
+var GenerateNginxConfiguration = &cobra.Command{
+	Use:   "generateNginxConfiguration",
+	Short: "Use to generate Nginx configuration files based on a Radish descriptor",
+	Long: `For generating Nginx configuration files. 
+
+Takes a number of flags:
+
+1. openshiftConfigPath - Path to the openshift.json file in the container. The file content is used to extract data for the nginx.conf file.
+	Openshift.json file example:
+
+	{
+		"docker": {
+		  "maintainer": "Aurora OpenShift Utvikling <utvpaas@skatteetaten.no>",
+		  "labels": {
+			"io.k8s.description": "Demo application with React on Openshift.",
+			"io.openshift.tags": "openshift,react,nodejs"
+		  }
+		},
+		"web": {
+			"configurableProxy": false,
+			"nodejs": {
+				"main": "api/server.js",
+				"overrides": {
+					"client_max_body_size": "10m"
+				}
+			},
+			"webapp": {
+			   "content": "build",
+			   "path": "/web",
+			   "disableTryfiles": false,
+			   "headers": {
+				  "SomeHeader": "SomeValue"
+				}
+			}
+		}
+	  }
+
+2. nginxPath - This command will generate an nginx configuration file. The nginxPath is the location (including file name) where the file is saved. 
+
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		openshiftConfigPath := ""
+		if cmd.Flag("openshiftConfigPath") != nil {
+			openshiftConfigPath = cmd.Flag("openshiftConfigPath").Value.String()
+		}
+
+		nginxPath := ""
+		if cmd.Flag("nginxPath") != nil {
+			nginxPath = cmd.Flag("nginxPath").Value.String()
+		}
+
+		err := radish.GenerateNginxConfiguration(openshiftConfigPath, nginxPath)
+		if err != nil {
+			logrus.Fatalf("Nginx config generation failed: %s", err)
+			os.Exit(1)
+		}
+	},
+}
+
 //RunJava :
 var RunJava = &cobra.Command{
 	Use:   "runJava",

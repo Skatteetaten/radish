@@ -1,4 +1,4 @@
-package executor
+package java
 
 import (
 	"github.com/skatteetaten/radish/pkg/util"
@@ -229,7 +229,7 @@ func TestExitOnOom(t *testing.T) {
 }
 
 func createTestContext(env map[string]string) ArgumentsContext {
-	desc := JavaDescriptor{}
+	desc := descriptor{}
 	limits := util.CGroupLimits{
 		MemoryLimitInBytes: 1024 * 1024 * 1024 * 8,
 		MaxCoresEstimated:  4,

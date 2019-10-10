@@ -1,4 +1,4 @@
-package executor
+package java
 
 import (
 	"github.com/stretchr/testify/assert"

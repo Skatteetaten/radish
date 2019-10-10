@@ -1,4 +1,4 @@
-package executor
+package java
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 type ArgumentsContext struct {
 	Arguments    []string
 	Environment  func(string) (string, bool)
-	Descriptor   JavaDescriptor
+	Descriptor   descriptor
 	CGroupLimits util.CGroupLimits
 }
 

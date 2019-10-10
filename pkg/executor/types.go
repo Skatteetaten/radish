@@ -19,3 +19,16 @@ type Executor interface {
 	*/
 	BuildClasspath(string) (string, error)
 }
+
+//TemplateInput :
+type TemplateInput struct {
+	Baseimage            string
+	HasNodeJSApplication bool
+	NginxOverrides       map[string]string
+	ConfigurableProxy    bool
+	Static               string
+	SPA                  bool
+	ExtraStaticHeaders   map[string]string
+	Path                 string
+	Env                  map[string]string
+}

@@ -25,6 +25,9 @@ var podNamespace string
 var appName string
 var hostName string
 
+var openshiftConfigPath string
+var nginxPath string
+
 //Execute :
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
@@ -38,6 +41,10 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(radish.RunJava)
 	rootCmd.AddCommand(radish.PrintClasspath)
+
+	rootCmd.AddCommand(radish.GenerateNginxConfiguration)
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&openshiftConfigPath, "openshiftConfigPath", "", "", "path to the openshift.json file")
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&nginxPath, "nginxPath", "", "", "The nginxPath is the location (including file name) where the file is saved.")
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&templateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")

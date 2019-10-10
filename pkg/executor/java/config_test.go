@@ -1,4 +1,4 @@
-package executor
+package java
 
 import (
 	"bytes"
@@ -47,8 +47,8 @@ func TestBuildArgLineFromDescriptorSubpath(t *testing.T) {
 }
 
 func TestExpanstionOfVariablesAgainstEnv(t *testing.T) {
-	desc := JavaDescriptor{
-		Data: JavaDescriptorData{
+	desc := descriptor{
+		Data: descriptorData{
 			JavaOptions: "-Dtest=${SOME} -Dtest2=${OTHER} \"this should not be splitt\"",
 		},
 	}
@@ -60,8 +60,8 @@ func TestExpanstionOfVariablesAgainstEnv(t *testing.T) {
 }
 
 func TestTokenizationOfShellQuotedArgs(t *testing.T) {
-	desc := JavaDescriptor{
-		Data: JavaDescriptorData{
+	desc := descriptor{
+		Data: descriptorData{
 			ApplicationArgs: "arg1 arg2 \"this should not be splitt\"",
 			MainClass:       "Class",
 		},

@@ -2,6 +2,7 @@ vendor
 .go
 bin/amd64
 .idea/
+.vscode/
 
 bin
 TEST-junit.xml

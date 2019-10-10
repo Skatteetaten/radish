@@ -1,9 +1,10 @@
-package executor
+package java
 
 import (
 	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
 	"os"
@@ -20,7 +21,7 @@ type generatedJavaExecutor struct {
 }
 
 //NewJavaExecutor :
-func NewJavaExecutor() Executor {
+func NewJavaExecutor() executor.Executor {
 	return &generatedJavaExecutor{
 		javaExitHandler: javaExitHandler{},
 	}
