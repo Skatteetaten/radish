@@ -184,3 +184,14 @@ var RunJava = &cobra.Command{
 		radish.RunRadish(args)
 	},
 }
+
+//PrintClasspath :
+var PrintClasspath = &cobra.Command{
+	Use:   "printCP",
+	Short: "Prints complete classpath Radish will use with java application",
+	Long:  `Prints complete classpath Radish will use with java application`,
+	Args:  cobra.MaximumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		radish.PrintRadishCP(args)
+	},
+}

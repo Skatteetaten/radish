@@ -40,6 +40,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(radish.RunJava)
+	rootCmd.AddCommand(radish.PrintClasspath)
 
 	rootCmd.AddCommand(radish.GenerateNginxConfiguration)
 	radish.GenerateNginxConfiguration.Flags().StringVarP(&openshiftConfigPath, "openshiftConfigPath", "", "", "path to the openshift.json file")
