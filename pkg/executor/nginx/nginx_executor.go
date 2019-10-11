@@ -62,7 +62,6 @@ http {
 //GenerateNginxConfiguration :
 func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
 	var openshiftConfig OpenshiftConfig
-	var template string = nginxConfigTemplate
 
 	if openshiftConfigPath != "" {
 		data, err := ioutil.ReadFile(openshiftConfigPath)
@@ -78,18 +77,35 @@ func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) er
 		return fmt.Errorf("openshiftConfigPath is missing")
 	}
 
+	fileWriter := util.NewFileWriter(nginxPath)
+
+	err := generateNginxConfiguration(openshiftConfig, fileWriter)
+
+	if err != nil {
+		return errors.Wrap(err, "Error writing nginx configuration")
+	}
+
+	return nil
+}
+
+func generateNginxConfiguration(openshiftConfig OpenshiftConfig, fileWriter util.FileWriter) error {
+
 	input, err := mapDataDescToTemplateInput(openshiftConfig)
 	if err != nil {
 		return fmt.Errorf("Error mapping data to template")
 	}
 
-	writer := util.NewTemplateWriter(input, "nginx.conf", template)
+	writer := util.NewTemplateWriter(input, "nginx.conf", nginxConfigTemplate)
 	if writer == nil {
-		return errors.Wrap(err, "Error creating nginx configuration")
+		return errors.New("Error creating nginx configuration")
 	}
 
-	fileWriter := util.NewFileWriter(nginxPath)
-	fileWriter(writer)
+	err = fileWriter(writer, "nginx.conf")
+
+	if err != nil {
+		return errors.Wrap(err, "Error writing nginx configuration")
+	}
+
 	return nil
 }
 
@@ -128,7 +144,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		NginxOverrides:       openshiftConfig.Web.Nodejs.Overrides,
 		ConfigurableProxy:    openshiftConfig.Web.ConfigurableProxy,
 		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
-		SPA:                  openshiftConfig.Web.WebApp.DisableTryfiles,
+		SPA:                  !openshiftConfig.Web.WebApp.DisableTryfiles,
 		Path:                 path,
 		Env:                  env,
 	}, nil
