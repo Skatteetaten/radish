@@ -211,7 +211,7 @@ const expectedNginxConfigWithOverrides = `
 `
 
 func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
-	openshiftJson := OpenshiftConfig{
+	openshiftJSON := OpenshiftConfig{
 		Docker: Docker{
 			Maintainer: "Tullebukk",
 		},
@@ -222,13 +222,13 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 		},
 	}
 	var actual string
-	err := generateNginxConfiguration(openshiftJson, testFileWriter(&actual))
+	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 	assert.NoError(t, err)
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfFilePartial, actual)
 }
 
 func TestGeneratedFilesWhenNodeJSIsDisabled(t *testing.T) {
-	openshiftJson := OpenshiftConfig{
+	openshiftJSON := OpenshiftConfig{
 		Docker: Docker{
 			Maintainer: "Tullebukk",
 		},
@@ -240,14 +240,14 @@ func TestGeneratedFilesWhenNodeJSIsDisabled(t *testing.T) {
 	}
 
 	var data string
-	err := generateNginxConfiguration(openshiftJson, testFileWriter(&data))
+	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&data))
 
 	assert.NoError(t, err)
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileNoNodejsPartial, data)
 }
 
 func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
-	openshiftJson := OpenshiftConfig{
+	openshiftJSON := OpenshiftConfig{
 		Docker: Docker{
 			Maintainer: "tullebukk",
 		},
@@ -267,21 +267,21 @@ func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
 	}
 
 	var actual string
-	err := generateNginxConfiguration(openshiftJson, testFileWriter(&actual))
+	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileSpaAndCustomHeaders, actual)
 
-	openshiftJson.Web.WebApp.DisableTryfiles = true
+	openshiftJSON.Web.WebApp.DisableTryfiles = true
 
-	err = generateNginxConfiguration(openshiftJson, testFileWriter(&actual))
+	err = generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileNoSpaAndCustomHeaders, actual)
 }
 
 func TestThatOverrideInNginxIsSet(t *testing.T) {
-	openshiftJson := OpenshiftConfig{
+	openshiftJSON := OpenshiftConfig{
 		Docker: Docker{
 			Maintainer: "Tullebukk",
 		},
@@ -296,7 +296,7 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 	}
 
 	var actual string
-	err := generateNginxConfiguration(openshiftJson, testFileWriter(&actual))
+	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfigWithOverrides, actual)
