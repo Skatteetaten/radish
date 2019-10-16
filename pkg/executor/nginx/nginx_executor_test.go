@@ -99,7 +99,6 @@ http {
 }
 `
 
-
 const nginxConfPrefix = `
 worker_processes  1;
 error_log stderr;
@@ -211,18 +210,16 @@ const expectedNginxConfigWithOverrides = `
 }
 `
 
-
 func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 	openshiftJson := OpenshiftConfig{
 		Docker: Docker{
 			Maintainer: "Tullebukk",
 		},
 		Web: Web{
-			Nodejs:Nodejs{
+			Nodejs: Nodejs{
 				Main: "test.json",
 			},
 		},
-
 	}
 	var actual string
 	err := generateNginxConfiguration(openshiftJson, testFileWriter(&actual))
@@ -236,7 +233,7 @@ func TestGeneratedFilesWhenNodeJSIsDisabled(t *testing.T) {
 			Maintainer: "Tullebukk",
 		},
 		Web: Web{
-			WebApp:WebApp{
+			WebApp: WebApp{
 				Path: "",
 			},
 		},
@@ -254,13 +251,13 @@ func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
 		Docker: Docker{
 			Maintainer: "tullebukk",
 		},
-		Web:Web{
-			Nodejs:Nodejs{
+		Web: Web{
+			Nodejs: Nodejs{
 				Main: "test.json",
 			},
-			WebApp:WebApp{
-				DisableTryfiles:false,
-				Headers:map[string]string{
+			WebApp: WebApp{
+				DisableTryfiles: false,
+				Headers: map[string]string{
 					"X-Test-Header":  "Tulleheader",
 					"X-Test-Header2": "Tulleheader2",
 				},
@@ -274,7 +271,6 @@ func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileSpaAndCustomHeaders, actual)
-
 
 	openshiftJson.Web.WebApp.DisableTryfiles = true
 
@@ -290,9 +286,9 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 			Maintainer: "Tullebukk",
 		},
 		Web: Web{
-			Nodejs:Nodejs{
+			Nodejs: Nodejs{
 				Main: "test.json",
-				Overrides:map[string]string{
+				Overrides: map[string]string{
 					"client_max_body_size": "5m",
 				},
 			},

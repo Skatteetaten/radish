@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
@@ -75,8 +74,7 @@ func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) er
 			return fmt.Errorf("Error mapping openshift json to internal structure")
 		}
 	} else {
-		logrus.Info("OpenshiftConfigPath is missing. Will not generate nginx configuration with radish")
-		return nil
+		return fmt.Errorf("OpenshiftConfigPath is missing. Will not generate nginx configuration with radish")
 	}
 
 	fileWriter := util.NewFileWriter(nginxPath)
