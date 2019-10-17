@@ -44,7 +44,7 @@ http {
        listen 8080;
 
        location /api {
-          {{if or .HasNodeJSApplication .ConfigurableProxy}}proxy_pass http://{{.Env.PROXY_PASS_HOST}}:{{.Env.PROXY_PASS_PORT}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
+          {{if or .HasNodeJSApplication .ConfigurableProxy}}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
           {{$key}} {{$value}};{{end}}
        }
 {{if .SPA}}
@@ -125,7 +125,6 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		return nil, err
 	}
 
-	env := make(map[string]string)
 	proxyPassHost := os.Getenv("PROXY_PASS_HOST")
 	if proxyPassHost == "" {
 		proxyPassHost = "localhost"
@@ -136,9 +135,6 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		proxyPassPort = "9090"
 	}
 
-	env["PROXY_PASS_HOST"] = proxyPassHost
-	env["PROXY_PASS_PORT"] = proxyPassPort
-
 	return &executor.TemplateInput{
 		HasNodeJSApplication: openshiftConfig.Web.Nodejs.Main != "",
 		NginxOverrides:       openshiftConfig.Web.Nodejs.Overrides,
@@ -146,7 +142,8 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
 		SPA:                  !openshiftConfig.Web.WebApp.DisableTryfiles,
 		Path:                 path,
-		Env:                  env,
+		ProxyPassHost:        proxyPassHost,
+		ProxyPassPort:        proxyPassPort,
 	}, nil
 }
 
