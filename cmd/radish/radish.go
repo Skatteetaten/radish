@@ -122,8 +122,8 @@ var GenerateNginxConfiguration = &cobra.Command{
 
 Takes a number of flags:
 
-1. openshiftConfigPath - Path to the openshift.json file in the container. The file content is used to extract data for the nginx.conf file.
-	Openshift.json file example:
+1. radishConfigPath - Path to the openshift.json file in the container. The file content is used to extract data for the nginx.conf file.
+	radish.json file example:
 
 	{
 		"docker": {
@@ -157,8 +157,8 @@ Takes a number of flags:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		openshiftConfigPath := ""
-		if cmd.Flag("openshiftConfigPath") != nil {
-			openshiftConfigPath = cmd.Flag("openshiftConfigPath").Value.String()
+		if cmd.Flag("radishConfigPath") != nil {
+			openshiftConfigPath = cmd.Flag("radishConfigPath").Value.String()
 		}
 
 		nginxPath := ""
