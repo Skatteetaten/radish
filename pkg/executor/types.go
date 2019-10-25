@@ -30,5 +30,6 @@ type TemplateInput struct {
 	SPA                  bool
 	ExtraStaticHeaders   map[string]string
 	Path                 string
-	Env                  map[string]string
+	ProxyPassHost        string
+	ProxyPassPort        string
 }

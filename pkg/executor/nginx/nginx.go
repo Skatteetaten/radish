@@ -44,7 +44,7 @@ http {
        listen 8080;
 
        location /api {
-          {{if or .HasNodeJSApplication .ConfigurableProxy}}proxy_pass http://{{.Env.PROXY_PASS_HOST}}:{{.Env.PROXY_PASS_PORT}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
+          {{if or .HasNodeJSApplication .ConfigurableProxy}}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
           {{$key}} {{$value}};{{end}}
        }
 {{if .SPA}}
@@ -62,7 +62,6 @@ http {
 //GenerateNginxConfiguration :
 func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
 	var openshiftConfig OpenshiftConfig
-	var template string = nginxConfigTemplate
 
 	if openshiftConfigPath != "" {
 		data, err := ioutil.ReadFile(openshiftConfigPath)
@@ -75,21 +74,38 @@ func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) er
 			return fmt.Errorf("Error mapping openshift json to internal structure")
 		}
 	} else {
-		return fmt.Errorf("openshiftConfigPath is missing")
+		return fmt.Errorf("OpenshiftConfigPath is missing. Will not generate nginx configuration with radish")
 	}
+
+	fileWriter := util.NewFileWriter(nginxPath)
+
+	err := generateNginxConfiguration(openshiftConfig, fileWriter)
+
+	if err != nil {
+		return errors.Wrap(err, "Error writing nginx configuration")
+	}
+
+	return nil
+}
+
+func generateNginxConfiguration(openshiftConfig OpenshiftConfig, fileWriter util.FileWriter) error {
 
 	input, err := mapDataDescToTemplateInput(openshiftConfig)
 	if err != nil {
 		return fmt.Errorf("Error mapping data to template")
 	}
 
-	writer := util.NewTemplateWriter(input, "nginx.conf", template)
+	writer := util.NewTemplateWriter(input, "nginx.conf", nginxConfigTemplate)
 	if writer == nil {
-		return errors.Wrap(err, "Error creating nginx configuration")
+		return errors.New("Error creating nginx configuration")
 	}
 
-	fileWriter := util.NewFileWriter(nginxPath)
-	fileWriter(writer)
+	err = fileWriter(writer, "nginx.conf")
+
+	if err != nil {
+		return errors.Wrap(err, "Error writing nginx configuration")
+	}
+
 	return nil
 }
 
@@ -109,7 +125,6 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		return nil, err
 	}
 
-	env := make(map[string]string)
 	proxyPassHost := os.Getenv("PROXY_PASS_HOST")
 	if proxyPassHost == "" {
 		proxyPassHost = "localhost"
@@ -120,17 +135,15 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		proxyPassPort = "9090"
 	}
 
-	env["PROXY_PASS_HOST"] = proxyPassHost
-	env["PROXY_PASS_PORT"] = proxyPassPort
-
 	return &executor.TemplateInput{
 		HasNodeJSApplication: openshiftConfig.Web.Nodejs.Main != "",
 		NginxOverrides:       openshiftConfig.Web.Nodejs.Overrides,
 		ConfigurableProxy:    openshiftConfig.Web.ConfigurableProxy,
 		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
-		SPA:                  openshiftConfig.Web.WebApp.DisableTryfiles,
+		SPA:                  !openshiftConfig.Web.WebApp.DisableTryfiles,
 		Path:                 path,
-		Env:                  env,
+		ProxyPassHost:        proxyPassHost,
+		ProxyPassPort:        proxyPassPort,
 	}, nil
 }
 

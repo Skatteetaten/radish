@@ -43,7 +43,7 @@ func init() {
 	rootCmd.AddCommand(radish.PrintClasspath)
 
 	rootCmd.AddCommand(radish.GenerateNginxConfiguration)
-	radish.GenerateNginxConfiguration.Flags().StringVarP(&openshiftConfigPath, "openshiftConfigPath", "", "", "path to the openshift.json file")
+	radish.GenerateNginxConfiguration.Flags().StringVarP(&openshiftConfigPath, "radishConfigPath", "", "", "path to the radish config file")
 	radish.GenerateNginxConfiguration.Flags().StringVarP(&nginxPath, "nginxPath", "", "", "The nginxPath is the location (including file name) where the file is saved.")
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)

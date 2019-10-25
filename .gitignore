@@ -3,6 +3,7 @@ vendor
 bin/amd64
 .idea/
 .vscode/
+.scannerwork/
 
 bin
 TEST-junit.xml
