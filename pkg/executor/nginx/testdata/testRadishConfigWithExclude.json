@@ -1,0 +1,27 @@
+{
+    "docker": {
+      "maintainer": "Aurora OpenShift Utvikling <utvpaas@skatteetaten.no>",
+      "labels": {
+        "io.k8s.description": "Demo application with React on Openshift.",
+        "io.openshift.tags": "openshift,react,nodejs"
+      }
+    },
+    "web": {
+        "configurableProxy": false,
+        "nodejs": {
+            "main": "api/server.js",
+            "overrides": {
+                "client_max_body_size": "10m"
+            }
+        },
+        "webapp": {
+           "content": "build",
+           "path": "/web",
+           "disableTryfiles": false,
+           "headers": {
+              "SomeHeader": "SomeValue"
+            }
+        },
+        "exclude": ["test/fil1.swf", "test/fil2.png"]
+    }
+  }
