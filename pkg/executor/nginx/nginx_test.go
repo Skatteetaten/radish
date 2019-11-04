@@ -137,13 +137,11 @@ http {
       }
     
 	   location test/fil1.swf {  
-		  access_log off; 
-		  deny all; 
+		  return 404;
 	   }
     
 	   location test/fil2.png {  
-		  access_log off; 
-		  deny all; 
+		  return 404;
 	   }
     
 

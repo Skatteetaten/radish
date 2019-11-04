@@ -49,8 +49,7 @@ http {
       }
     {{range $value := .Exclude}}
 	   location {{$value}} {  
-		  access_log off; 
-		  deny all; 
+		  return 404;
 	   }
     {{end}}
 {{if .SPA}}
