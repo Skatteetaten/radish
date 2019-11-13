@@ -153,6 +153,74 @@ http {
     }
 }
 `
+const nginxConfWithCustomLocations = `
+worker_processes  1;
+error_log stderr;
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /dev/stdout;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  75;
+
+	    gzip off;
+
+
+    index index.html;
+
+    server {
+       listen 8080;
+
+       location /api {
+          proxy_pass http://localhost:9090;
+         client_max_body_size 10m;
+      }
+    
+
+       location /web/ {
+          root /u01/static;
+          try_files $uri /web/index.html;
+          add_header SomeHeader "SomeValue";
+	   }
+	   
+	           location /web/index.html {
+            root /u01/static;
+            gzip on;
+            gzip_min_length 1024;
+            gzip_vary on;
+            add_header Cache-Control "no-cache";
+            add_header X-Frame-Options "DENY";
+            add_header X-XSS-Protection "1";
+        }
+        location /web/index/other.html {
+            root /u01/static;
+            add_header Cache-Control "no-store";
+            add_header X-XSS-Protection "1; mode=block";
+        }
+        location /web/index_other.html {
+            root /u01/static;
+            gzip off;
+            add_header Cache-Control "max-age=60";
+            add_header X-XSS-Protection "0";
+        }
+
+    }
+}
+`
 
 const nginxConfPrefix = `
 worker_processes  1;
@@ -427,7 +495,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *tes
 
 	s := string(data[:])
 	println(s)
-	assert.Equal(t, s, nginxConfigWithExclude)
+	assert.Equal(t, s, nginxConfWithCustomLocations)
 }
 
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {
