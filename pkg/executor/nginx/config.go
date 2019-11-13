@@ -13,9 +13,10 @@ type Docker struct {
 
 //Web :
 type Web struct {
-	ConfigurableProxy bool   `json:"configurableProxy"`
-	Nodejs            Nodejs `json:"nodejs"`
-	WebApp            WebApp `json:"webapp"`
+	ConfigurableProxy bool     `json:"configurableProxy"`
+	Nodejs            Nodejs   `json:"nodejs"`
+	WebApp            WebApp   `json:"webapp"`
+	Exclude           []string `json:"exclude"`
 }
 
 //Nodejs :

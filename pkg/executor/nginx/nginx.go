@@ -45,8 +45,13 @@ http {
 
        location /api {
           {{if or .HasNodeJSApplication .ConfigurableProxy}}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
-          {{$key}} {{$value}};{{end}}
-       }
+         {{$key}} {{$value}};{{end}}
+      }
+    {{range $value := .Exclude}}
+	   location {{$value}} {  
+		  return 404;
+	   }
+    {{end}}
 {{if .SPA}}
        location {{.Path}} {
           root /u01/static;
@@ -125,6 +130,12 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		return nil, err
 	}
 
+	exclude := openshiftConfig.Web.Exclude
+	ignoreExclude := os.Getenv("IGNORE_NGINX_EXCLUDE")
+	if strings.EqualFold("true", ignoreExclude) {
+		exclude = []string{}
+	}
+
 	proxyPassHost := os.Getenv("PROXY_PASS_HOST")
 	if proxyPassHost == "" {
 		proxyPassHost = "localhost"
@@ -142,6 +153,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
 		SPA:                  !openshiftConfig.Web.WebApp.DisableTryfiles,
 		Path:                 path,
+		Exclude:              exclude,
 		ProxyPassHost:        proxyPassHost,
 		ProxyPassPort:        proxyPassPort,
 	}, nil

@@ -32,4 +32,5 @@ type TemplateInput struct {
 	Path                 string
 	ProxyPassHost        string
 	ProxyPassPort        string
+	Exclude              []string
 }
