@@ -418,6 +418,18 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvP
 	os.Unsetenv("IGNORE_NGINX_EXCLUDE")
 }
 
+func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *testing.T) {
+	err := GenerateNginxConfiguration("testdata/testRadishConfigWithCustomLocations.json", "testdata")
+	assert.Equal(t, nil, err)
+
+	data, err := ioutil.ReadFile("testdata/nginx.conf")
+	assert.Equal(t, nil, err)
+
+	s := string(data[:])
+	println(s)
+	assert.Equal(t, s, nginxConfigWithExclude)
+}
+
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {
 	err := GenerateNginxConfiguration("", "testdata")
 	assert.NotEmpty(t, err)

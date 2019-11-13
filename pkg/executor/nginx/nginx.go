@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -36,7 +37,7 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	{{.Gzip}}
 
     index index.html;
 
@@ -59,7 +60,9 @@ http {
        location {{.Path}} {
           root /u01/static;{{end}}{{range $key, $value := .ExtraStaticHeaders}}
           add_header {{$key}} "{{$value}}";{{end}}
-       }
+	   }
+	   
+	   {{.Locations}}
     }
 }
 `
@@ -115,7 +118,7 @@ func generateNginxConfiguration(openshiftConfig OpenshiftConfig, fileWriter util
 }
 
 func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.TemplateInput, error) {
-
+	documentRoot := "/u01/static"
 	path := "/"
 	if len(strings.TrimPrefix(openshiftConfig.Web.WebApp.Path, "/")) > 0 {
 		path = "/" + strings.TrimPrefix(openshiftConfig.Web.WebApp.Path, "/")
@@ -146,6 +149,9 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		proxyPassPort = "9090"
 	}
 
+	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
+	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
+
 	return &executor.TemplateInput{
 		HasNodeJSApplication: openshiftConfig.Web.Nodejs.Main != "",
 		NginxOverrides:       openshiftConfig.Web.Nodejs.Overrides,
@@ -153,7 +159,9 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
 		SPA:                  !openshiftConfig.Web.WebApp.DisableTryfiles,
 		Path:                 path,
+		Gzip:                 nginxGzipForTemplate,
 		Exclude:              exclude,
+		Locations:            nginxLocationForTemplate,
 		ProxyPassHost:        proxyPassHost,
 		ProxyPassPort:        proxyPassPort,
 	}, nil
@@ -196,4 +204,88 @@ func whitelistOverrides(overrides map[string]string) error {
 		}
 	}
 	return nil
+}
+
+func (m nginxLocations) sort() (index []string) {
+	for k := range m {
+		index = append(index, k)
+	}
+	sort.Strings(index)
+	return
+}
+
+func (m headers) sort() (index []string) {
+	for k := range m {
+		index = append(index, k)
+	}
+	sort.Strings(index)
+	return
+}
+
+func nginxLocationsMapToString(m nginxLocations, documentRoot string, path string) string {
+	sumLocations := ""
+	indentN1 := strings.Repeat(" ", 8)
+	indentN2 := strings.Repeat(" ", 12)
+
+	for _, k := range m.sort() {
+		v := m[k]
+		singleLocation := fmt.Sprintf("%slocation %s%s {\n", indentN1, path, k)
+		singleLocation = fmt.Sprintf("%s%sroot %s;\n", singleLocation, indentN2, documentRoot)
+		gZipUse := strings.TrimSpace(v.Gzip.Use)
+		gZipVary := strings.TrimSpace(v.Gzip.Vary)
+		if gZipUse == "on" {
+			singleLocation = fmt.Sprintf("%s%sgzip on;\n", singleLocation, indentN2)
+			if v.Gzip.MinLength > 0 {
+				singleLocation = fmt.Sprintf("%s%sgzip_min_length %d;\n", singleLocation, indentN2, v.Gzip.MinLength)
+			}
+			if gZipVary != "" {
+				singleLocation = fmt.Sprintf("%s%sgzip_vary %s;\n", singleLocation, indentN2, gZipVary)
+			}
+			if v.Gzip.Proxied != "" {
+				singleLocation = fmt.Sprintf("%s%sgzip_proxied %s;\n", singleLocation, indentN2, v.Gzip.Proxied)
+			}
+			if v.Gzip.Types != "" {
+				singleLocation = fmt.Sprintf("%s%sgzip_types %s;\n", singleLocation, indentN2, v.Gzip.Types)
+			}
+			if v.Gzip.Disable != "" {
+				singleLocation = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", singleLocation, indentN2, v.Gzip.Disable)
+			}
+		} else if gZipUse == "off" {
+			singleLocation = fmt.Sprintf("%s%sgzip off;\n", singleLocation, indentN2)
+		}
+
+		for _, k2 := range v.Headers.sort() {
+			singleLocation = fmt.Sprintf("%s%sadd_header %s \"%s\";\n", singleLocation, indentN2, k2, v.Headers[k2])
+		}
+
+		singleLocation = fmt.Sprintf("%s%s}\n", singleLocation, indentN1)
+		sumLocations = sumLocations + singleLocation
+	}
+	return sumLocations
+}
+
+func nginxGzipMapToString(gzip nginxGzip) string {
+	sumGzip := ""
+	indent := strings.Repeat(" ", 4)
+	if gzip.Use == "on" {
+		sumGzip = fmt.Sprintf("%s%sgzip on;\n", sumGzip, indent)
+		if gzip.MinLength > 0 {
+			sumGzip = fmt.Sprintf("%s%sgzip_min_length %d;\n", sumGzip, indent, gzip.MinLength)
+		}
+		if gzip.Vary != "" {
+			sumGzip = fmt.Sprintf("%s%sgzip_vary %s;\n", sumGzip, indent, gzip.Vary)
+		}
+		if gzip.Proxied != "" {
+			sumGzip = fmt.Sprintf("%s%sgzip_proxied %s;\n", sumGzip, indent, gzip.Proxied)
+		}
+		if gzip.Types != "" {
+			sumGzip = fmt.Sprintf("%s%sgzip_types %s;\n", sumGzip, indent, gzip.Types)
+		}
+		if gzip.Disable != "" {
+			sumGzip = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", sumGzip, indent, gzip.Disable)
+		}
+	} else {
+		sumGzip = fmt.Sprintf("%s%sgzip off;\n", sumGzip, indent)
+	}
+	return sumGzip
 }
