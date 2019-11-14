@@ -33,7 +33,8 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	    gzip off;
+
 
     index index.html;
 
@@ -50,7 +51,9 @@ http {
           root /u01/static;
           try_files $uri /web/index.html;
           add_header SomeHeader "SomeValue";
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -79,7 +82,8 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	    gzip off;
+
 
     index index.html;
 
@@ -96,10 +100,13 @@ http {
           root /u01/static;
           try_files $uri /web/index.html;
           add_header SomeHeader "SomeValue";
-       }
+	   }
+	   
+	   
     }
 }
 `
+
 const nginxConfigWithExclude = `
 worker_processes  1;
 error_log stderr;
@@ -124,7 +131,8 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	    gzip off;
+
 
     index index.html;
 
@@ -149,10 +157,13 @@ http {
           root /u01/static;
           try_files $uri /web/index.html;
           add_header SomeHeader "SomeValue";
-       }
+	   }
+	   
+	   
     }
 }
 `
+
 const nginxConfWithCustomLocations = `
 worker_processes  1;
 error_log stderr;
@@ -246,7 +257,8 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	    gzip off;
+
 
     index index.html;
 `
@@ -263,7 +275,9 @@ const expectedNginxConfFileNoNodejsPartial = `
        location / {
           root /u01/static;
           try_files $uri /index.html;
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -279,7 +293,9 @@ const expectedNginxConfFilePartial = `
        location / {
           root /u01/static;
           try_files $uri /index.html;
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -298,7 +314,9 @@ const expectedNginxConfFileSpaAndCustomHeaders = `
           try_files $uri /index.html;
           add_header X-Test-Header "Tulleheader";
           add_header X-Test-Header2 "Tulleheader2";
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -316,7 +334,9 @@ const expectedNginxConfFileNoSpaAndCustomHeaders = `
           root /u01/static;
           add_header X-Test-Header "Tulleheader";
           add_header X-Test-Header2 "Tulleheader2";
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -334,7 +354,9 @@ const expectedNginxConfigWithOverrides = `
        location / {
           root /u01/static;
           try_files $uri /index.html;
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -352,6 +374,7 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 	}
 	var actual string
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
+
 	assert.NoError(t, err)
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfFilePartial, actual)
 }
