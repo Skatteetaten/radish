@@ -206,20 +206,22 @@ func whitelistOverrides(overrides map[string]string) error {
 	return nil
 }
 
-func (m nginxLocations) sort() (index []string) {
+func (m nginxLocations) sort() []string {
+	index := []string{}
 	for k := range m {
 		index = append(index, k)
 	}
 	sort.Strings(index)
-	return
+	return index
 }
 
-func (m headers) sort() (index []string) {
+func (m headers) sort() []string {
+	index := []string{}
 	for k := range m {
 		index = append(index, k)
 	}
 	sort.Strings(index)
-	return
+	return index
 }
 
 func nginxLocationsMapToString(m nginxLocations, documentRoot string, path string) string {
