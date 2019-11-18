@@ -219,6 +219,7 @@ http {
         }
         location /web/index/other.html {
             root /u01/static;
+            gzip off;
             add_header Cache-Control "no-store";
             add_header X-XSS-Protection "1; mode=block";
         }
@@ -517,7 +518,6 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *tes
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	println(s)
 	assert.Equal(t, s, nginxConfWithCustomLocations)
 }
 

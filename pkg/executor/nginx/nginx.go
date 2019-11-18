@@ -229,35 +229,14 @@ func nginxLocationsMapToString(m nginxLocations, documentRoot string, path strin
 	indentN1 := strings.Repeat(" ", 8)
 	indentN2 := strings.Repeat(" ", 12)
 
-	for _, k := range m.sort() {
-		v := m[k]
-		singleLocation := fmt.Sprintf("%slocation %s%s {\n", indentN1, path, k)
+	for _, key := range m.sort() {
+		value := m[key]
+		singleLocation := fmt.Sprintf("%slocation %s%s {\n", indentN1, path, key)
 		singleLocation = fmt.Sprintf("%s%sroot %s;\n", singleLocation, indentN2, documentRoot)
-		gZipUse := strings.TrimSpace(v.Gzip.Use)
-		gZipVary := strings.TrimSpace(v.Gzip.Vary)
-		if gZipUse == "on" {
-			singleLocation = fmt.Sprintf("%s%sgzip on;\n", singleLocation, indentN2)
-			if v.Gzip.MinLength > 0 {
-				singleLocation = fmt.Sprintf("%s%sgzip_min_length %d;\n", singleLocation, indentN2, v.Gzip.MinLength)
-			}
-			if gZipVary != "" {
-				singleLocation = fmt.Sprintf("%s%sgzip_vary %s;\n", singleLocation, indentN2, gZipVary)
-			}
-			if v.Gzip.Proxied != "" {
-				singleLocation = fmt.Sprintf("%s%sgzip_proxied %s;\n", singleLocation, indentN2, v.Gzip.Proxied)
-			}
-			if v.Gzip.Types != "" {
-				singleLocation = fmt.Sprintf("%s%sgzip_types %s;\n", singleLocation, indentN2, v.Gzip.Types)
-			}
-			if v.Gzip.Disable != "" {
-				singleLocation = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", singleLocation, indentN2, v.Gzip.Disable)
-			}
-		} else if gZipUse == "off" {
-			singleLocation = fmt.Sprintf("%s%sgzip off;\n", singleLocation, indentN2)
-		}
+		singleLocation = getGzipConfAsString(value.Gzip, singleLocation, indentN2)
 
-		for _, k2 := range v.Headers.sort() {
-			singleLocation = fmt.Sprintf("%s%sadd_header %s \"%s\";\n", singleLocation, indentN2, k2, v.Headers[k2])
+		for _, k2 := range value.Headers.sort() {
+			singleLocation = fmt.Sprintf("%s%sadd_header %s \"%s\";\n", singleLocation, indentN2, k2, value.Headers[k2])
 		}
 
 		singleLocation = fmt.Sprintf("%s%s}\n", singleLocation, indentN1)
@@ -267,27 +246,30 @@ func nginxLocationsMapToString(m nginxLocations, documentRoot string, path strin
 }
 
 func nginxGzipMapToString(gzip nginxGzip) string {
-	sumGzip := ""
 	indent := strings.Repeat(" ", 4)
-	if gzip.Use == "on" {
-		sumGzip = fmt.Sprintf("%s%sgzip on;\n", sumGzip, indent)
+	return getGzipConfAsString(gzip, "", indent)
+}
+
+func getGzipConfAsString(gzip nginxGzip, location string, indent string) string {
+	if strings.TrimSpace(gzip.Use) == "on" {
+		location = fmt.Sprintf("%s%sgzip on;\n", location, indent)
 		if gzip.MinLength > 0 {
-			sumGzip = fmt.Sprintf("%s%sgzip_min_length %d;\n", sumGzip, indent, gzip.MinLength)
+			location = fmt.Sprintf("%s%sgzip_min_length %d;\n", location, indent, gzip.MinLength)
 		}
 		if gzip.Vary != "" {
-			sumGzip = fmt.Sprintf("%s%sgzip_vary %s;\n", sumGzip, indent, gzip.Vary)
+			location = fmt.Sprintf("%s%sgzip_vary %s;\n", location, indent, strings.TrimSpace(gzip.Vary))
 		}
 		if gzip.Proxied != "" {
-			sumGzip = fmt.Sprintf("%s%sgzip_proxied %s;\n", sumGzip, indent, gzip.Proxied)
+			location = fmt.Sprintf("%s%sgzip_proxied %s;\n", location, indent, gzip.Proxied)
 		}
 		if gzip.Types != "" {
-			sumGzip = fmt.Sprintf("%s%sgzip_types %s;\n", sumGzip, indent, gzip.Types)
+			location = fmt.Sprintf("%s%sgzip_types %s;\n", location, indent, gzip.Types)
 		}
 		if gzip.Disable != "" {
-			sumGzip = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", sumGzip, indent, gzip.Disable)
+			location = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", location, indent, gzip.Disable)
 		}
 	} else {
-		sumGzip = fmt.Sprintf("%s%sgzip off;\n", sumGzip, indent)
+		location = fmt.Sprintf("%s%sgzip off;\n", location, indent)
 	}
-	return sumGzip
+	return location
 }
