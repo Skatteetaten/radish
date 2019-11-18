@@ -233,7 +233,11 @@ func nginxLocationsMapToString(m nginxLocations, documentRoot string, path strin
 		value := m[key]
 		singleLocation := fmt.Sprintf("%slocation %s%s {\n", indentN1, path, key)
 		singleLocation = fmt.Sprintf("%s%sroot %s;\n", singleLocation, indentN2, documentRoot)
-		singleLocation = getGzipConfAsString(value.Gzip, singleLocation, indentN2)
+
+		gZipUse := strings.TrimSpace(value.Gzip.Use)
+		if gZipUse == "on" || gZipUse == "off" {
+			singleLocation = getGzipConfAsString(value.Gzip, singleLocation, indentN2)
+		}
 
 		for _, k2 := range value.Headers.sort() {
 			singleLocation = fmt.Sprintf("%s%sadd_header %s \"%s\";\n", singleLocation, indentN2, k2, value.Headers[k2])
