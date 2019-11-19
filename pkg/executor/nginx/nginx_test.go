@@ -33,7 +33,8 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	    gzip off;
+
 
     index index.html;
 
@@ -50,7 +51,9 @@ http {
           root /u01/static;
           try_files $uri /web/index.html;
           add_header SomeHeader "SomeValue";
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -79,7 +82,8 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	    gzip off;
+
 
     index index.html;
 
@@ -96,10 +100,13 @@ http {
           root /u01/static;
           try_files $uri /web/index.html;
           add_header SomeHeader "SomeValue";
-       }
+	   }
+	   
+	   
     }
 }
 `
+
 const nginxConfigWithExclude = `
 worker_processes  1;
 error_log stderr;
@@ -124,7 +131,8 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	    gzip off;
+
 
     index index.html;
 
@@ -149,7 +157,78 @@ http {
           root /u01/static;
           try_files $uri /web/index.html;
           add_header SomeHeader "SomeValue";
-       }
+	   }
+	   
+	   
+    }
+}
+`
+
+const nginxConfWithCustomLocations = `
+worker_processes  1;
+error_log stderr;
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /dev/stdout;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  75;
+
+	    gzip off;
+
+
+    index index.html;
+
+    server {
+       listen 8080;
+
+       location /api {
+          proxy_pass http://localhost:9090;
+         client_max_body_size 10m;
+      }
+    
+
+       location /web/ {
+          root /u01/static;
+          try_files $uri /web/index.html;
+          add_header SomeHeader "SomeValue";
+	   }
+	   
+	           location /web/index.html {
+            root /u01/static;
+            gzip on;
+            gzip_min_length 1024;
+            gzip_vary on;
+            add_header Cache-Control "no-cache";
+            add_header X-Frame-Options "DENY";
+            add_header X-XSS-Protection "1";
+        }
+        location /web/index/other.html {
+            root /u01/static;
+            add_header Cache-Control "no-store";
+            add_header X-XSS-Protection "1; mode=block";
+        }
+        location /web/index_other.html {
+            root /u01/static;
+            gzip off;
+            add_header Cache-Control "max-age=60";
+            add_header X-XSS-Protection "0";
+        }
+
     }
 }
 `
@@ -178,7 +257,8 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	    gzip off;
+
 
     index index.html;
 `
@@ -195,7 +275,9 @@ const expectedNginxConfFileNoNodejsPartial = `
        location / {
           root /u01/static;
           try_files $uri /index.html;
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -211,7 +293,9 @@ const expectedNginxConfFilePartial = `
        location / {
           root /u01/static;
           try_files $uri /index.html;
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -230,7 +314,9 @@ const expectedNginxConfFileSpaAndCustomHeaders = `
           try_files $uri /index.html;
           add_header X-Test-Header "Tulleheader";
           add_header X-Test-Header2 "Tulleheader2";
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -248,7 +334,9 @@ const expectedNginxConfFileNoSpaAndCustomHeaders = `
           root /u01/static;
           add_header X-Test-Header "Tulleheader";
           add_header X-Test-Header2 "Tulleheader2";
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -266,7 +354,9 @@ const expectedNginxConfigWithOverrides = `
        location / {
           root /u01/static;
           try_files $uri /index.html;
-       }
+	   }
+	   
+	   
     }
 }
 `
@@ -284,6 +374,7 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 	}
 	var actual string
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
+
 	assert.NoError(t, err)
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfFilePartial, actual)
 }
@@ -416,6 +507,20 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvP
 
 	// Clean up env params
 	os.Unsetenv("IGNORE_NGINX_EXCLUDE")
+}
+
+func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *testing.T) {
+	err := GenerateNginxConfiguration("testdata/testRadishConfigWithCustomLocations.json", "testdata")
+	assert.Equal(t, nil, err)
+
+	data, err := ioutil.ReadFile("testdata/nginx.conf")
+	assert.Equal(t, nil, err)
+
+	s := string(data[:])
+	println(s)
+	println("")
+	println(nginxConfWithCustomLocations)
+	assert.Equal(t, s, nginxConfWithCustomLocations)
 }
 
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {

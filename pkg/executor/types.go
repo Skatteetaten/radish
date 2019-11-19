@@ -1,6 +1,8 @@
 package executor
 
-import "os/exec"
+import (
+	"os/exec"
+)
 
 //Executor :
 type Executor interface {
@@ -32,5 +34,7 @@ type TemplateInput struct {
 	Path                 string
 	ProxyPassHost        string
 	ProxyPassPort        string
+	Gzip                 string
 	Exclude              []string
+	Locations            string
 }

@@ -1,0 +1,56 @@
+{
+    "docker": {
+      "maintainer": "Aurora OpenShift Utvikling <utvpaas@skatteetaten.no>",
+      "labels": {
+        "io.k8s.description": "Demo application with React on Openshift.",
+        "io.openshift.tags": "openshift,react,nodejs"
+      }
+    },
+    "web": {
+      "configurableProxy": false,
+      "nodejs": {
+        "main": "api/server.js",
+          "overrides": {
+            "client_max_body_size": "10m"
+          }
+        },
+        "webapp": {
+           "content": "build",
+           "path": "/web",
+           "disableTryfiles": false,
+           "headers": {
+              "SomeHeader": "SomeValue"
+            }
+        },
+        "locations": {
+          "index.html": {
+            "headers": {
+             "Cache-Control": "no-cache",
+             "X-XSS-Protection": "1",
+             "X-Frame-Options": "DENY"
+            },
+            "gzip": {
+             "use": "on",
+             "min_length": 1024,
+             "vary": "on"
+            }
+          },
+          "index_other.html": {
+            "headers": {
+             "Cache-Control": "max-age=60",
+             "X-XSS-Protection": "0"
+            },
+            "gzip": {
+             "use": "off"
+            }
+          },
+          "index/other.html": {
+            "headers": {
+               "Cache-Control": "no-store",
+               "X-XSS-Protection": "1; mode=block"
+            }
+          }
+        }
+      }
+  }
+  

@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -36,7 +37,7 @@ http {
 
     keepalive_timeout  75;
 
-    #gzip  on;
+	{{.Gzip}}
 
     index index.html;
 
@@ -59,7 +60,9 @@ http {
        location {{.Path}} {
           root /u01/static;{{end}}{{range $key, $value := .ExtraStaticHeaders}}
           add_header {{$key}} "{{$value}}";{{end}}
-       }
+	   }
+	   
+	   {{.Locations}}
     }
 }
 `
@@ -115,7 +118,7 @@ func generateNginxConfiguration(openshiftConfig OpenshiftConfig, fileWriter util
 }
 
 func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.TemplateInput, error) {
-
+	documentRoot := "/u01/static"
 	path := "/"
 	if len(strings.TrimPrefix(openshiftConfig.Web.WebApp.Path, "/")) > 0 {
 		path = "/" + strings.TrimPrefix(openshiftConfig.Web.WebApp.Path, "/")
@@ -146,6 +149,9 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		proxyPassPort = "9090"
 	}
 
+	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
+	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
+
 	return &executor.TemplateInput{
 		HasNodeJSApplication: openshiftConfig.Web.Nodejs.Main != "",
 		NginxOverrides:       openshiftConfig.Web.Nodejs.Overrides,
@@ -153,7 +159,9 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
 		SPA:                  !openshiftConfig.Web.WebApp.DisableTryfiles,
 		Path:                 path,
+		Gzip:                 nginxGzipForTemplate,
 		Exclude:              exclude,
+		Locations:            nginxLocationForTemplate,
 		ProxyPassHost:        proxyPassHost,
 		ProxyPassPort:        proxyPassPort,
 	}, nil
@@ -196,4 +204,76 @@ func whitelistOverrides(overrides map[string]string) error {
 		}
 	}
 	return nil
+}
+
+func (m nginxLocations) sort() []string {
+	index := []string{}
+	for k := range m {
+		index = append(index, k)
+	}
+	sort.Strings(index)
+	return index
+}
+
+func (m headers) sort() []string {
+	index := []string{}
+	for k := range m {
+		index = append(index, k)
+	}
+	sort.Strings(index)
+	return index
+}
+
+func nginxLocationsMapToString(m nginxLocations, documentRoot string, path string) string {
+	sumLocations := ""
+	indentN1 := strings.Repeat(" ", 8)
+	indentN2 := strings.Repeat(" ", 12)
+
+	for _, key := range m.sort() {
+		value := m[key]
+		singleLocation := fmt.Sprintf("%slocation %s%s {\n", indentN1, path, key)
+		singleLocation = fmt.Sprintf("%s%sroot %s;\n", singleLocation, indentN2, documentRoot)
+
+		gZipUse := strings.TrimSpace(value.Gzip.Use)
+		if gZipUse == "on" || gZipUse == "off" {
+			singleLocation = getGzipConfAsString(value.Gzip, singleLocation, indentN2)
+		}
+
+		for _, k2 := range value.Headers.sort() {
+			singleLocation = fmt.Sprintf("%s%sadd_header %s \"%s\";\n", singleLocation, indentN2, k2, value.Headers[k2])
+		}
+
+		singleLocation = fmt.Sprintf("%s%s}\n", singleLocation, indentN1)
+		sumLocations = sumLocations + singleLocation
+	}
+	return sumLocations
+}
+
+func nginxGzipMapToString(gzip nginxGzip) string {
+	indent := strings.Repeat(" ", 4)
+	return getGzipConfAsString(gzip, "", indent)
+}
+
+func getGzipConfAsString(gzip nginxGzip, location string, indent string) string {
+	if strings.TrimSpace(gzip.Use) == "on" {
+		location = fmt.Sprintf("%s%sgzip on;\n", location, indent)
+		if gzip.MinLength > 0 {
+			location = fmt.Sprintf("%s%sgzip_min_length %d;\n", location, indent, gzip.MinLength)
+		}
+		if gzip.Vary != "" {
+			location = fmt.Sprintf("%s%sgzip_vary %s;\n", location, indent, strings.TrimSpace(gzip.Vary))
+		}
+		if gzip.Proxied != "" {
+			location = fmt.Sprintf("%s%sgzip_proxied %s;\n", location, indent, gzip.Proxied)
+		}
+		if gzip.Types != "" {
+			location = fmt.Sprintf("%s%sgzip_types %s;\n", location, indent, gzip.Types)
+		}
+		if gzip.Disable != "" {
+			location = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", location, indent, gzip.Disable)
+		}
+	} else {
+		location = fmt.Sprintf("%s%sgzip off;\n", location, indent)
+	}
+	return location
 }

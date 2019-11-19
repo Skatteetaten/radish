@@ -13,10 +13,12 @@ type Docker struct {
 
 //Web :
 type Web struct {
-	ConfigurableProxy bool     `json:"configurableProxy"`
-	Nodejs            Nodejs   `json:"nodejs"`
-	WebApp            WebApp   `json:"webapp"`
-	Exclude           []string `json:"exclude"`
+	ConfigurableProxy bool           `json:"configurableProxy"`
+	Nodejs            Nodejs         `json:"nodejs"`
+	WebApp            WebApp         `json:"webapp"`
+	Gzip              nginxGzip      `json:"gzip"`
+	Exclude           []string       `json:"exclude"`
+	Locations         nginxLocations `json:"locations"`
 }
 
 //Nodejs :
@@ -37,6 +39,24 @@ type WebApp struct {
 type OpenshiftConfig struct {
 	Docker Docker `json:"docker"`
 	Web    Web    `json:"web"`
+}
+
+type headers map[string]string
+
+type nginxLocations map[string]*nginxLocation
+
+type nginxLocation struct {
+	Headers headers   `json:"headers"`
+	Gzip    nginxGzip `json:"gzip"`
+}
+
+type nginxGzip struct {
+	Use       string `json:"use"`
+	MinLength int    `json:"min_length"`
+	Vary      string `json:"vary"`
+	Proxied   string `json:"proxied"`
+	Types     string `json:"types"`
+	Disable   string `json:"disable"`
 }
 
 //UnmarshallOpenshiftConfig :
