@@ -86,7 +86,7 @@ func TestGenerateStanzasAll(t *testing.T) {
 	assert.True(t, strings.Count(stanzaFileOutput, "# --- start/stanza ATS") == 2)
 	assert.True(t, strings.Count(stanzaFileOutput, "index = "+splunkIndex) == 3)
 	assert.True(t, strings.Count(stanzaFileOutput, "index = "+splunkAuditIndex) == 1)
-	assert.True(t, strings.Count(stanzaFileOutput, "blacklist = "+splunkBlacklist) == 1)
+	assert.True(t, strings.Count(stanzaFileOutput, "blacklist = "+splunkBlacklist) == 3)
 
 	// But without AppDynamics
 	os.Setenv("SPLUNK_AUDIT_INDEX", "")

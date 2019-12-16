@@ -25,6 +25,7 @@ disabled = false
 followTail = 0
 sourcetype = access_combined
 index = {{.SplunkIndex}}
+blacklist = {{.SplunkBlacklist}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
@@ -35,6 +36,7 @@ disabled = false
 followTail = 0
 sourcetype = gc_log
 index = {{.SplunkIndex}}
+blacklist = {{.SplunkBlacklist}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
