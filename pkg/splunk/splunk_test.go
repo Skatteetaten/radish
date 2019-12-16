@@ -36,6 +36,7 @@ func TestGenerateStanzasCustomFile(t *testing.T) {
 	hostName := "hostName"
 
 	os.Setenv("SPLUNK_INDEX", "splunkIndex")
+	os.Setenv("SPLUNK_BLACKLIST", "splunkBlacklist")
 	os.Setenv("POD_NAMESPACE", podNamespace)
 	os.Setenv("APP_NAME", appName)
 	os.Setenv("HOSTNAME", hostName)
@@ -58,6 +59,7 @@ func TestGenerateStanzasAll(t *testing.T) {
 	splunkAuditIndex := "audit-test"
 	splunkAppDynamicsIndex := "monitor"
 	splunkAtsIndex := "ats-index"
+	splunkBlacklist := "splunkBlacklist"
 	podNamespace := "podNamespace"
 	appName := "appName"
 	hostName := "hostName"
@@ -67,6 +69,7 @@ func TestGenerateStanzasAll(t *testing.T) {
 	os.Setenv("SPLUNK_AUDIT_INDEX", splunkAuditIndex)
 	os.Setenv("SPLUNK_APPDYNAMICS_INDEX", splunkAppDynamicsIndex)
 	os.Setenv("SPLUNK_ATS_INDEX", splunkAtsIndex)
+	os.Setenv("SPLUNK_BLACKLIST", splunkBlacklist)
 	os.Setenv("POD_NAMESPACE", podNamespace)
 	os.Setenv("APP_NAME", appName)
 	os.Setenv("HOSTNAME", hostName)
@@ -83,6 +86,7 @@ func TestGenerateStanzasAll(t *testing.T) {
 	assert.True(t, strings.Count(stanzaFileOutput, "# --- start/stanza ATS") == 2)
 	assert.True(t, strings.Count(stanzaFileOutput, "index = "+splunkIndex) == 3)
 	assert.True(t, strings.Count(stanzaFileOutput, "index = "+splunkAuditIndex) == 1)
+	assert.True(t, strings.Count(stanzaFileOutput, "blacklist = "+splunkBlacklist) == 1)
 
 	// But without AppDynamics
 	os.Setenv("SPLUNK_AUDIT_INDEX", "")
