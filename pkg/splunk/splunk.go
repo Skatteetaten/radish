@@ -14,7 +14,7 @@ disabled = false
 followTail = 0
 sourcetype = log4j
 index = {{.SplunkIndex}}
-blacklist = {{.SplunkBlacklist}}
+{{.SplunkBlacklist}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
@@ -25,7 +25,7 @@ disabled = false
 followTail = 0
 sourcetype = access_combined
 index = {{.SplunkIndex}}
-blacklist = {{.SplunkBlacklist}}
+{{.SplunkBlacklist}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
@@ -36,7 +36,7 @@ disabled = false
 followTail = 0
 sourcetype = gc_log
 index = {{.SplunkIndex}}
-blacklist = {{.SplunkBlacklist}}
+{{.SplunkBlacklist}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
@@ -146,6 +146,8 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 
 	if vars.SplunkBlacklist == "" {
 		logrus.Debug("No SPLUNK_BLACKLIST env variable present")
+	} else {
+		vars.SplunkBlacklist = "blacklist = " + vars.SplunkBlacklist
 	}
 
 	if splunkStanza == "" {

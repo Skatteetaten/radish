@@ -4,7 +4,7 @@ disabled = false
 followTail = 0
 sourcetype = log4j
 index = myindex
-blacklist = 
+
 _meta = environment::1 application::appname nodetype::openshift
 host = host
 # --- end/stanza
@@ -15,7 +15,7 @@ disabled = false
 followTail = 0
 sourcetype = access_combined
 index = myindex
-blacklist = 
+
 _meta = environment::1 application::appname nodetype::openshift
 host = host
 # --- end/stanza
@@ -26,7 +26,7 @@ disabled = false
 followTail = 0
 sourcetype = gc_log
 index = myindex
-blacklist = 
+
 _meta = environment::1 application::appname nodetype::openshift
 host = host
 # --- end/stanza
