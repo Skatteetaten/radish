@@ -32,6 +32,7 @@ The second task of Radish is a CLI to accomplish a number of tasks.
 | SPLUNK_AUDIT_INDEX | Splunk Index for audit logs.|
 | SPLUNK_APPDYNAMICS_INDEX | Splunk Index for APM logs.|
 | SPLUNK_ATS_INDEX | Splunk Index for ATS/STS logs.|
+| SPLUNK_BLACKLIST | Rules for which incomming files that should be excluded. Must be a valid PCRE2 regular expression.|
 
 # Build:
 

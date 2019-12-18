@@ -14,6 +14,7 @@ disabled = false
 followTail = 0
 sourcetype = log4j
 index = {{.SplunkIndex}}
+{{.SplunkBlacklist}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
@@ -24,6 +25,7 @@ disabled = false
 followTail = 0
 sourcetype = access_combined
 index = {{.SplunkIndex}}
+{{.SplunkBlacklist}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
@@ -34,6 +36,7 @@ disabled = false
 followTail = 0
 sourcetype = gc_log
 index = {{.SplunkIndex}}
+{{.SplunkBlacklist}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
 # --- end/stanza
@@ -88,6 +91,7 @@ type Data struct {
 	SplunkAtsIndex         string `envvar:"SPLUNK_ATS_INDEX" default:""`
 	SplunkAuditIndex       string `envvar:"SPLUNK_AUDIT_INDEX" default:""`
 	SplunkAppdynamicsIndex string `envvar:"SPLUNK_APPDYNAMICS_INDEX" default:""`
+	SplunkBlacklist        string `envvar:"SPLUNK_BLACKLIST" default:""`
 	PodNamespace           string `envvar:"POD_NAMESPACE" default:""`
 	AppName                string `envvar:"APP_NAME" default:""`
 	HostName               string `envvar:"HOSTNAME" default:""`
@@ -140,6 +144,12 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 		splunkStanza = splunkStanza + atsSplunkStanza
 	}
 
+	if vars.SplunkBlacklist == "" {
+		logrus.Debug("No SPLUNK_BLACKLIST env variable present")
+	} else {
+		vars.SplunkBlacklist = "blacklist = " + vars.SplunkBlacklist
+	}
+
 	if splunkStanza == "" {
 		logrus.Info("No Splunk stanza will be created.")
 		return nil
@@ -150,11 +160,13 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 	} else if vars.PodNamespace == "" {
 		return errors.New("No PodNamespace present as flag or environment variable")
 	}
+
 	if appNameFlag != "" {
 		vars.AppName = appNameFlag
 	} else if vars.AppName == "" {
 		return errors.New("No AppName present as flag or environment variable")
 	}
+
 	if hostNameFlag != "" {
 		vars.HostName = hostNameFlag
 	} else if vars.HostName == "" {
