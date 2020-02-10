@@ -37,4 +37,5 @@ type TemplateInput struct {
 	Gzip                 string
 	Exclude              []string
 	Locations            string
+	WorkerConnections    string
 }

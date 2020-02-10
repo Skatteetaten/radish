@@ -3,14 +3,15 @@ package nginx
 import (
 	"bytes"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/skatteetaten/radish/pkg/executor"
-	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
 	"os"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/skatteetaten/radish/pkg/executor"
+	"github.com/skatteetaten/radish/pkg/util"
 )
 
 const nginxConfigTemplate string = `
@@ -18,7 +19,7 @@ worker_processes  1;
 error_log stderr;
 
 events {
-    worker_connections  1024;
+    worker_connections  {{.WorkerConnections}};
 }
 
 
@@ -149,6 +150,11 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		proxyPassPort = "9090"
 	}
 
+	workerConnections := os.Getenv("NGINX_WORKER_CONNECTIONS")
+	if workerConnections == "" {
+		workerConnections = "1024"
+	}
+
 	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
 	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
 
@@ -164,6 +170,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		Locations:            nginxLocationForTemplate,
 		ProxyPassHost:        proxyPassHost,
 		ProxyPassPort:        proxyPassPort,
+		WorkerConnections:    workerConnections,
 	}, nil
 }
 
