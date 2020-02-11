@@ -2,11 +2,12 @@ package nginx
 
 import (
 	"bytes"
-	"github.com/skatteetaten/radish/pkg/util"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/skatteetaten/radish/pkg/util"
+	"github.com/stretchr/testify/assert"
 )
 
 const ninxConfigFile = `
@@ -263,6 +264,36 @@ http {
     index index.html;
 `
 
+const nginxConfPrefixWithChangedWorkerConns = `
+worker_processes  1;
+error_log stderr;
+
+events {
+    worker_connections  2048;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /dev/stdout;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  75;
+
+	    gzip off;
+
+
+    index index.html;
+`
+
 const expectedNginxConfFileNoNodejsPartial = `
     server {
        listen 8080;
@@ -377,6 +408,27 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfFilePartial, actual)
+}
+
+func TestGeneratedNginxFileWhenWorkerConnsAreChanged(t *testing.T) {
+	os.Setenv("NGINX_WORKER_CONNECTIONS", "2048")
+	openshiftJSON := OpenshiftConfig{
+		Docker: Docker{
+			Maintainer: "Tullebukk",
+		},
+		Web: Web{
+			Nodejs: Nodejs{
+				Main: "test.json",
+			},
+		},
+	}
+	var actual string
+	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
+
+	assert.NoError(t, err)
+	assert.Equal(t, nginxConfPrefixWithChangedWorkerConns+expectedNginxConfFilePartial, actual)
+
+	os.Unsetenv("NGINX_WORKER_CONNECTIONS")
 }
 
 func TestGeneratedFilesWhenNodeJSIsDisabled(t *testing.T) {
