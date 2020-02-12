@@ -38,4 +38,5 @@ type TemplateInput struct {
 	Exclude              []string
 	Locations            string
 	WorkerConnections    string
+	WorkerProcesses      string
 }

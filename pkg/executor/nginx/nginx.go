@@ -15,7 +15,7 @@ import (
 )
 
 const nginxConfigTemplate string = `
-worker_processes  1;
+worker_processes  {{.WorkerProcesses}};
 error_log stderr;
 
 events {
@@ -140,20 +140,13 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		exclude = []string{}
 	}
 
-	proxyPassHost := os.Getenv("PROXY_PASS_HOST")
-	if proxyPassHost == "" {
-		proxyPassHost = "localhost"
-	}
+	proxyPassHost := getEnvOrDefault("PROXY_PASS_HOST", "localhost")
 
-	proxyPassPort := os.Getenv("PROXY_PASS_PORT")
-	if proxyPassPort == "" {
-		proxyPassPort = "9090"
-	}
+	proxyPassPort := getEnvOrDefault("PROXY_PASS_PORT", "9090")
 
-	workerConnections := os.Getenv("NGINX_WORKER_CONNECTIONS")
-	if workerConnections == "" {
-		workerConnections = "1024"
-	}
+	workerConnections := getEnvOrDefault("NGINX_WORKER_CONNECTIONS", "1024")
+
+	workerProcesses := getEnvOrDefault("NGINX_WORKER_PROCESSES", "1")
 
 	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
 	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
@@ -171,6 +164,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		ProxyPassHost:        proxyPassHost,
 		ProxyPassPort:        proxyPassPort,
 		WorkerConnections:    workerConnections,
+		WorkerProcesses:      workerProcesses,
 	}, nil
 }
 
@@ -283,4 +277,12 @@ func getGzipConfAsString(gzip nginxGzip, location string, indent string) string 
 		location = fmt.Sprintf("%s%sgzip off;\n", location, indent)
 	}
 	return location
+}
+
+func getEnvOrDefault(key string, fallback string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+	return value
 }

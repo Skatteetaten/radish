@@ -40,9 +40,10 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 | SPLUNK_ATS_INDEX | Splunk Index for ATS/STS logs.|
 | SPLUNK_BLACKLIST | Rules for which incomming files that should be excluded. Must be a valid PCRE2 regular expression.|
 | IGNORE_NGINX_EXCLUDE | Ignore Nginx exclude for Nginx configuration.|
-| PROXY_PASS_HOST | Proxypass host for Nginx configuration.|
-| PROXY_PASS_PORT | Proxypass port for Nginx configuration.|
-| NGINX_WORKER_CONNECTIONS | Number of worker connections for Nginx configuration. |
+| PROXY_PASS_HOST | Proxypass host for Nginx configuration. Default localhost.|
+| PROXY_PASS_PORT | Proxypass port for Nginx configuration. Default 9090.|
+| NGINX_WORKER_CONNECTIONS | Number of worker connections for Nginx configuration. Default 1024.|
+| NGINX_WORKER_PROCESSES | Number of worker processes for Nginx configuration. Default 1.|
 
 # Build:
 
