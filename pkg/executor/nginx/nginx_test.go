@@ -264,8 +264,8 @@ http {
     index index.html;
 `
 
-const nginxConfPrefixWithChangedWorkerConns = `
-worker_processes  1;
+const nginxConfPrefixWithChangedWorkerConnsAndProcesses = `
+worker_processes  2;
 error_log stderr;
 
 events {
@@ -410,8 +410,9 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 	assert.Equal(t, nginxConfPrefix+expectedNginxConfFilePartial, actual)
 }
 
-func TestGeneratedNginxFileWhenWorkerConnsAreChanged(t *testing.T) {
+func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
 	os.Setenv("NGINX_WORKER_CONNECTIONS", "2048")
+	os.Setenv("NGINX_WORKER_PROCESSES", "2")
 	openshiftJSON := OpenshiftConfig{
 		Docker: Docker{
 			Maintainer: "Tullebukk",
@@ -426,9 +427,10 @@ func TestGeneratedNginxFileWhenWorkerConnsAreChanged(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefixWithChangedWorkerConns+expectedNginxConfFilePartial, actual)
+	assert.Equal(t, nginxConfPrefixWithChangedWorkerConnsAndProcesses+expectedNginxConfFilePartial, actual)
 
 	os.Unsetenv("NGINX_WORKER_CONNECTIONS")
+	os.Unsetenv("NGINX_WORKER_PROCESSES")
 }
 
 func TestGeneratedFilesWhenNodeJSIsDisabled(t *testing.T) {

@@ -15,7 +15,7 @@ import (
 )
 
 const nginxConfigTemplate string = `
-worker_processes  1;
+worker_processes  {{.WorkerProcesses}};
 error_log stderr;
 
 events {
@@ -155,6 +155,11 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		workerConnections = "1024"
 	}
 
+	workerProcesses := os.Getenv("NGINX_WORKER_PROCESSES")
+	if workerProcesses == "" {
+		workerProcesses = "1"
+	}
+
 	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
 	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
 
@@ -171,6 +176,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		ProxyPassHost:        proxyPassHost,
 		ProxyPassPort:        proxyPassPort,
 		WorkerConnections:    workerConnections,
+		WorkerProcesses:      workerProcesses,
 	}, nil
 }
 
