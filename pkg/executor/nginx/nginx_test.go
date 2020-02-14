@@ -523,7 +523,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
 	os.Setenv("PROXY_PASS_HOST", "127.0.0.1")
 	os.Setenv("PROXY_PASS_PORT", "9099")
-	err := GenerateNginxConfiguration("testdata/testRadishConfig.json", "testdata")
+	err := GenerateNginxConfiguration("testdata/testRadishConfigWithProxy.json", "testdata")
 	assert.Equal(t, nil, err)
 
 	data, err := ioutil.ReadFile("testdata/nginx.conf")

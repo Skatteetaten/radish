@@ -27,7 +27,6 @@ type TemplateInput struct {
 	Baseimage            string
 	HasNodeJSApplication bool
 	NginxOverrides       map[string]string
-	ConfigurableProxy    bool
 	Static               string
 	SPA                  bool
 	ExtraStaticHeaders   map[string]string

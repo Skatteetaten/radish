@@ -46,7 +46,7 @@ http {
        listen 8080;
 
        location /api {
-          {{if or .HasNodeJSApplication .ConfigurableProxy}}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
+          {{if .HasNodeJSApplication }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
          {{$key}} {{$value}};{{end}}
       }
     {{range $value := .Exclude}}
@@ -140,9 +140,19 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		exclude = []string{}
 	}
 
-	proxyPassHost := getEnvOrDefault("PROXY_PASS_HOST", "localhost")
+	proxyPassHost := os.Getenv("PROXY_PASS_HOST")
+	if len(proxyPassHost) == 0 && !openshiftConfig.Web.ConfigurableProxy {
+		proxyPassHost = "localhost"
+	} else if openshiftConfig.Web.Nodejs.Main != "" && !openshiftConfig.Web.ConfigurableProxy {
+		proxyPassHost = "localhost"
+	}
 
-	proxyPassPort := getEnvOrDefault("PROXY_PASS_PORT", "9090")
+	proxyPassPort := os.Getenv("PROXY_PASS_PORT")
+	if len(proxyPassPort) == 0 && !openshiftConfig.Web.ConfigurableProxy {
+		proxyPassPort = "9090"
+	} else if openshiftConfig.Web.Nodejs.Main != "" && !openshiftConfig.Web.ConfigurableProxy {
+		proxyPassPort = "9090"
+	}
 
 	workerConnections := getEnvOrDefault("NGINX_WORKER_CONNECTIONS", "1024")
 
@@ -154,7 +164,6 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 	return &executor.TemplateInput{
 		HasNodeJSApplication: openshiftConfig.Web.Nodejs.Main != "",
 		NginxOverrides:       openshiftConfig.Web.Nodejs.Overrides,
-		ConfigurableProxy:    openshiftConfig.Web.ConfigurableProxy,
 		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
 		SPA:                  !openshiftConfig.Web.WebApp.DisableTryfiles,
 		Path:                 path,
