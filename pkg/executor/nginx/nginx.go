@@ -145,7 +145,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 
 	proxyPassPort := getEnvOrDefault("PROXY_PASS_PORT", "9090")
 
-	proxyReadTimeout := getEnvOrDefault("NGINX_PROXY_READ_TIMEOUT", "1")
+	proxyReadTimeout := getEnvOrDefault("NGINX_PROXY_READ_TIMEOUT", "60")
 
 	workerConnections := getEnvOrDefault("NGINX_WORKER_CONNECTIONS", "1024")
 

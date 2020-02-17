@@ -33,7 +33,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
-    proxy_read_timeout 1;
+    proxy_read_timeout 60;
 
 	    gzip off;
 
@@ -133,7 +133,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
-    proxy_read_timeout 1;
+    proxy_read_timeout 60;
 
 	    gzip off;
 
@@ -191,7 +191,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
-    proxy_read_timeout 1;
+    proxy_read_timeout 60;
 
 	    gzip off;
 
@@ -261,7 +261,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
-    proxy_read_timeout 1;
+    proxy_read_timeout 60;
 
 	    gzip off;
 
@@ -292,7 +292,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
-    proxy_read_timeout 1;
+    proxy_read_timeout 60;
 
 	    gzip off;
 
