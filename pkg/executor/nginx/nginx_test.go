@@ -33,6 +33,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
+    proxy_read_timeout 1;
 
 	    gzip off;
 
@@ -82,6 +83,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
+    proxy_read_timeout 5;
 
 	    gzip off;
 
@@ -131,6 +133,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
+    proxy_read_timeout 1;
 
 	    gzip off;
 
@@ -188,6 +191,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
+    proxy_read_timeout 1;
 
 	    gzip off;
 
@@ -257,6 +261,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
+    proxy_read_timeout 1;
 
 	    gzip off;
 
@@ -287,6 +292,7 @@ http {
     #tcp_nopush     on;
 
     keepalive_timeout  75;
+    proxy_read_timeout 1;
 
 	    gzip off;
 
@@ -521,8 +527,10 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
+	os.Setenv("NGINX_PROXY_READ_TIMEOUT", "5")
 	os.Setenv("PROXY_PASS_HOST", "127.0.0.1")
 	os.Setenv("PROXY_PASS_PORT", "9099")
+
 	err := GenerateNginxConfiguration("testdata/testRadishConfig.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -533,6 +541,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 	assert.Equal(t, s, ninxConfigFileWithCustomEnvParams)
 
 	// Clean up env params
+	os.Unsetenv("NGINX_PROXY_READ_TIMEOUT")
 	os.Unsetenv("PROXY_PASS_HOST")
 	os.Unsetenv("PROXY_PASS_PORT")
 }
