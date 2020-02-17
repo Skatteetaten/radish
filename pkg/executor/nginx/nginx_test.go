@@ -537,6 +537,13 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 	os.Unsetenv("PROXY_PASS_PORT")
 }
 
+func TestGenerateNginxConfigurationWithProxyShouldFailWhenEnvsAreMissing(t *testing.T) {
+	err := GenerateNginxConfiguration("testdata/testRadishConfigWithProxy.json", "testdata")
+	if err == nil {
+		t.Fail()
+	}
+}
+
 func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) {
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithExclude.json", "testdata")
 	assert.Equal(t, nil, err)

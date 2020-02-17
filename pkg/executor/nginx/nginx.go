@@ -46,7 +46,7 @@ http {
        listen 8080;
 
        location /api {
-          {{if .HasNodeJSApplication }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
+          {{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
          {{$key}} {{$value}};{{end}}
       }
     {{range $value := .Exclude}}
@@ -67,6 +67,12 @@ http {
     }
 }
 `
+
+type proxy struct {
+	hasProxy bool
+	host     string
+	port     string
+}
 
 //GenerateNginxConfiguration :
 func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
@@ -118,6 +124,40 @@ func generateNginxConfiguration(openshiftConfig OpenshiftConfig, fileWriter util
 	return nil
 }
 
+func configureProxyPass(config OpenshiftConfig) (*proxy, error) {
+	hasNodeJsAppliacation := config.Web.Nodejs.Main != ""
+
+	if hasNodeJsAppliacation && !config.Web.ConfigurableProxy {
+		return &proxy{
+			hasProxy: true,
+			host:     "localhost",
+			port:     "9090",
+		}, nil
+
+	} else if config.Web.ConfigurableProxy || hasNodeJsAppliacation {
+
+		proxyPassHost, ok := os.LookupEnv("PROXY_PASS_HOST")
+		if !ok {
+			return nil, errors.Errorf("ConfigurableProxy is configured, but PROXY_PASS_HOST is missing")
+		}
+		proxyPassPort, ok := os.LookupEnv("PROXY_PASS_PORT")
+		if !ok {
+			return nil, errors.Errorf("ConfigurableProxy is configured, but PROXY_PASS_PORT is missing")
+		}
+
+		return &proxy{
+			hasProxy: true,
+			host:     proxyPassHost,
+			port:     proxyPassPort,
+		}, nil
+	} else {
+		return &proxy{
+			hasProxy: false,
+		}, nil
+	}
+
+}
+
 func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.TemplateInput, error) {
 	documentRoot := "/u01/static"
 	path := "/"
@@ -140,40 +180,30 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		exclude = []string{}
 	}
 
-	proxyPassHost := os.Getenv("PROXY_PASS_HOST")
-	if len(proxyPassHost) == 0 && !openshiftConfig.Web.ConfigurableProxy {
-		proxyPassHost = "localhost"
-	} else if openshiftConfig.Web.Nodejs.Main != "" && !openshiftConfig.Web.ConfigurableProxy {
-		proxyPassHost = "localhost"
-	}
-
-	proxyPassPort := os.Getenv("PROXY_PASS_PORT")
-	if len(proxyPassPort) == 0 && !openshiftConfig.Web.ConfigurableProxy {
-		proxyPassPort = "9090"
-	} else if openshiftConfig.Web.Nodejs.Main != "" && !openshiftConfig.Web.ConfigurableProxy {
-		proxyPassPort = "9090"
+	proxy, err := configureProxyPass(openshiftConfig)
+	if err != nil {
+		return nil, err
 	}
 
 	workerConnections := getEnvOrDefault("NGINX_WORKER_CONNECTIONS", "1024")
-
 	workerProcesses := getEnvOrDefault("NGINX_WORKER_PROCESSES", "1")
 
 	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
 	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
 
 	return &executor.TemplateInput{
-		HasNodeJSApplication: openshiftConfig.Web.Nodejs.Main != "",
-		NginxOverrides:       openshiftConfig.Web.Nodejs.Overrides,
-		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
-		SPA:                  !openshiftConfig.Web.WebApp.DisableTryfiles,
-		Path:                 path,
-		Gzip:                 nginxGzipForTemplate,
-		Exclude:              exclude,
-		Locations:            nginxLocationForTemplate,
-		ProxyPassHost:        proxyPassHost,
-		ProxyPassPort:        proxyPassPort,
-		WorkerConnections:    workerConnections,
-		WorkerProcesses:      workerProcesses,
+		NginxOverrides:     openshiftConfig.Web.Nodejs.Overrides,
+		ExtraStaticHeaders: openshiftConfig.Web.WebApp.Headers,
+		SPA:                !openshiftConfig.Web.WebApp.DisableTryfiles,
+		Path:               path,
+		Gzip:               nginxGzipForTemplate,
+		Exclude:            exclude,
+		Locations:          nginxLocationForTemplate,
+		HasProxyPass:       proxy.hasProxy,
+		ProxyPassHost:      proxy.host,
+		ProxyPassPort:      proxy.port,
+		WorkerConnections:  workerConnections,
+		WorkerProcesses:    workerProcesses,
 	}, nil
 }
 
