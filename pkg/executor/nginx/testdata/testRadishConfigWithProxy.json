@@ -7,7 +7,7 @@
       }
     },
     "web": {
-        "configurableProxy": false,
+        "configurableProxy": true,
         "nodejs": {
             "main": "api/server.js",
             "overrides": {
