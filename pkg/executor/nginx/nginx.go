@@ -38,7 +38,7 @@ http {
 
     keepalive_timeout  75;
 
-	{{.Gzip}}
+{{.Gzip}}
 
     index index.html;
 
@@ -300,20 +300,30 @@ func getGzipConfAsString(gzip nginxGzip, location string, indent string) string 
 		if gzip.MinLength > 0 {
 			location = fmt.Sprintf("%s%sgzip_min_length %d;\n", location, indent, gzip.MinLength)
 		}
+		if gzip.Types != "" {
+			location = fmt.Sprintf("%s%sgzip_types %s;\n", location, indent, gzip.Types)
+		}
+	} else {
+		location = fmt.Sprintf("%s%sgzip off;\n", location, indent)
+	}
+
+	if strings.TrimSpace(gzip.UseStatic) == "on" {
+		location = fmt.Sprintf("%s%sgzip_static on;\n", location, indent)
+	} else {
+		location = fmt.Sprintf("%s%sgzip_static off;\n", location, indent)
+	}
+
+	//settings gzip_vary, gzip_proxied and gzip_disable are relevant for both gzip and gzip_static
+	if strings.TrimSpace(gzip.Use) == "on" || strings.TrimSpace(gzip.UseStatic) == "on" {
 		if gzip.Vary != "" {
 			location = fmt.Sprintf("%s%sgzip_vary %s;\n", location, indent, strings.TrimSpace(gzip.Vary))
 		}
 		if gzip.Proxied != "" {
 			location = fmt.Sprintf("%s%sgzip_proxied %s;\n", location, indent, gzip.Proxied)
 		}
-		if gzip.Types != "" {
-			location = fmt.Sprintf("%s%sgzip_types %s;\n", location, indent, gzip.Types)
-		}
 		if gzip.Disable != "" {
 			location = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", location, indent, gzip.Disable)
 		}
-	} else {
-		location = fmt.Sprintf("%s%sgzip off;\n", location, indent)
 	}
 	return location
 }
