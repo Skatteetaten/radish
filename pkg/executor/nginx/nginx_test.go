@@ -35,7 +35,59 @@ http {
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-	    gzip off;
+    gzip off;
+    gzip_static off;
+
+
+    index index.html;
+
+    server {
+       listen 8080;
+
+       location /api {
+          proxy_pass http://localhost:9090;
+         client_max_body_size 10m;
+      }
+    
+
+       location /web/ {
+          root /u01/static;
+          try_files $uri /web/index.html;
+          add_header SomeHeader "SomeValue";
+	   }
+	   
+	   
+    }
+}
+`
+
+const nginxConfigFileWithGzipStatic = `
+worker_processes  1;
+error_log stderr;
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /dev/stdout;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  75;
+    proxy_read_timeout 60;
+
+    gzip off;
+    gzip_static on;
 
 
     index index.html;
@@ -85,7 +137,8 @@ http {
     keepalive_timeout  75;
     proxy_read_timeout 5;
 
-	    gzip off;
+    gzip off;
+    gzip_static off;
 
 
     index index.html;
@@ -135,7 +188,8 @@ http {
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-	    gzip off;
+    gzip off;
+    gzip_static off;
 
 
     index index.html;
@@ -193,7 +247,8 @@ http {
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-	    gzip off;
+    gzip off;
+    gzip_static off;
 
 
     index index.html;
@@ -217,6 +272,7 @@ http {
             root /u01/static;
             gzip on;
             gzip_min_length 1024;
+            gzip_static off;
             gzip_vary on;
             add_header Cache-Control "no-cache";
             add_header X-Frame-Options "DENY";
@@ -230,6 +286,7 @@ http {
         location /web/index_other.html {
             root /u01/static;
             gzip off;
+            gzip_static off;
             add_header Cache-Control "max-age=60";
             add_header X-XSS-Protection "0";
         }
@@ -263,7 +320,8 @@ http {
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-	    gzip off;
+    gzip off;
+    gzip_static off;
 
 
     index index.html;
@@ -294,7 +352,8 @@ http {
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-	    gzip off;
+    gzip off;
+    gzip_static off;
 
 
     index index.html;
@@ -526,12 +585,22 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 	assert.Equal(t, s, ninxConfigFile)
 }
 
+func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
+	err := GenerateNginxConfiguration("testdata/testRadishConfigWithGzipStatic.json", "testdata")
+	assert.Equal(t, nil, err)
+
+	data, err := ioutil.ReadFile("testdata/nginx.conf")
+	assert.Equal(t, nil, err)
+
+	s := string(data[:])
+	assert.Equal(t, s, nginxConfigFileWithGzipStatic)
+}
+
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
 	os.Setenv("NGINX_PROXY_READ_TIMEOUT", "5")
 	os.Setenv("PROXY_PASS_HOST", "127.0.0.1")
 	os.Setenv("PROXY_PASS_PORT", "9099")
-
-	err := GenerateNginxConfiguration("testdata/testRadishConfig.json", "testdata")
+	err := GenerateNginxConfiguration("testdata/testRadishConfigWithProxy.json", "testdata")
 	assert.Equal(t, nil, err)
 
 	data, err := ioutil.ReadFile("testdata/nginx.conf")
@@ -544,6 +613,13 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 	os.Unsetenv("NGINX_PROXY_READ_TIMEOUT")
 	os.Unsetenv("PROXY_PASS_HOST")
 	os.Unsetenv("PROXY_PASS_PORT")
+}
+
+func TestGenerateNginxConfigurationWithProxyShouldFailWhenEnvsAreMissing(t *testing.T) {
+	err := GenerateNginxConfiguration("testdata/testRadishConfigWithProxy.json", "testdata")
+	if err == nil {
+		t.Fail()
+	}
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) {
@@ -580,9 +656,6 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *tes
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	println(s)
-	println("")
-	println(nginxConfWithCustomLocations)
 	assert.Equal(t, s, nginxConfWithCustomLocations)
 }
 

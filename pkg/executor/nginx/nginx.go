@@ -39,7 +39,7 @@ http {
     keepalive_timeout  75;
     proxy_read_timeout {{.ProxyReadTimeout}};
 
-	{{.Gzip}}
+{{.Gzip}}
 
     index index.html;
 
@@ -47,7 +47,7 @@ http {
        listen 8080;
 
        location /api {
-          {{if or .HasNodeJSApplication .ConfigurableProxy}}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
+          {{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
          {{$key}} {{$value}};{{end}}
       }
     {{range $value := .Exclude}}
@@ -68,6 +68,12 @@ http {
     }
 }
 `
+
+type proxy struct {
+	hasProxy bool
+	host     string
+	port     string
+}
 
 //GenerateNginxConfiguration :
 func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
@@ -119,6 +125,40 @@ func generateNginxConfiguration(openshiftConfig OpenshiftConfig, fileWriter util
 	return nil
 }
 
+func configureProxyPass(config OpenshiftConfig) (*proxy, error) {
+	hasNodeJsAppliacation := config.Web.Nodejs.Main != ""
+
+	if hasNodeJsAppliacation && !config.Web.ConfigurableProxy {
+		return &proxy{
+			hasProxy: true,
+			host:     "localhost",
+			port:     "9090",
+		}, nil
+
+	} else if config.Web.ConfigurableProxy || hasNodeJsAppliacation {
+
+		proxyPassHost, ok := os.LookupEnv("PROXY_PASS_HOST")
+		if !ok {
+			return nil, errors.Errorf("ConfigurableProxy is configured, but PROXY_PASS_HOST is missing")
+		}
+		proxyPassPort, ok := os.LookupEnv("PROXY_PASS_PORT")
+		if !ok {
+			return nil, errors.Errorf("ConfigurableProxy is configured, but PROXY_PASS_PORT is missing")
+		}
+
+		return &proxy{
+			hasProxy: true,
+			host:     proxyPassHost,
+			port:     proxyPassPort,
+		}, nil
+	} else {
+		return &proxy{
+			hasProxy: false,
+		}, nil
+	}
+
+}
+
 func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.TemplateInput, error) {
 	documentRoot := "/u01/static"
 	path := "/"
@@ -141,34 +181,33 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		exclude = []string{}
 	}
 
-	proxyPassHost := getEnvOrDefault("PROXY_PASS_HOST", "localhost")
-
-	proxyPassPort := getEnvOrDefault("PROXY_PASS_PORT", "9090")
+	proxy, err := configureProxyPass(openshiftConfig)
+	if err != nil {
+		return nil, err
+	}
 
 	proxyReadTimeout := getEnvOrDefault("NGINX_PROXY_READ_TIMEOUT", "60")
 
 	workerConnections := getEnvOrDefault("NGINX_WORKER_CONNECTIONS", "1024")
-
 	workerProcesses := getEnvOrDefault("NGINX_WORKER_PROCESSES", "1")
 
 	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
 	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
 
 	return &executor.TemplateInput{
-		HasNodeJSApplication: openshiftConfig.Web.Nodejs.Main != "",
-		NginxOverrides:       openshiftConfig.Web.Nodejs.Overrides,
-		ConfigurableProxy:    openshiftConfig.Web.ConfigurableProxy,
-		ExtraStaticHeaders:   openshiftConfig.Web.WebApp.Headers,
-		SPA:                  !openshiftConfig.Web.WebApp.DisableTryfiles,
-		Path:                 path,
-		Gzip:                 nginxGzipForTemplate,
-		Exclude:              exclude,
-		Locations:            nginxLocationForTemplate,
-		ProxyPassHost:        proxyPassHost,
-		ProxyPassPort:        proxyPassPort,
-		WorkerConnections:    workerConnections,
-		WorkerProcesses:      workerProcesses,
-		ProxyReadTimeout:     proxyReadTimeout,
+		NginxOverrides:     openshiftConfig.Web.Nodejs.Overrides,
+		ExtraStaticHeaders: openshiftConfig.Web.WebApp.Headers,
+		SPA:                !openshiftConfig.Web.WebApp.DisableTryfiles,
+		Path:               path,
+		Gzip:               nginxGzipForTemplate,
+		Exclude:            exclude,
+		Locations:          nginxLocationForTemplate,
+		HasProxyPass:       proxy.hasProxy,
+		ProxyPassHost:      proxy.host,
+		ProxyPassPort:      proxy.port,
+		WorkerConnections:  workerConnections,
+		WorkerProcesses:    workerProcesses,
+		ProxyReadTimeout:   proxyReadTimeout,
 	}, nil
 }
 
@@ -265,20 +304,30 @@ func getGzipConfAsString(gzip nginxGzip, location string, indent string) string 
 		if gzip.MinLength > 0 {
 			location = fmt.Sprintf("%s%sgzip_min_length %d;\n", location, indent, gzip.MinLength)
 		}
+		if gzip.Types != "" {
+			location = fmt.Sprintf("%s%sgzip_types %s;\n", location, indent, gzip.Types)
+		}
+	} else {
+		location = fmt.Sprintf("%s%sgzip off;\n", location, indent)
+	}
+
+	if strings.TrimSpace(gzip.UseStatic) == "on" {
+		location = fmt.Sprintf("%s%sgzip_static on;\n", location, indent)
+	} else {
+		location = fmt.Sprintf("%s%sgzip_static off;\n", location, indent)
+	}
+
+	//settings gzip_vary, gzip_proxied and gzip_disable are relevant for both gzip and gzip_static
+	if strings.TrimSpace(gzip.Use) == "on" || strings.TrimSpace(gzip.UseStatic) == "on" {
 		if gzip.Vary != "" {
 			location = fmt.Sprintf("%s%sgzip_vary %s;\n", location, indent, strings.TrimSpace(gzip.Vary))
 		}
 		if gzip.Proxied != "" {
 			location = fmt.Sprintf("%s%sgzip_proxied %s;\n", location, indent, gzip.Proxied)
 		}
-		if gzip.Types != "" {
-			location = fmt.Sprintf("%s%sgzip_types %s;\n", location, indent, gzip.Types)
-		}
 		if gzip.Disable != "" {
 			location = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", location, indent, gzip.Disable)
 		}
-	} else {
-		location = fmt.Sprintf("%s%sgzip off;\n", location, indent)
 	}
 	return location
 }

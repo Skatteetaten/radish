@@ -24,20 +24,19 @@ type Executor interface {
 
 //TemplateInput :
 type TemplateInput struct {
-	Baseimage            string
-	HasNodeJSApplication bool
-	NginxOverrides       map[string]string
-	ConfigurableProxy    bool
-	Static               string
-	SPA                  bool
-	ExtraStaticHeaders   map[string]string
-	Path                 string
-	ProxyPassHost        string
-	ProxyPassPort        string
-	Gzip                 string
-	Exclude              []string
-	Locations            string
-	WorkerConnections    string
-	WorkerProcesses      string
-	ProxyReadTimeout     string
+	Baseimage          string
+	NginxOverrides     map[string]string
+	Static             string
+	SPA                bool
+	ExtraStaticHeaders map[string]string
+	Path               string
+	HasProxyPass       bool
+	ProxyPassHost      string
+	ProxyPassPort      string
+	Gzip               string
+	Exclude            []string
+	Locations          string
+	WorkerConnections  string
+	WorkerProcesses    string
+	ProxyReadTimeout   string
 }
