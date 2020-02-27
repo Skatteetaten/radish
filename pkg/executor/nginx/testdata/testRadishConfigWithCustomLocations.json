@@ -30,9 +30,7 @@
              "X-Frame-Options": "DENY"
             },
             "gzip": {
-             "use": "on",
              "use_static": "on",
-             "min_length": 1024,
              "vary": "on"
             }
           },

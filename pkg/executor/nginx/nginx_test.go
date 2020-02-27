@@ -34,7 +34,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -84,8 +83,11 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static on;
+    gzip_vary on;
+    gzip_proxied expired no-cache no-store private auth;
+    gzip_disable msie6;
+    gzip_http_version 1.1;
 
 
     index index.html;
@@ -134,7 +136,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -184,7 +185,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -242,7 +242,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -265,8 +264,6 @@ http {
 	   
 	           location /web/index.html {
             root /u01/static;
-            gzip on;
-            gzip_min_length 1024;
             gzip_static on;
             gzip_vary on;
             add_header Cache-Control "no-cache";
@@ -280,8 +277,6 @@ http {
         }
         location /web/index_other.html {
             root /u01/static;
-            gzip off;
-            gzip_static off;
             add_header Cache-Control "max-age=60";
             add_header X-XSS-Protection "0";
         }
@@ -314,7 +309,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -345,7 +339,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -586,7 +579,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, nginxConfigFileWithGzipStatic)
+	assert.Equal(t, nginxConfigFileWithGzipStatic, s)
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {

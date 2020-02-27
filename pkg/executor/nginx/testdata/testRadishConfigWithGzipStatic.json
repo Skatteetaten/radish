@@ -23,8 +23,11 @@
             }
         },
         "gzip": {
-          "use" : "off",
-          "use_static" : "on"
+          "use_static" : "on",
+          "proxied" : "expired no-cache no-store private auth",
+          "vary" : "on",
+          "disable" : "msie6",
+          "http_version" : "1.1"
         }
     }
   }
