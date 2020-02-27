@@ -275,7 +275,9 @@ func nginxLocationsMapToString(m nginxLocations, documentRoot string, path strin
 		singleLocation = fmt.Sprintf("%s%sroot %s;\n", singleLocation, indentN2, documentRoot)
 
 		gZipUse := strings.TrimSpace(value.Gzip.Use)
-		if gZipUse == "on" || gZipUse == "off" {
+		gZipUseStatic := strings.TrimSpace(value.Gzip.UseStatic)
+
+		if gZipUse == "on" || gZipUse == "off" || gZipUseStatic == "on" || gZipUseStatic == "off" {
 			singleLocation = getGzipConfAsString(value.Gzip, singleLocation, indentN2)
 		}
 
@@ -313,7 +315,7 @@ func getGzipConfAsString(gzip nginxGzip, location string, indent string) string 
 		location = fmt.Sprintf("%s%sgzip_static off;\n", location, indent)
 	}
 
-	//settings gzip_vary, gzip_proxied and gzip_disable are relevant for both gzip and gzip_static
+	//settings gzip_vary, gzip_proxied, gzip_http_version and gzip_disable are relevant for both gzip and gzip_static
 	if strings.TrimSpace(gzip.Use) == "on" || strings.TrimSpace(gzip.UseStatic) == "on" {
 		if gzip.Vary != "" {
 			location = fmt.Sprintf("%s%sgzip_vary %s;\n", location, indent, strings.TrimSpace(gzip.Vary))
@@ -323,6 +325,9 @@ func getGzipConfAsString(gzip nginxGzip, location string, indent string) string 
 		}
 		if gzip.Disable != "" {
 			location = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", location, indent, gzip.Disable)
+		}
+		if gzip.HTTPVersion != "" {
+			location = fmt.Sprintf("%s%sgzip_http_version \"%s\";\n", location, indent, gzip.HTTPVersion)
 		}
 	}
 	return location

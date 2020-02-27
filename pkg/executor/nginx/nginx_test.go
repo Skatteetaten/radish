@@ -267,7 +267,7 @@ http {
             root /u01/static;
             gzip on;
             gzip_min_length 1024;
-            gzip_static off;
+            gzip_static on;
             gzip_vary on;
             add_header Cache-Control "no-cache";
             add_header X-Frame-Options "DENY";

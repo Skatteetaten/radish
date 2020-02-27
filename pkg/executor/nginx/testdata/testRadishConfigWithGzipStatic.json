@@ -24,7 +24,7 @@
         },
         "gzip": {
           "use" : "off",
-          "useStatic" : "on"
+          "use_static" : "on"
         }
     }
   }
