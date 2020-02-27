@@ -52,10 +52,6 @@ type nginxLocation struct {
 
 type nginxGzip struct {
 	UseStatic   string `json:"use_static"`
-	Vary        string `json:"vary"`
-	Proxied     string `json:"proxied"`
-	Disable     string `json:"disable"`
-	HTTPVersion string `json:"http_version"`
 }
 
 //UnmarshallOpenshiftConfig :

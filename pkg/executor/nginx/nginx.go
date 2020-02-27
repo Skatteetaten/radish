@@ -298,20 +298,8 @@ func nginxGzipMapToString(gzip nginxGzip) string {
 func getGzipConfAsString(gzip nginxGzip, location string, indent string) string {
 	if strings.TrimSpace(gzip.UseStatic) == "on" {
 		location = fmt.Sprintf("%s%sgzip_static on;\n", location, indent)
-
-		if gzip.Vary != "" {
-			location = fmt.Sprintf("%s%sgzip_vary %s;\n", location, indent, strings.TrimSpace(gzip.Vary))
-		}
-		if gzip.Proxied != "" {
-			location = fmt.Sprintf("%s%sgzip_proxied %s;\n", location, indent, gzip.Proxied)
-		}
-		if gzip.Disable != "" {
-			location = fmt.Sprintf("%s%sgzip_disable %s;\n", location, indent, gzip.Disable)
-		}
-		if gzip.HTTPVersion != "" {
-			location = fmt.Sprintf("%s%sgzip_http_version %s;\n", location, indent, gzip.HTTPVersion)
-		}
-
+		location = fmt.Sprintf("%s%sgzip_vary on;\n", location, indent)
+		location = fmt.Sprintf("%s%sgzip_proxied any;\n", location, indent)
 	} else {
 		location = fmt.Sprintf("%s%sgzip_static off;\n", location, indent)
 	}

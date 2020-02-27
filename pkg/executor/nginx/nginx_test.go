@@ -85,9 +85,7 @@ http {
 
     gzip_static on;
     gzip_vary on;
-    gzip_proxied expired no-cache no-store private auth;
-    gzip_disable msie6;
-    gzip_http_version 1.1;
+    gzip_proxied any;
 
 
     index index.html;
@@ -266,6 +264,7 @@ http {
             root /u01/static;
             gzip_static on;
             gzip_vary on;
+            gzip_proxied any;
             add_header Cache-Control "no-cache";
             add_header X-Frame-Options "DENY";
             add_header X-XSS-Protection "1";
