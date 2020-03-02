@@ -46,8 +46,10 @@ http {
        listen 8080;
 
        location /api {
-          {{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
-         {{$key}} {{$value}};{{end}}
+         {{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};
+         proxy_http_version 1.1;{{else}}return 404;
+		 {{end}}{{range $key, $value := .NginxOverrides}}
+		 {{$key}} {{$value}};{{end}}
       }
     {{range $value := .Exclude}}
 	   location {{$value}} {  
@@ -300,7 +302,6 @@ func getGzipConfAsString(gzip nginxGzip, location string, indent string) string 
 		location = fmt.Sprintf("%s%sgzip_static on;\n", location, indent)
 		location = fmt.Sprintf("%s%sgzip_vary on;\n", location, indent)
 		location = fmt.Sprintf("%s%sgzip_proxied any;\n", location, indent)
-		location = fmt.Sprintf("%s%sgzip_http_version 1.0;\n", location, indent)
 	} else {
 		location = fmt.Sprintf("%s%sgzip_static off;\n", location, indent)
 	}

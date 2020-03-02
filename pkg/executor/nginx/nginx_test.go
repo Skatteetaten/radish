@@ -43,8 +43,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 
@@ -94,8 +95,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 
@@ -143,8 +145,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://127.0.0.1:9099;
-         client_max_body_size 10m;
+         proxy_pass http://127.0.0.1:9099;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 
@@ -192,8 +195,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 	   location test/fil1.swf {  
@@ -249,8 +253,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 
@@ -349,7 +354,8 @@ const expectedNginxConfFileNoNodejsPartial = `
        listen 8080;
 
        location /api {
-          return 404;
+         return 404;
+		 
       }
     
 
@@ -367,7 +373,8 @@ const expectedNginxConfFilePartial = `
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
       }
     
 
@@ -386,7 +393,8 @@ const expectedNginxConfFileSpaAndCustomHeaders = `
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
       }
     
 
@@ -407,7 +415,8 @@ const expectedNginxConfFileNoSpaAndCustomHeaders = `
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
       }
     
 
@@ -427,8 +436,9 @@ const expectedNginxConfigWithOverrides = `
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 5m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 5m;
       }
     
 
@@ -457,7 +467,7 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfFilePartial, actual)
+	assert.Equal(t, actual, nginxConfPrefix+expectedNginxConfFilePartial)
 }
 
 func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {

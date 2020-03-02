@@ -51,7 +51,7 @@ type nginxLocation struct {
 }
 
 type nginxGzip struct {
-	UseStatic   string `json:"use_static"`
+	UseStatic string `json:"use_static"`
 }
 
 //UnmarshallOpenshiftConfig :
