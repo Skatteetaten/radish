@@ -46,8 +46,10 @@ http {
        listen 8080;
 
        location /api {
-          {{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
-         {{$key}} {{$value}};{{end}}
+         {{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};
+         proxy_http_version 1.1;{{else}}return 404;
+		 {{end}}{{range $key, $value := .NginxOverrides}}
+		 {{$key}} {{$value}};{{end}}
       }
     {{range $value := .Exclude}}
 	   location {{$value}} {  
@@ -274,8 +276,9 @@ func nginxLocationsMapToString(m nginxLocations, documentRoot string, path strin
 		singleLocation := fmt.Sprintf("%slocation %s%s {\n", indentN1, path, key)
 		singleLocation = fmt.Sprintf("%s%sroot %s;\n", singleLocation, indentN2, documentRoot)
 
-		gZipUse := strings.TrimSpace(value.Gzip.Use)
-		if gZipUse == "on" || gZipUse == "off" {
+		gZipUseStatic := strings.TrimSpace(value.Gzip.UseStatic)
+
+		if gZipUseStatic == "on" || gZipUseStatic == "off" {
 			singleLocation = getGzipConfAsString(value.Gzip, singleLocation, indentN2)
 		}
 
@@ -295,36 +298,14 @@ func nginxGzipMapToString(gzip nginxGzip) string {
 }
 
 func getGzipConfAsString(gzip nginxGzip, location string, indent string) string {
-	if strings.TrimSpace(gzip.Use) == "on" {
-		location = fmt.Sprintf("%s%sgzip on;\n", location, indent)
-		if gzip.MinLength > 0 {
-			location = fmt.Sprintf("%s%sgzip_min_length %d;\n", location, indent, gzip.MinLength)
-		}
-		if gzip.Types != "" {
-			location = fmt.Sprintf("%s%sgzip_types %s;\n", location, indent, gzip.Types)
-		}
-	} else {
-		location = fmt.Sprintf("%s%sgzip off;\n", location, indent)
-	}
-
 	if strings.TrimSpace(gzip.UseStatic) == "on" {
 		location = fmt.Sprintf("%s%sgzip_static on;\n", location, indent)
+		location = fmt.Sprintf("%s%sgzip_vary on;\n", location, indent)
+		location = fmt.Sprintf("%s%sgzip_proxied any;\n", location, indent)
 	} else {
 		location = fmt.Sprintf("%s%sgzip_static off;\n", location, indent)
 	}
 
-	//settings gzip_vary, gzip_proxied and gzip_disable are relevant for both gzip and gzip_static
-	if strings.TrimSpace(gzip.Use) == "on" || strings.TrimSpace(gzip.UseStatic) == "on" {
-		if gzip.Vary != "" {
-			location = fmt.Sprintf("%s%sgzip_vary %s;\n", location, indent, strings.TrimSpace(gzip.Vary))
-		}
-		if gzip.Proxied != "" {
-			location = fmt.Sprintf("%s%sgzip_proxied %s;\n", location, indent, gzip.Proxied)
-		}
-		if gzip.Disable != "" {
-			location = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", location, indent, gzip.Disable)
-		}
-	}
 	return location
 }
 

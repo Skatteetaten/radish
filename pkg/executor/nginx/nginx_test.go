@@ -34,7 +34,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -44,8 +43,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 
@@ -84,8 +84,9 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static on;
+    gzip_vary on;
+    gzip_proxied any;
 
 
     index index.html;
@@ -94,8 +95,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 
@@ -134,7 +136,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -144,8 +145,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://127.0.0.1:9099;
-         client_max_body_size 10m;
+         proxy_pass http://127.0.0.1:9099;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 
@@ -184,7 +186,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -194,8 +195,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 	   location test/fil1.swf {  
@@ -242,7 +244,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -252,8 +253,9 @@ http {
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 10m;
       }
     
 
@@ -265,10 +267,9 @@ http {
 	   
 	           location /web/index.html {
             root /u01/static;
-            gzip on;
-            gzip_min_length 1024;
-            gzip_static off;
+            gzip_static on;
             gzip_vary on;
+            gzip_proxied any;
             add_header Cache-Control "no-cache";
             add_header X-Frame-Options "DENY";
             add_header X-XSS-Protection "1";
@@ -280,8 +281,6 @@ http {
         }
         location /web/index_other.html {
             root /u01/static;
-            gzip off;
-            gzip_static off;
             add_header Cache-Control "max-age=60";
             add_header X-XSS-Protection "0";
         }
@@ -314,7 +313,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -345,7 +343,6 @@ http {
 
     keepalive_timeout  75;
 
-    gzip off;
     gzip_static off;
 
 
@@ -357,7 +354,8 @@ const expectedNginxConfFileNoNodejsPartial = `
        listen 8080;
 
        location /api {
-          return 404;
+         return 404;
+		 
       }
     
 
@@ -375,7 +373,8 @@ const expectedNginxConfFilePartial = `
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
       }
     
 
@@ -394,7 +393,8 @@ const expectedNginxConfFileSpaAndCustomHeaders = `
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
       }
     
 
@@ -415,7 +415,8 @@ const expectedNginxConfFileNoSpaAndCustomHeaders = `
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
       }
     
 
@@ -435,8 +436,9 @@ const expectedNginxConfigWithOverrides = `
        listen 8080;
 
        location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 5m;
+         proxy_pass http://localhost:9090;
+         proxy_http_version 1.1;
+		 client_max_body_size 5m;
       }
     
 
@@ -465,7 +467,7 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfFilePartial, actual)
+	assert.Equal(t, actual, nginxConfPrefix+expectedNginxConfFilePartial)
 }
 
 func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
@@ -586,7 +588,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, nginxConfigFileWithGzipStatic)
+	assert.Equal(t, nginxConfigFileWithGzipStatic, s)
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
