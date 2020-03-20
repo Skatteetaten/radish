@@ -17,7 +17,7 @@ func Start(p *os.Process, forwardGracetime time.Duration) {
 }
 func forward(signals chan os.Signal, p *os.Process, forwardGracetime time.Duration) {
 	for s := range signals {
-		logrus.Infof("Got %s. Sending to child in %d seconds", s, forwardGracetime.Seconds())
+		logrus.Infof("Got %s. Sending to child in %0.0f seconds", s, forwardGracetime.Seconds())
 		if forwardGracetime > 0 {
 			time.Sleep(forwardGracetime)
 		}
