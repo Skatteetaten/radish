@@ -10,8 +10,10 @@ import (
 	"github.com/skatteetaten/radish/pkg/signaler"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 //RunRadish :
@@ -33,12 +35,26 @@ func RunRadish(args []string) {
 	reaper.Start()
 	signal.Ignore(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL)
 	pid := cmd.Process.Pid
-	signaler.Start(cmd.Process)
+	signaler.Start(cmd.Process, findGraceTime())
 	var wstatus syscall.WaitStatus
 	syscall.Wait4(int(pid), &wstatus, 0, nil)
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
 	os.Exit(int(exitCode))
+}
+
+func findGraceTime() time.Duration {
+	signalForward := os.Getenv("RADISH_SIGNAL_FORWARD_DELAY")
+	if signalForward == "" {
+		return 0
+	}
+	sf, err := strconv.Atoi(signalForward)
+	if err != nil {
+		logrus.Warnf("Could not parse %s to an integer (%s). Signal forward delay is 0", signalForward, err)
+		return 0
+	}
+
+	return time.Duration(int64(sf) * int64(time.Second))
 }
 
 //PrintRadishCP :
