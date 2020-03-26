@@ -132,7 +132,7 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 
 	var splunkStanza string
 
-	if vars.SplunkAppLogConfig != "" { // Use new functionality
+	if vars.SplunkAppLogConfig != "" { // Use external configuration
 		var splunkAppLogConfigList []SplunkAppLogConfigElement
 		json.Unmarshal([]byte(vars.SplunkAppLogConfig), &splunkAppLogConfigList)
 
@@ -151,7 +151,7 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 			return errors.Wrap(err, "Failed to write Splunk stanzas")
 		}
 
-	} else { // Default to old functionality
+	} else { // Default to internal configuration
 		if splunkIndexFlag != "" {
 			vars.SplunkIndex = splunkIndexFlag
 		}
