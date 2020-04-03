@@ -20,33 +20,36 @@ host = {{.HostName}}
 # --- end/stanza
 `
 
-const customSplunkStanzaNewFormatResult string = `# --- start/stanza AUDIT
+const customSplunkStanzaNewFormatResult string = `# --- start/stanza test
 [monitor://*.log]
 disabled = false
 followTail = 0
 sourcetype = log4j
 index = test
-_meta = environment:: application:: nodetype::openshift logtype::audit
+
+_meta = environment:: application:: nodetype::openshift
 host = 
 # --- end/stanza
 
-# --- start/stanza AUDIT
+# --- start/stanza audit
 [monitor://*audit]
 disabled = false
 followTail = 0
 sourcetype = _json
 index = audit
-_meta = environment:: application:: nodetype::openshift logtype::audit
+
+_meta = environment:: application:: nodetype::openshift
 host = 
 # --- end/stanza
 
-# --- start/stanza AUDIT
+# --- start/stanza access
 [monitor://*access]
 disabled = false
 followTail = 0
 sourcetype = combined
 index = access
-_meta = environment:: application:: nodetype::openshift logtype::audit
+
+_meta = environment:: application:: nodetype::openshift
 host = 
 # --- end/stanza
 
@@ -176,6 +179,9 @@ func TestGenerateNoStanzas(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	outputFileName := dir
+	os.Setenv("POD_NAMESPACE", "podNamespace")
+	os.Setenv("APP_NAME", "appName")
+	os.Setenv("HOSTNAME", "hostName")
 	os.Setenv("SPLUNK_INDEX", "")
 	os.Setenv("SPLUNK_AUDIT_INDEX", "")
 	os.Setenv("SPLUNK_APPDYNAMICS_INDEX", "")
