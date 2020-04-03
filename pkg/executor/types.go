@@ -38,4 +38,5 @@ type TemplateInput struct {
 	Locations          string
 	WorkerConnections  string
 	WorkerProcesses    string
+	NotServingOnRoot   bool
 }
