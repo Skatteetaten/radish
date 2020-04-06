@@ -9,7 +9,6 @@ import (
 	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
 	"text/template"
-	_ "text/template"
 )
 
 const splunkAppLogConfigTemplate string = `# --- start/stanza {{.Name}}
