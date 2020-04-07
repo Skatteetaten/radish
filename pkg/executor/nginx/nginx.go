@@ -66,6 +66,14 @@ http {
 	   }
 	   
 	   {{.Locations}}
+       
+        {{if .NotServingOnRoot}}
+        location = / {
+			if ($request_method = HEAD) {
+    			return 200;
+			}
+		}
+       {{end}}
     }
 }
 `
@@ -193,6 +201,11 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
 	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
 
+	notServingOnRoot := true
+	if path == "/" {
+		notServingOnRoot = false
+	}
+
 	return &executor.TemplateInput{
 		NginxOverrides:     openshiftConfig.Web.Nodejs.Overrides,
 		ExtraStaticHeaders: openshiftConfig.Web.WebApp.Headers,
@@ -206,6 +219,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		ProxyPassPort:      proxy.port,
 		WorkerConnections:  workerConnections,
 		WorkerProcesses:    workerProcesses,
+		NotServingOnRoot:   notServingOnRoot,
 	}, nil
 }
 

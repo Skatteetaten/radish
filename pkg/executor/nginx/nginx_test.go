@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/skatteetaten/radish/pkg/util"
@@ -55,6 +56,11 @@ http {
           add_header SomeHeader "SomeValue";
 	   }
 	   
+       location =/ {
+          if($request_method=HEAD){ 
+          return200;
+          }
+        }
 	   
     }
 }
@@ -107,6 +113,11 @@ http {
           add_header SomeHeader "SomeValue";
 	   }
 	   
+       location =/ {
+			if ($request_method = HEAD) {
+    			return 200;
+			}
+		}
 	   
     }
 }
@@ -156,8 +167,12 @@ http {
           try_files $uri /web/index.html;
           add_header SomeHeader "SomeValue";
 	   }
-	   
-	   
+
+       location =/ {
+			if ($request_method = HEAD) {
+    			return 200;
+			}
+       }
     }
 }
 `
@@ -214,6 +229,12 @@ http {
           try_files $uri /web/index.html;
           add_header SomeHeader "SomeValue";
 	   }
+
+        location =/ {
+			if ($request_method = HEAD) {
+    			return 200;
+			}
+		}
 	   
 	   
     }
@@ -257,7 +278,6 @@ http {
          proxy_http_version 1.1;
 		 client_max_body_size 10m;
       }
-    
 
        location /web/ {
           root /u01/static;
@@ -265,7 +285,7 @@ http {
           add_header SomeHeader "SomeValue";
 	   }
 	   
-	           location /web/index.html {
+       location /web/index.html {
             root /u01/static;
             gzip_static on;
             gzip_vary on;
@@ -284,6 +304,12 @@ http {
             add_header Cache-Control "max-age=60";
             add_header X-XSS-Protection "0";
         }
+
+		location =/ {
+			if ($request_method = HEAD) {
+    			return 200;
+			}
+		}
 
     }
 }
@@ -447,7 +473,7 @@ const expectedNginxConfigWithOverrides = `
           try_files $uri /index.html;
 	   }
 	   
-	   
+
     }
 }
 `
@@ -467,7 +493,7 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, actual, nginxConfPrefix+expectedNginxConfFilePartial)
+	assert.Equal(t, cleanString(actual), cleanString(nginxConfPrefix+expectedNginxConfFilePartial))
 }
 
 func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
@@ -487,7 +513,8 @@ func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefixWithChangedWorkerConnsAndProcesses+expectedNginxConfFilePartial, actual)
+
+	assert.Equal(t, cleanString(nginxConfPrefixWithChangedWorkerConnsAndProcesses+expectedNginxConfFilePartial), cleanString(actual))
 
 	os.Unsetenv("NGINX_WORKER_CONNECTIONS")
 	os.Unsetenv("NGINX_WORKER_PROCESSES")
@@ -509,7 +536,7 @@ func TestGeneratedFilesWhenNodeJSIsDisabled(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&data))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileNoNodejsPartial, data)
+	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFileNoNodejsPartial), cleanString(data))
 }
 
 func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
@@ -536,14 +563,14 @@ func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileSpaAndCustomHeaders, actual)
+	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFileSpaAndCustomHeaders), cleanString(actual))
 
 	openshiftJSON.Web.WebApp.DisableTryfiles = true
 
 	err = generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileNoSpaAndCustomHeaders, actual)
+	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFileNoSpaAndCustomHeaders), cleanString(actual))
 }
 
 func TestThatOverrideInNginxIsSet(t *testing.T) {
@@ -565,7 +592,7 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfigWithOverrides, actual)
+	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfigWithOverrides), cleanString(actual))
 
 }
 
@@ -577,7 +604,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, ninxConfigFile)
+	assert.Equal(t, cleanString(s), cleanString(ninxConfigFile))
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
@@ -588,7 +615,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, nginxConfigFileWithGzipStatic, s)
+	assert.Equal(t, cleanString(nginxConfigFileWithGzipStatic), cleanString(s))
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
@@ -601,7 +628,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, ninxConfigFileWithCustomEnvParams)
+	assert.Equal(t, cleanString(s), cleanString(ninxConfigFileWithCustomEnvParams))
 
 	// Clean up env params
 	os.Unsetenv("PROXY_PASS_HOST")
@@ -623,7 +650,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) 
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, nginxConfigWithExclude)
+	assert.Equal(t, cleanString(s), cleanString(nginxConfigWithExclude))
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvParam(t *testing.T) {
@@ -635,7 +662,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvP
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, ninxConfigFile)
+	assert.Equal(t, cleanString(s), cleanString(ninxConfigFile))
 
 	// Clean up env params
 	os.Unsetenv("IGNORE_NGINX_EXCLUDE")
@@ -649,7 +676,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *tes
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, nginxConfWithCustomLocations)
+	assert.Equal(t, cleanString(s), cleanString(nginxConfWithCustomLocations))
 }
 
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {
@@ -666,4 +693,9 @@ func testFileWriter(res *string) util.FileWriter {
 		}
 		return err
 	}
+}
+
+func cleanString(in string) string {
+	replacer := strings.NewReplacer("\n", "", " ", "", "\t", "")
+	return replacer.Replace(in)
 }
