@@ -19,62 +19,61 @@ worker_processes  {{.WorkerProcesses}};
 error_log stderr;
 
 events {
-    worker_connections  {{.WorkerConnections}};
+	worker_connections  {{.WorkerConnections}};
 }
 
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+						'$status $body_bytes_sent "$http_referer" '
+						'"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /dev/stdout;
+	access_log  /dev/stdout;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	sendfile        on;
+	#tcp_nopush     on;
 
-    keepalive_timeout  75;
+	keepalive_timeout  75;
 
-{{.Gzip}}
+	{{.Gzip}}
 
-    index index.html;
+	index index.html;
 
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-         {{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};
-         proxy_http_version 1.1;{{else}}return 404;
-		 {{end}}{{range $key, $value := .NginxOverrides}}
-		 {{$key}} {{$value}};{{end}}
-      }
-    {{range $value := .Exclude}}
-	   location {{$value}} {  
-		  return 404;
-	   }
-    {{end}}
+		location /api {
+		{{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};
+			proxy_http_version 1.1;{{else}}return 404;
+		{{end}}{{range $key, $value := .NginxOverrides}}
+			{{$key}} {{$value}};{{end}}
+		}
+		{{range $value := .Exclude}}
+		location {{$value}} {  
+			return 404;
+		}
+	{{end}}
 {{if .SPA}}
-       location {{.Path}} {
-          root /u01/static;
-          try_files $uri {{.Path}}index.html;{{else}}
-       location {{.Path}} {
-          root /u01/static;{{end}}{{range $key, $value := .ExtraStaticHeaders}}
-          add_header {{$key}} "{{$value}}";{{end}}
-	   }
-	   
-	   {{.Locations}}
-       
-        {{if .NotServingOnRoot}}
-        location = / {
-			if ($request_method = HEAD) {
-    			return 200;
+		location {{.Path}} {
+			root /u01/static;
+			try_files $uri {{.Path}}index.html;{{else}}
+			location {{.Path}} {
+			root /u01/static;{{end}}{{range $key, $value := .ExtraStaticHeaders}}
+			add_header {{$key}} "{{$value}}";{{end}}
+		}
+		
+		{{.Locations}}
+		{{if .NotServingOnRoot}}
+		location =/ {
+			if ($request_method=HEAD) {
+				return 200;
 			}
 		}
-       {{end}}
-    }
+{{end}}
+	}
 }
 `
 
@@ -282,8 +281,8 @@ func (m headers) sort() []string {
 
 func nginxLocationsMapToString(m nginxLocations, documentRoot string, path string) string {
 	sumLocations := ""
-	indentN1 := strings.Repeat(" ", 8)
-	indentN2 := strings.Repeat(" ", 12)
+	indentN1 := strings.Repeat("\t", 2)
+	indentN2 := strings.Repeat("\t", 3)
 
 	for _, key := range m.sort() {
 		value := m[key]
@@ -307,7 +306,7 @@ func nginxLocationsMapToString(m nginxLocations, documentRoot string, path strin
 }
 
 func nginxGzipMapToString(gzip nginxGzip) string {
-	indent := strings.Repeat(" ", 4)
+	indent := strings.Repeat("\t", 1)
 	return getGzipConfAsString(gzip, "", indent)
 }
 
