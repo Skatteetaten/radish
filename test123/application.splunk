@@ -30,3 +30,4 @@ index = myindex
 _meta = environment::1 application::appname nodetype::openshift
 host = host
 # --- end/stanza
+

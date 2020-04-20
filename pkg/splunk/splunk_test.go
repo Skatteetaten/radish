@@ -20,6 +20,41 @@ host = {{.HostName}}
 # --- end/stanza
 `
 
+const customSplunkStanzaNewFormatResult string = `# --- start/stanza test
+[monitor://*.log]
+disabled = false
+followTail = 0
+sourcetype = log4j
+index = test
+
+_meta = environment:: application:: nodetype::openshift
+host = 
+# --- end/stanza
+
+# --- start/stanza audit
+[monitor://*audit]
+disabled = false
+followTail = 0
+sourcetype = _json
+index = audit
+
+_meta = environment:: application:: nodetype::openshift
+host = 
+# --- end/stanza
+
+# --- start/stanza access
+[monitor://*access]
+disabled = false
+followTail = 0
+sourcetype = combined
+index = access
+
+_meta = environment:: application:: nodetype::openshift
+host = 
+# --- end/stanza
+
+`
+
 func TestGenerateStanzasCustomFile(t *testing.T) {
 	dir, err := ioutil.TempDir("", "radishtest")
 	assert.NoError(t, err)
@@ -144,6 +179,9 @@ func TestGenerateNoStanzas(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	outputFileName := dir
+	os.Setenv("POD_NAMESPACE", "podNamespace")
+	os.Setenv("APP_NAME", "appName")
+	os.Setenv("HOSTNAME", "hostName")
 	os.Setenv("SPLUNK_INDEX", "")
 	os.Setenv("SPLUNK_AUDIT_INDEX", "")
 	os.Setenv("SPLUNK_APPDYNAMICS_INDEX", "")
@@ -152,6 +190,29 @@ func TestGenerateNoStanzas(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = os.Stat(outputFileName + "/application.splunk")
 	assert.True(t, os.IsNotExist(err))
+}
+
+func TestGenerateStanzasNewFormat(t *testing.T) {
+	dir, err := ioutil.TempDir("", "radishtest")
+	assert.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	outputFileName := dir
+	splunkAuditIndex := "audit-test"
+	splunkAppDynamicsIndex := "monitor-123"
+
+	os.Setenv("SPLUNK_INDEX", "")
+	os.Setenv("SPLUNK_AUDIT_INDEX", splunkAuditIndex)
+	os.Setenv("SPLUNK_APPDYNAMICS_INDEX", splunkAppDynamicsIndex)
+	os.Setenv("POD_NAMESPACE", "podNamespace")
+	os.Setenv("APP_NAME", "appName")
+	os.Setenv("HOSTNAME", "hostName")
+	os.Setenv("SPLUNK_APPLICATION_LOG_CONFIG", "[{\"index\": \"test\", \"pattern\": \"*.log\", \"sourcetype\": \"log4j\"},{\"index\": \"audit\", \"pattern\":\"*audit\", \"sourcetype\": \"_json\"},{\"index\": \"access\", \"pattern\": \"*access\", \"sourcetype\": \"combined\"}]")
+
+	err = GenerateStanzas("", "", "", "", "", outputFileName)
+	assert.NoError(t, err)
+	stanzaFileOutput := readFile(outputFileName + "/application.splunk")
+	assert.Equal(t, customSplunkStanzaNewFormatResult, stanzaFileOutput)
 }
 
 func generalStanzaFormat(stanzaFile string, entries int) bool {
