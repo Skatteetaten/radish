@@ -21,36 +21,36 @@ host = {{.HostName}}
 `
 
 const customSplunkStanzaNewFormatResult string = `# --- start/stanza test
-[monitor://*.log]
+[monitor://./logs/*.log]
 disabled = false
 followTail = 0
 sourcetype = log4j
 index = test
 
-_meta = environment:: application:: nodetype::openshift
-host = 
+_meta = environment::podNamespace application::appName nodetype::openshift
+host = hostName
 # --- end/stanza
 
 # --- start/stanza audit
-[monitor://*audit]
+[monitor://./logs/*audit]
 disabled = false
 followTail = 0
 sourcetype = _json
 index = audit
 
-_meta = environment:: application:: nodetype::openshift
-host = 
+_meta = environment::podNamespace application::appName nodetype::openshift
+host = hostName
 # --- end/stanza
 
 # --- start/stanza access
-[monitor://*access]
+[monitor://./logs/*access]
 disabled = false
 followTail = 0
 sourcetype = combined
 index = access
 
-_meta = environment:: application:: nodetype::openshift
-host = 
+_meta = environment::podNamespace application::appName nodetype::openshift
+host = hostName
 # --- end/stanza
 
 `
@@ -79,7 +79,7 @@ func TestGenerateStanzasCustomFile(t *testing.T) {
 	err = GenerateStanzas(stanzaFile, splunkIndex, "", "", "", outputFileName)
 	assert.NoError(t, err)
 	stanzaFileOutput := readFile(outputFileName + "/application.splunk")
-	assert.True(t, generalStanzaFormat(stanzaFileOutput, 1))
+	assert.True(t, generalStanzaFormat(stanzaFileOutput, 1, t))
 	assert.True(t, strings.Contains(stanzaFileOutput, "# --- start/stanza CUSTOMIZED"))
 	assert.True(t, strings.Count(stanzaFileOutput, "index = "+splunkIndex) == 1)
 }
@@ -112,7 +112,7 @@ func TestGenerateStanzasAll(t *testing.T) {
 	err = GenerateStanzas("", "", "", "", "", outputFileName)
 	assert.NoError(t, err)
 	stanzaFileOutput := readFile(outputFileName + "/application.splunk")
-	assert.True(t, generalStanzaFormat(stanzaFileOutput, 7))
+	assert.True(t, generalStanzaFormat(stanzaFileOutput, 7, t))
 	assert.True(t, strings.HasPrefix(stanzaFileOutput, "# --- start/stanza STDOUT"))
 	assert.True(t, strings.Contains(stanzaFileOutput, "# --- start/stanza ACCESS_LOG"))
 	assert.True(t, strings.Contains(stanzaFileOutput, "# --- start/stanza GC LOG"))
@@ -129,7 +129,7 @@ func TestGenerateStanzasAll(t *testing.T) {
 	os.Setenv("SPLUNK_ATS_INDEX", "")
 	err = GenerateStanzas("", "", "", "", "", outputFileName)
 	stanzaFileOutput = readFile(outputFileName + "/application.splunk")
-	assert.True(t, generalStanzaFormat(stanzaFileOutput, 3))
+	assert.True(t, generalStanzaFormat(stanzaFileOutput, 3, t))
 
 	// Test "command line" options
 	splunkIndex = "newIndex"
@@ -143,7 +143,7 @@ func TestGenerateStanzasAll(t *testing.T) {
 	os.Setenv("POD_NAMESPACE", podNamespace)
 	os.Setenv("APP_NAME", appName)
 	os.Setenv("HOSTNAME", hostName)
-	assert.True(t, generalStanzaFormat(stanzaFileOutput, 3))
+	assert.True(t, generalStanzaFormat(stanzaFileOutput, 3, t))
 	assert.True(t, strings.Count(stanzaFileOutput, "index = "+splunkIndex) == 3)
 }
 
@@ -166,7 +166,7 @@ func TestGenerateStanzasNoApp(t *testing.T) {
 	err = GenerateStanzas("", "", "", "", "", outputFileName)
 	assert.NoError(t, err)
 	stanzaFileOutput := readFile(outputFileName + "/application.splunk")
-	assert.True(t, generalStanzaFormat(stanzaFileOutput, 2))
+	assert.True(t, generalStanzaFormat(stanzaFileOutput, 2, t))
 	assert.True(t, strings.HasPrefix(stanzaFileOutput, "# --- start/stanza AUDIT"))
 	assert.True(t, strings.Contains(stanzaFileOutput, "# --- start/stanza APPDYNAMICS"))
 	assert.True(t, strings.Contains(stanzaFileOutput, "index = "+splunkAppDynamicsIndex))
@@ -213,36 +213,29 @@ func TestGenerateStanzasNewFormat(t *testing.T) {
 	assert.NoError(t, err)
 	stanzaFileOutput := readFile(outputFileName + "/application.splunk")
 	assert.Equal(t, customSplunkStanzaNewFormatResult, stanzaFileOutput)
+	assert.True(t, generalStanzaFormat(stanzaFileOutput, 3, t))
 }
 
-func generalStanzaFormat(stanzaFile string, entries int) bool {
+func generalStanzaFormat(stanzaFile string, entries int, t *testing.T) bool {
 	hostName := os.Getenv("HOSTNAME")
 	podNamespace := os.Getenv("POD_NAMESPACE")
 	appName := os.Getenv("APP_NAME")
 
 	returnValue := true
-	if strings.Count(stanzaFile, "# --- start/stanza") != entries {
-		returnValue = false
-	}
-	if strings.Count(stanzaFile, "# --- end/stanza") != entries {
-		returnValue = false
-	}
-	if strings.Count(stanzaFile, "disabled = false") != entries {
-		returnValue = false
-	}
-	if strings.Count(stanzaFile, "followTail = 0") != entries {
-		returnValue = false
-	}
-	if strings.Count(stanzaFile, fmt.Sprintf("_meta = environment::%s application::%s", podNamespace, appName)) != entries {
-		returnValue = false
-	}
-	if strings.Count(stanzaFile, "[monitor://.") != entries {
-		returnValue = false
-	}
-	if strings.Count(stanzaFile, "host = "+hostName) != entries {
-		returnValue = false
-	}
+	returnValue = returnValue && countEntries("# --- start/stanza", stanzaFile, entries, t)
+	returnValue = returnValue && countEntries("# --- end/stanza", stanzaFile, entries, t)
+	returnValue = returnValue && countEntries("disabled = false", stanzaFile, entries, t)
+	returnValue = returnValue && countEntries("followTail = 0", stanzaFile, entries, t)
+	returnValue = returnValue && countEntries(fmt.Sprintf("_meta = environment::%s application::%s", podNamespace, appName), stanzaFile, entries, t)
+	returnValue = returnValue && countEntries("[monitor://.", stanzaFile, entries, t)
+	returnValue = returnValue && countEntries("host = "+hostName, stanzaFile, entries, t)
 	return returnValue
+}
+
+func countEntries(pattern string, file string, expectedEntries int, t *testing.T) bool {
+	c := strings.Count(file, pattern)
+	assert.Equal(t, expectedEntries, c, "Wrong count of "+pattern+" in file "+file)
+	return expectedEntries == c
 }
 
 func readFile(stanzaFile string) string {

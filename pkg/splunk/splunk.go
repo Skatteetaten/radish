@@ -11,12 +11,12 @@ import (
 	"text/template"
 )
 
-const splunkAppLogConfigTemplate string = `# --- start/stanza {{.Name}}
-[monitor://{{.Pattern}}]
+const splunkAppLogConfigTemplate string = `# --- start/stanza {{.NameOfIndexInComment}}
+[monitor://./logs/{{.Pattern}}]
 disabled = false
 followTail = 0
 sourcetype = {{.SourceType}}
-index = {{.Index}}
+index = {{.IndexName}}
 {{.SplunkBlacklist}}
 _meta = environment::{{.PodNamespace}} application::{{.AppName}} nodetype::openshift
 host = {{.HostName}}
@@ -41,10 +41,18 @@ type splunkAppLogConfigElement struct {
 	Index           string
 	Pattern         string
 	SourceType      string
-	PodNamespace    string
-	AppName         string
-	HostName        string
 	SplunkBlacklist string
+}
+
+type templateInput struct {
+	PodNamespace         string
+	AppName              string
+	HostName             string
+	IndexName            string
+	NameOfIndexInComment string
+	Pattern              string
+	SourceType           string
+	SplunkBlacklist      string
 }
 
 type applicationIdentifier struct {
@@ -81,7 +89,6 @@ func newApplicationIdentifier(appNameFlag string, podNamespaceFlag string, hostN
 	} else {
 		return nil, errors.New("No HostName present as flag or environment variable")
 	}
-
 	return &applicationIdentifier{
 		AppName:      appName,
 		AppNamespace: podNamespace,
@@ -102,7 +109,6 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 	if err != nil {
 		return err
 	}
-
 	var splunkStanza string
 	var splunkStanzaElems []splunkAppLogConfigElement
 
@@ -176,7 +182,18 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 			element.Name = element.Index
 		}
 
-		stanzaElement, err := newSplunkStanzaElement(splunkAppLogConfigTemplate, element)
+		d := templateInput{
+			AppName:              applicationIdentifier.AppName,
+			PodNamespace:         applicationIdentifier.AppNamespace,
+			HostName:             applicationIdentifier.Hostname,
+			IndexName:            element.Index,
+			NameOfIndexInComment: element.Name,
+			Pattern:              element.Pattern,
+			SourceType:           element.SourceType,
+			SplunkBlacklist:      element.SplunkBlacklist,
+		}
+
+		stanzaElement, err := newSplunkStanzaElement(splunkAppLogConfigTemplate, d)
 		if stanzaElement == "" {
 			return errors.Wrap(err, "Failed to write Splunk stanzas")
 		}
@@ -200,40 +217,37 @@ func GenerateStanzas(templateFilePath string, splunkIndexFlag string,
 
 func createAtsSplunkStanza(identifier *applicationIdentifier, index string) []splunkAppLogConfigElement {
 	return []splunkAppLogConfigElement{
-		newStanzaElement(identifier, "ATS Custom", index, "./logs/ats/*.custom.xml", "ats:eval:xml", ""),
-		newStanzaElement(identifier, "ATS DEFAULT", index, "./logs/ats/*.default.xml", "evalevent_xml", ""),
+		newStanzaElement("ATS Custom", index, "ats/*.custom.xml", "ats:eval:xml", ""),
+		newStanzaElement("ATS DEFAULT", index, "ats/*.default.xml", "evalevent_xml", ""),
 	}
 }
 
 func createAppdynamicsStanza(identifier *applicationIdentifier, index string) []splunkAppLogConfigElement {
 	return []splunkAppLogConfigElement{
-		newStanzaElement(identifier, "APPDYNAMICS", index, "./logs/appdynamics/*.log", "log4j", ""),
+		newStanzaElement("APPDYNAMICS", index, "./logs/appdynamics/*.log", "log4j", ""),
 	}
 }
 
 func createAuditSplunkStanza(identifier *applicationIdentifier, index string) []splunkAppLogConfigElement {
 	return []splunkAppLogConfigElement{
-		newStanzaElement(identifier, "AUDIT", index, "./logs/*.audit.json", "_json", ""),
+		newStanzaElement("AUDIT", index, "*.audit.json", "_json", ""),
 	}
 }
 
 func createApplicationSplunkStanza(identifier *applicationIdentifier, index string, splunkBlacklist string) []splunkAppLogConfigElement {
 	return []splunkAppLogConfigElement{
-		newStanzaElement(identifier, "STDOUT", index, "./logs/*.log", "log4j", splunkBlacklist),
-		newStanzaElement(identifier, "ACCESS_LOG", index, "./logs/*.access", "access_combined", splunkBlacklist),
-		newStanzaElement(identifier, "GC LOG", index, "./logs/*.gc", "gc_log", splunkBlacklist),
+		newStanzaElement("STDOUT", index, "*.log", "log4j", splunkBlacklist),
+		newStanzaElement("ACCESS_LOG", index, "*.access", "access_combined", splunkBlacklist),
+		newStanzaElement("GC LOG", index, "*.gc", "gc_log", splunkBlacklist),
 	}
 }
 
-func newStanzaElement(identifier *applicationIdentifier, name, index, pattern, sourcetype, splunkBlacklist string) splunkAppLogConfigElement {
+func newStanzaElement(name, index, pattern, sourcetype, splunkBlacklist string) splunkAppLogConfigElement {
 	return splunkAppLogConfigElement{
 		Name:            name,
 		Index:           index,
 		Pattern:         pattern,
 		SourceType:      sourcetype,
-		PodNamespace:    identifier.AppNamespace,
-		AppName:         identifier.AppName,
-		HostName:        identifier.Hostname,
 		SplunkBlacklist: splunkBlacklist,
 	}
 }
@@ -253,7 +267,7 @@ func newSplunkStanzas(template string, data Data) util.WriterFunc {
 		template)
 }
 
-func newSplunkStanzaElement(stanzaTemplate string, data splunkAppLogConfigElement) (string, error) {
+func newSplunkStanzaElement(stanzaTemplate string, data templateInput) (string, error) {
 	t, err := template.New("parseTemplate").Parse(stanzaTemplate)
 	if err != nil {
 		return "", err
