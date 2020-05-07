@@ -13,7 +13,7 @@ node {
   }
 
   stage('Test and coverage'){
-    go.buildGoWithJenkinsSh("Go 1.13")
+    go.buildGoWithJenkinsSh("go-1.13")
   }
 
   stage('Deploy to Nexus'){

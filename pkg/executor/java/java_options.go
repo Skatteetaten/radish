@@ -35,7 +35,7 @@ var Java8ArgumentsModificators = []ArgumentModificator{
 	&jolokiaOptions{},
 	&appDynamicsOptions{},
 	&cpuCoreTuning{},
-	&memoryOptions{},
+	&java8MemoryOptions{},
 	&metaspaceOptions{},
 	&heapDumpOptions{},
 }
@@ -49,6 +49,7 @@ var Java11ArgumentsModificators = []ArgumentModificator{
 	&java11DiagnosticsOptions{},
 	&jolokiaOptions{},
 	&appDynamicsOptions{},
+	&java11MemoryOptions{},
 	&heapDumpOptions{},
 }
 
@@ -291,14 +292,14 @@ func (m *appDynamicsOptions) modifyArguments(context ArgumentsContext) []string 
 
 var memoryArguments = []string{"-Xmx", "-XX:+UseCGroupMemoryLimitForHeap", "-Xms"}
 
-type memoryOptions struct {
+type java8MemoryOptions struct {
 }
 
-func (m *memoryOptions) shouldModifyArguments(context ArgumentsContext) bool {
+func (m *java8MemoryOptions) shouldModifyArguments(context ArgumentsContext) bool {
 	return !containsArgument(context.Arguments, memoryArguments...)
 }
 
-func (m *memoryOptions) modifyArguments(context ArgumentsContext) []string {
+func (m *java8MemoryOptions) modifyArguments(context ArgumentsContext) []string {
 	args := removeArguments(context.Arguments, memoryArguments)
 	memRatio, exists := context.Environment("JAVA_MAX_MEM_RATIO")
 	var fraction int
@@ -316,6 +317,36 @@ func (m *memoryOptions) modifyArguments(context ArgumentsContext) []string {
 	if limits.HasMemoryLimit() {
 		args = append([]string{fmt.Sprintf("-Xmx%dm", limits.MemoryFractionInMB(fraction))}, args...)
 		args = append([]string{fmt.Sprintf("-Xms%dm", limits.MemoryFractionInMB(fraction))}, args...)
+	}
+	return args
+}
+
+type java11MemoryOptions struct {
+}
+
+func (m *java11MemoryOptions) shouldModifyArguments(context ArgumentsContext) bool {
+	return !containsArgument(context.Arguments, memoryArguments...)
+}
+
+func (m *java11MemoryOptions) modifyArguments(context ArgumentsContext) []string {
+	args := removeArguments(context.Arguments, memoryArguments)
+	maxMemory, exists := context.Environment("JAVA_MAX_RAM_PERCENTAGE")
+	var percent float64
+	if exists {
+		memInPercent, err := strconv.ParseFloat(maxMemory, 32)
+		if err != nil {
+			logrus.Warnf("Trying to parse JAVA_MAX_RAM_PERCENTAGE, but could not parse it %s. Defaults to 75 percent", err)
+			percent = 75.0
+		} else {
+			percent = memInPercent
+		}
+	} else {
+		//Recomended heap size
+		percent = 75.0
+	}
+	limits := context.CGroupLimits
+	if limits.HasMemoryLimit() {
+		args = append([]string{fmt.Sprintf("-XX:MaxRAMPercentage=%.1f", percent)}, args...)
 	}
 	return args
 }
