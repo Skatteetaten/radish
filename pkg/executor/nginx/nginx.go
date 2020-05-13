@@ -19,53 +19,62 @@ worker_processes  {{.WorkerProcesses}};
 error_log stderr;
 
 events {
-    worker_connections  {{.WorkerConnections}};
+	worker_connections  {{.WorkerConnections}};
 }
 
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+						'$status $body_bytes_sent "$http_referer" '
+						'"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /dev/stdout;
+	access_log  /dev/stdout;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	sendfile        on;
+	#tcp_nopush     on;
 
     keepalive_timeout  75;
     proxy_read_timeout {{.ProxyReadTimeout}};
 
-{{.Gzip}}
+	{{.Gzip}}
 
-    index index.html;
+	index index.html;
 
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          {{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};{{else}}return 404;{{end}}{{range $key, $value := .NginxOverrides}}
-         {{$key}} {{$value}};{{end}}
-      }
-    {{range $value := .Exclude}}
-	   location {{$value}} {  
-		  return 404;
-	   }
-    {{end}}
+		location /api {
+		{{if .HasProxyPass }}proxy_pass http://{{.ProxyPassHost}}:{{.ProxyPassPort}};
+			proxy_http_version 1.1;{{else}}return 404;
+		{{end}}{{range $key, $value := .NginxOverrides}}
+			{{$key}} {{$value}};{{end}}
+		}
+		{{range $value := .Exclude}}
+		location {{$value}} {  
+			return 404;
+		}
+	{{end}}
 {{if .SPA}}
-       location {{.Path}} {
-          root /u01/static;
-          try_files $uri {{.Path}}index.html;{{else}}
-       location {{.Path}} {
-          root /u01/static;{{end}}{{range $key, $value := .ExtraStaticHeaders}}
-          add_header {{$key}} "{{$value}}";{{end}}
-	   }
-	   
-	   {{.Locations}}
-    }
+		location {{.Path}} {
+			root /u01/static;
+			try_files $uri {{.Path}}index.html;{{else}}
+			location {{.Path}} {
+			root /u01/static;{{end}}{{range $key, $value := .ExtraStaticHeaders}}
+			add_header {{$key}} "{{$value}}";{{end}}
+		}
+		
+		{{.Locations}}
+		{{if .NotServingOnRoot}}
+		location =/ {
+			if ($request_method=HEAD) {
+				return 200;
+			}
+		}
+{{end}}
+	}
 }
 `
 
@@ -194,6 +203,11 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
 	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
 
+	notServingOnRoot := true
+	if path == "/" {
+		notServingOnRoot = false
+	}
+
 	return &executor.TemplateInput{
 		NginxOverrides:     openshiftConfig.Web.Nodejs.Overrides,
 		ExtraStaticHeaders: openshiftConfig.Web.WebApp.Headers,
@@ -208,6 +222,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		WorkerConnections:  workerConnections,
 		WorkerProcesses:    workerProcesses,
 		ProxyReadTimeout:   proxyReadTimeout,
+		NotServingOnRoot:   notServingOnRoot,
 	}, nil
 }
 
@@ -270,16 +285,17 @@ func (m headers) sort() []string {
 
 func nginxLocationsMapToString(m nginxLocations, documentRoot string, path string) string {
 	sumLocations := ""
-	indentN1 := strings.Repeat(" ", 8)
-	indentN2 := strings.Repeat(" ", 12)
+	indentN1 := strings.Repeat("\t", 2)
+	indentN2 := strings.Repeat("\t", 3)
 
 	for _, key := range m.sort() {
 		value := m[key]
 		singleLocation := fmt.Sprintf("%slocation %s%s {\n", indentN1, path, key)
 		singleLocation = fmt.Sprintf("%s%sroot %s;\n", singleLocation, indentN2, documentRoot)
 
-		gZipUse := strings.TrimSpace(value.Gzip.Use)
-		if gZipUse == "on" || gZipUse == "off" {
+		gZipUseStatic := strings.TrimSpace(value.Gzip.UseStatic)
+
+		if gZipUseStatic == "on" || gZipUseStatic == "off" {
 			singleLocation = getGzipConfAsString(value.Gzip, singleLocation, indentN2)
 		}
 
@@ -294,41 +310,19 @@ func nginxLocationsMapToString(m nginxLocations, documentRoot string, path strin
 }
 
 func nginxGzipMapToString(gzip nginxGzip) string {
-	indent := strings.Repeat(" ", 4)
+	indent := strings.Repeat("\t", 1)
 	return getGzipConfAsString(gzip, "", indent)
 }
 
 func getGzipConfAsString(gzip nginxGzip, location string, indent string) string {
-	if strings.TrimSpace(gzip.Use) == "on" {
-		location = fmt.Sprintf("%s%sgzip on;\n", location, indent)
-		if gzip.MinLength > 0 {
-			location = fmt.Sprintf("%s%sgzip_min_length %d;\n", location, indent, gzip.MinLength)
-		}
-		if gzip.Types != "" {
-			location = fmt.Sprintf("%s%sgzip_types %s;\n", location, indent, gzip.Types)
-		}
-	} else {
-		location = fmt.Sprintf("%s%sgzip off;\n", location, indent)
-	}
-
 	if strings.TrimSpace(gzip.UseStatic) == "on" {
 		location = fmt.Sprintf("%s%sgzip_static on;\n", location, indent)
+		location = fmt.Sprintf("%s%sgzip_vary on;\n", location, indent)
+		location = fmt.Sprintf("%s%sgzip_proxied any;\n", location, indent)
 	} else {
 		location = fmt.Sprintf("%s%sgzip_static off;\n", location, indent)
 	}
 
-	//settings gzip_vary, gzip_proxied and gzip_disable are relevant for both gzip and gzip_static
-	if strings.TrimSpace(gzip.Use) == "on" || strings.TrimSpace(gzip.UseStatic) == "on" {
-		if gzip.Vary != "" {
-			location = fmt.Sprintf("%s%sgzip_vary %s;\n", location, indent, strings.TrimSpace(gzip.Vary))
-		}
-		if gzip.Proxied != "" {
-			location = fmt.Sprintf("%s%sgzip_proxied %s;\n", location, indent, gzip.Proxied)
-		}
-		if gzip.Disable != "" {
-			location = fmt.Sprintf("%s%sgzip_disable \"%s\";\n", location, indent, gzip.Disable)
-		}
-	}
 	return location
 }
 

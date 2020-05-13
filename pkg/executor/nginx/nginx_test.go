@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/skatteetaten/radish/pkg/util"
@@ -15,49 +16,54 @@ worker_processes  1;
 error_log stderr;
 
 events {
-    worker_connections  1024;
+	worker_connections  1024;
 }
 
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+						'$status $body_bytes_sent "$http_referer" '
+						'"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /dev/stdout;
+	access_log  /dev/stdout;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	sendfile        on;
+	#tcp_nopush     on;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-    gzip off;
-    gzip_static off;
+	gzip_static off;
 
 
-    index index.html;
+	index index.html;
 
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
-      }
-    
+		location /api {
+		proxy_pass http://localhost:9090;
+		proxy_http_version 1.1;
+		client_max_body_size 10m;
+	}
+	
 
-       location /web/ {
-          root /u01/static;
-          try_files $uri /web/index.html;
-          add_header SomeHeader "SomeValue";
-	   }
-	   
-	   
-    }
+		location /web/ {
+			root /u01/static;
+			try_files $uri /web/index.html;
+			add_header SomeHeader "SomeValue";
+		}	
+
+		location =/ {
+			if ($request_method=HEAD) {
+			return 200;
+		}
+		}
+	
+	}
 }
 `
 
@@ -66,49 +72,56 @@ worker_processes  1;
 error_log stderr;
 
 events {
-    worker_connections  1024;
+	worker_connections  1024;
 }
 
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+						'$status $body_bytes_sent "$http_referer" '
+						'"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /dev/stdout;
+	access_log  /dev/stdout;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	sendfile        on;
+	#tcp_nopush     on;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-    gzip off;
-    gzip_static on;
+	gzip_static on;
+	gzip_vary on;
+	gzip_proxied any;
 
 
-    index index.html;
+	index index.html;
 
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
-      }
-    
+		location /api {
+			proxy_pass http://localhost:9090;
+			proxy_http_version 1.1;
+			client_max_body_size 10m;
+	}
+	
 
-       location /web/ {
-          root /u01/static;
-          try_files $uri /web/index.html;
-          add_header SomeHeader "SomeValue";
-	   }
-	   
-	   
-    }
+		location /web/ {
+			root /u01/static;
+			try_files $uri /web/index.html;
+			add_header SomeHeader "SomeValue";
+		}
+		
+		location =/ {
+			if ($request_method=HEAD) {
+				return 200;
+			}
+		}
+	
+	}
 }
 `
 
@@ -117,49 +130,53 @@ worker_processes  1;
 error_log stderr;
 
 events {
-    worker_connections  1024;
+	worker_connections  1024;
 }
 
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+					'$status $body_bytes_sent "$http_referer" '
+					'"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /dev/stdout;
+	access_log  /dev/stdout;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	sendfile        on;
+	#tcp_nopush     on;
 
     keepalive_timeout  75;
     proxy_read_timeout 5;
 
-    gzip off;
-    gzip_static off;
+	gzip_static off;
 
 
-    index index.html;
+	index index.html;
 
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          proxy_pass http://127.0.0.1:9099;
-         client_max_body_size 10m;
-      }
-    
+		location /api {
+			proxy_pass http://127.0.0.1:9099;
+			proxy_http_version 1.1;
+			client_max_body_size 10m;
+		}
+	
 
-       location /web/ {
-          root /u01/static;
-          try_files $uri /web/index.html;
-          add_header SomeHeader "SomeValue";
-	   }
-	   
-	   
-    }
+		location /web/ {
+			root /u01/static;
+			try_files $uri /web/index.html;
+			add_header SomeHeader "SomeValue";
+		}
+
+		location =/ {
+			if ($request_method=HEAD) {
+				return 200;
+			}
+		}
+	}
 }
 `
 
@@ -168,57 +185,63 @@ worker_processes  1;
 error_log stderr;
 
 events {
-    worker_connections  1024;
+	worker_connections  1024;
 }
 
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+				'$status $body_bytes_sent "$http_referer" '
+				'"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /dev/stdout;
+	access_log  /dev/stdout;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	sendfile        on;
+	#tcp_nopush     on;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-    gzip off;
-    gzip_static off;
+	gzip_static off;
 
 
-    index index.html;
+	index index.html;
 
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
-      }
-    
-	   location test/fil1.swf {  
-		  return 404;
-	   }
-    
-	   location test/fil2.png {  
-		  return 404;
-	   }
-    
+		location /api {
+			proxy_pass http://localhost:9090;
+			proxy_http_version 1.1;
+			client_max_body_size 10m;
+		}
+	
+		location test/fil1.swf {  
+			return 404;
+		}
+		
+		location test/fil2.png {  
+			return 404;
+		}
+		
 
-       location /web/ {
-          root /u01/static;
-          try_files $uri /web/index.html;
-          add_header SomeHeader "SomeValue";
-	   }
-	   
-	   
-    }
+		location /web/ {	
+			root /u01/static;
+			try_files $uri /web/index.html;
+			add_header SomeHeader "SomeValue";
+		}
+
+			location =/ {
+			if ($request_method=HEAD) {
+				return 200;
+			}
+		}
+		
+		
+	}
 }
 `
 
@@ -227,71 +250,75 @@ worker_processes  1;
 error_log stderr;
 
 events {
-    worker_connections  1024;
+	worker_connections  1024;
 }
 
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+						'$status $body_bytes_sent "$http_referer" '
+						'"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /dev/stdout;
+	access_log  /dev/stdout;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	sendfile        on;
+	#tcp_nopush     on;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-    gzip off;
-    gzip_static off;
+		gzip_static off;
 
 
-    index index.html;
+	index index.html;
 
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 10m;
-      }
-    
+		location /api {
+		proxy_pass http://localhost:9090;
+			proxy_http_version 1.1;
+			client_max_body_size 10m;
+		}
+		
 
-       location /web/ {
-          root /u01/static;
-          try_files $uri /web/index.html;
-          add_header SomeHeader "SomeValue";
-	   }
-	   
-	           location /web/index.html {
-            root /u01/static;
-            gzip on;
-            gzip_min_length 1024;
-            gzip_static off;
-            gzip_vary on;
-            add_header Cache-Control "no-cache";
-            add_header X-Frame-Options "DENY";
-            add_header X-XSS-Protection "1";
-        }
-        location /web/index/other.html {
-            root /u01/static;
-            add_header Cache-Control "no-store";
-            add_header X-XSS-Protection "1; mode=block";
-        }
-        location /web/index_other.html {
-            root /u01/static;
-            gzip off;
-            gzip_static off;
-            add_header Cache-Control "max-age=60";
-            add_header X-XSS-Protection "0";
-        }
+		location /web/ {
+			root /u01/static;
+			try_files $uri /web/index.html;
+			add_header SomeHeader "SomeValue";
+		}
+		
+				location /web/index.html {
+			root /u01/static;
+			gzip_static on;
+			gzip_vary on;
+			gzip_proxied any;
+			add_header Cache-Control "no-cache";
+			add_header X-Frame-Options "DENY";
+			add_header X-XSS-Protection "1";
+		}
+		location /web/index/other.html {
+			root /u01/static;
+			add_header Cache-Control "no-store";
+			add_header X-XSS-Protection "1; mode=block";
+		}
+		location /web/index_other.html {
+			root /u01/static;
+			add_header Cache-Control "max-age=60";
+			add_header X-XSS-Protection "0";
+		}
 
-    }
+		
+		location =/ {
+			if ($request_method=HEAD) {
+				return 200;
+			}
+		}
+
+	}
 }
 `
 
@@ -300,31 +327,30 @@ worker_processes  1;
 error_log stderr;
 
 events {
-    worker_connections  1024;
+	worker_connections  1024;
 }
 
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+						'$status $body_bytes_sent "$http_referer" '
+						'"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /dev/stdout;
+	access_log  /dev/stdout;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	sendfile        on;
+	#tcp_nopush     on;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-    gzip off;
-    gzip_static off;
+	gzip_static off;
 
 
-    index index.html;
+	index index.html;
 `
 
 const nginxConfPrefixWithChangedWorkerConnsAndProcesses = `
@@ -332,128 +358,131 @@ worker_processes  2;
 error_log stderr;
 
 events {
-    worker_connections  2048;
+	worker_connections  2048;
 }
 
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+						'$status $body_bytes_sent "$http_referer" '
+						'"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /dev/stdout;
+	access_log  /dev/stdout;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	sendfile        on;
+	#tcp_nopush     on;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
 
-    gzip off;
-    gzip_static off;
+	gzip_static off;
 
 
-    index index.html;
+	index index.html;
 `
 
 const expectedNginxConfFileNoNodejsPartial = `
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          return 404;
-      }
-    
+		location /api {
+			return 404;
+			
+		}
+	
 
-       location / {
-          root /u01/static;
-          try_files $uri /index.html;
-	   }
-	   
-	   
-    }
+		location / {
+			root /u01/static;
+			try_files $uri /index.html;
+		}
+		
+		
+	}
 }
 `
 const expectedNginxConfFilePartial = `
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          proxy_pass http://localhost:9090;
-      }
-    
+		location /api {
+			proxy_pass http://localhost:9090;
+			proxy_http_version 1.1;
+		}
+	
 
-       location / {
-          root /u01/static;
-          try_files $uri /index.html;
-	   }
-	   
-	   
-    }
+		location / {
+			root /u01/static;
+			try_files $uri /index.html;
+		}
+		
+		
+	}
 }
 `
 
 const expectedNginxConfFileSpaAndCustomHeaders = `
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          proxy_pass http://localhost:9090;
-      }
-    
+		location /api {
+			proxy_pass http://localhost:9090;
+			proxy_http_version 1.1;
+		}
 
-       location / {
-          root /u01/static;
-          try_files $uri /index.html;
-          add_header X-Test-Header "Tulleheader";
-          add_header X-Test-Header2 "Tulleheader2";
-	   }
-	   
-	   
-    }
+
+		location / {
+			root /u01/static;
+			try_files $uri /index.html;
+			add_header X-Test-Header "Tulleheader";
+			add_header X-Test-Header2 "Tulleheader2";
+		}
+		
+		
+	}
 }
 `
 
 const expectedNginxConfFileNoSpaAndCustomHeaders = `
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          proxy_pass http://localhost:9090;
-      }
-    
+		location /api {
+			proxy_pass http://localhost:9090;
+			proxy_http_version 1.1;
+		}
+	
 
-       location / {
-          root /u01/static;
-          add_header X-Test-Header "Tulleheader";
-          add_header X-Test-Header2 "Tulleheader2";
-	   }
-	   
-	   
-    }
+		location / {
+			root /u01/static;
+			add_header X-Test-Header "Tulleheader";
+			add_header X-Test-Header2 "Tulleheader2";
+		}
+
+	}
 }
 `
 
 const expectedNginxConfigWithOverrides = `
-    server {
-       listen 8080;
+	server {
+		listen 8080;
 
-       location /api {
-          proxy_pass http://localhost:9090;
-         client_max_body_size 5m;
-      }
-    
+		location /api {
+			proxy_pass http://localhost:9090;
+			proxy_http_version 1.1;
+			client_max_body_size 5m;
+		}
 
-       location / {
-          root /u01/static;
-          try_files $uri /index.html;
-	   }
-	   
-	   
-    }
+
+		location / {
+			root /u01/static;
+			try_files $uri /index.html;
+		}
+
+
+	}
 }
 `
 
@@ -472,7 +501,7 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfFilePartial, actual)
+	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFilePartial), cleanString(actual))
 }
 
 func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
@@ -492,7 +521,8 @@ func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefixWithChangedWorkerConnsAndProcesses+expectedNginxConfFilePartial, actual)
+
+	assert.Equal(t, cleanString(nginxConfPrefixWithChangedWorkerConnsAndProcesses+expectedNginxConfFilePartial), cleanString(actual))
 
 	os.Unsetenv("NGINX_WORKER_CONNECTIONS")
 	os.Unsetenv("NGINX_WORKER_PROCESSES")
@@ -514,7 +544,7 @@ func TestGeneratedFilesWhenNodeJSIsDisabled(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&data))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileNoNodejsPartial, data)
+	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFileNoNodejsPartial), cleanString(data))
 }
 
 func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
@@ -541,14 +571,14 @@ func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileSpaAndCustomHeaders, actual)
+	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFileSpaAndCustomHeaders), cleanString(actual))
 
 	openshiftJSON.Web.WebApp.DisableTryfiles = true
 
 	err = generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfFileNoSpaAndCustomHeaders, actual)
+	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFileNoSpaAndCustomHeaders), cleanString(actual))
 }
 
 func TestThatOverrideInNginxIsSet(t *testing.T) {
@@ -570,7 +600,7 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
-	assert.Equal(t, nginxConfPrefix+expectedNginxConfigWithOverrides, actual)
+	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfigWithOverrides), cleanString(actual))
 
 }
 
@@ -582,7 +612,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, ninxConfigFile)
+	assert.Equal(t, cleanString(ninxConfigFile), cleanString(s))
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
@@ -593,7 +623,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, nginxConfigFileWithGzipStatic)
+	assert.Equal(t, cleanString(nginxConfigFileWithGzipStatic), cleanString(s))
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
@@ -607,7 +637,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, ninxConfigFileWithCustomEnvParams)
+	assert.Equal(t, cleanString(s), cleanString(ninxConfigFileWithCustomEnvParams))
 
 	// Clean up env params
 	os.Unsetenv("NGINX_PROXY_READ_TIMEOUT")
@@ -630,7 +660,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) 
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, nginxConfigWithExclude)
+	assert.Equal(t, cleanString(s), cleanString(nginxConfigWithExclude))
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvParam(t *testing.T) {
@@ -642,7 +672,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvP
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, ninxConfigFile)
+	assert.Equal(t, cleanString(s), cleanString(ninxConfigFile))
 
 	// Clean up env params
 	os.Unsetenv("IGNORE_NGINX_EXCLUDE")
@@ -656,7 +686,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *tes
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, s, nginxConfWithCustomLocations)
+	assert.Equal(t, cleanString(s), cleanString(nginxConfWithCustomLocations))
 }
 
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {
@@ -673,4 +703,9 @@ func testFileWriter(res *string) util.FileWriter {
 		}
 		return err
 	}
+}
+
+func cleanString(in string) string {
+	replacer := strings.NewReplacer("\n", "", "\t", "")
+	return replacer.Replace(in)
 }

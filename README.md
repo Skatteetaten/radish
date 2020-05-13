@@ -29,7 +29,8 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 | Environment variable |Description |
 | ---| ---| 
 | JAVA_OPTIONS | Checked for already set options |
-| JAVA_MAX_MEM_RATIO | adjust the ratio in percent of memory set as XMX. Default 25%. Remember that memory is more than heap.|
+| JAVA_MAX_MEM_RATIO | ONLY Java 8: adjust the ratio in percent of memory set as XMX. Default 25%. Remember that memory is more than heap.|
+| JAVA_MAX_RAM_PERCENTAGE | ONLY Java 11: adjust the max amount of memory set as XX:MaxRAMPercentage. Default 75.0. Remember that memory is more than heap. |
 | ENABLE_REMOTE_DEBUG| turn on remote debuging on DEBUG_PORT (default 5005) |
 | ENABLE_EXIT_ON_OOM | If set to a non-empty string, the JVM will exit on OutOfMemoryError. Default is off. |
 | ENABLE_JAVA_DIAGNOSTICS | If set to a non-empty string, the JVM is started with diagnostics flags set. Default is off.| 
@@ -44,6 +45,7 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 | PROXY_PASS_PORT | Proxypass port for Nginx configuration. Default 9090.|
 | NGINX_WORKER_CONNECTIONS | Number of worker connections for Nginx configuration. Default 1024.|
 | NGINX_WORKER_PROCESSES | Number of worker processes for Nginx configuration. Default 1.|
+| RADISH_SIGNAL_FORWARD_DELAY | The delay in second from a signal is received by radish until it is sent to the child process. Default is 0 |
 
 # Build:
 

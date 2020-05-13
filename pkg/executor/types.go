@@ -39,4 +39,5 @@ type TemplateInput struct {
 	WorkerConnections  string
 	WorkerProcesses    string
 	ProxyReadTimeout   string
+	NotServingOnRoot   bool
 }

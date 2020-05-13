@@ -36,6 +36,7 @@ func TestJava11Options(t *testing.T) {
 	env["ENABLE_JAVA_DIAGNOSTICS"] = "true"
 	env["ENABLE_REMOTE_DEBUG"] = "true"
 	env["APPDYNAMICS_AGENT_BASE_DIR"] = "/opt/appdynamics"
+	env["JAVA_MAX_RAM_PERCENTAGE"] = "50"
 	ctx := createTestContext(env)
 	modifiedArgs := applyArguments(Java11ArgumentsModificators, ctx)
 	assert.Contains(t, modifiedArgs, "-javaagent:jolokia.jar=host=0.0.0.0,port=8778,protocol=https")
@@ -43,7 +44,18 @@ func TestJava11Options(t *testing.T) {
 	assert.Contains(t, modifiedArgs, "-Xlog:gc")
 	assert.Contains(t, modifiedArgs, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
 	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
-	assert.Len(t, modifiedArgs, 9)
+	assert.Contains(t, modifiedArgs, "-XX:MaxRAMPercentage=50.0")
+	assert.Len(t, modifiedArgs, 10)
+}
+
+func TestJava11DefaultOptions(t *testing.T) {
+	env := make(map[string]string)
+	ctx := createTestContext(env)
+	modifiedArgs := applyArguments(Java11ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+	assert.Contains(t, modifiedArgs, "-XX:MaxRAMPercentage=75.0")
+	assert.Len(t, modifiedArgs, 5)
 }
 
 func TestOptionsJolokia(t *testing.T) {
@@ -192,8 +204,8 @@ func TestJavaDiagnostics(t *testing.T) {
 	}
 }
 
-func TestJavaMaxMemRatio(t *testing.T) {
-	m := &memoryOptions{}
+func TestJava8MaxMemRatio(t *testing.T) {
+	m := &java8MemoryOptions{}
 	env = make(map[string]string)
 	ctx := createTestContext(env)
 	args := m.modifyArguments(ctx)

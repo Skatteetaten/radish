@@ -35,6 +35,18 @@ func NewTemplateWriter(input interface{}, templatename string, templateString st
 	}
 }
 
+//NewStringWriter :
+func NewStringWriter(input interface{}, content string) WriterFunc {
+	return func(writer io.Writer) error {
+		tmpl := bytes.NewBufferString(content)
+		_, err := tmpl.WriteTo(writer)
+		if err != nil {
+			return errors.Wrap(err, "Error processing template")
+		}
+		return nil
+	}
+}
+
 //NewFileWriter :
 func NewFileWriter(targetFolder string) FileWriter {
 	return func(writerFunc WriterFunc, elem ...string) error {

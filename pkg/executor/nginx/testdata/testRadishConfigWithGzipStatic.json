@@ -6,25 +6,29 @@
       "io.openshift.tags": "openshift,react,nodejs"
     }
   },
-  "web": {
-    "configurableProxy": false,
-    "nodejs": {
-      "main": "api/server.js",
-      "overrides": {
-        "client_max_body_size": "10m"
-      }
-    },
-    "webapp": {
-      "content": "build",
-      "path": "/web",
-      "disableTryfiles": false,
-      "headers": {
-        "SomeHeader": "SomeValue"
-      }
-    },
-    "gzip": {
-      "use": "off",
-      "useStatic": "on"
+    "web": {
+        "configurableProxy": false,
+        "nodejs": {
+            "main": "api/server.js",
+            "overrides": {
+                "client_max_body_size": "10m"
+            }
+        },
+        "webapp": {
+           "content": "build",
+           "path": "/web",
+           "disableTryfiles": false,
+           "headers": {
+              "SomeHeader": "SomeValue"
+            }
+        },
+        "gzip": {
+          "use_static" : "on",
+          "proxied" : "expired no-cache no-store private auth",
+          "vary" : "on",
+          "disable" : "msie6",
+          "http_version" : "1.1"
+        }
     }
   }
 }
