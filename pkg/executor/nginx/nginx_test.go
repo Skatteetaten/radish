@@ -58,7 +58,7 @@ http {
 		}	
 
 		location =/ {
-			if ($request_method=HEAD) {
+			if ($request_method = HEAD) {
 			return 200;
 		}
 		}
@@ -116,7 +116,7 @@ http {
 		}
 		
 		location =/ {
-			if ($request_method=HEAD) {
+			if ($request_method = HEAD) {
 				return 200;
 			}
 		}
@@ -172,7 +172,7 @@ http {
 		}
 
 		location =/ {
-			if ($request_method=HEAD) {
+			if ($request_method = HEAD) {
 				return 200;
 			}
 		}
@@ -235,7 +235,7 @@ http {
 		}
 
 			location =/ {
-			if ($request_method=HEAD) {
+			if ($request_method = HEAD) {
 				return 200;
 			}
 		}
@@ -313,7 +313,7 @@ http {
 
 		
 		location =/ {
-			if ($request_method=HEAD) {
+			if ($request_method = HEAD) {
 				return 200;
 			}
 		}
