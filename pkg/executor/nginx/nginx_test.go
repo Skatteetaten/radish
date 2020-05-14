@@ -33,7 +33,8 @@ http {
 	sendfile        on;
 	#tcp_nopush     on;
 
-	keepalive_timeout  75;
+    keepalive_timeout  75;
+    proxy_read_timeout 60;
 
 	gzip_static off;
 
@@ -88,7 +89,8 @@ http {
 	sendfile        on;
 	#tcp_nopush     on;
 
-	keepalive_timeout  75;
+    keepalive_timeout  75;
+    proxy_read_timeout 60;
 
 	gzip_static on;
 	gzip_vary on;
@@ -145,7 +147,8 @@ http {
 	sendfile        on;
 	#tcp_nopush     on;
 
-	keepalive_timeout  75;
+    keepalive_timeout  75;
+    proxy_read_timeout 5;
 
 	gzip_static off;
 
@@ -199,7 +202,8 @@ http {
 	sendfile        on;
 	#tcp_nopush     on;
 
-	keepalive_timeout  75;
+    keepalive_timeout  75;
+    proxy_read_timeout 60;
 
 	gzip_static off;
 
@@ -255,17 +259,18 @@ http {
 	default_type  application/octet-stream;
 
 	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-				'$status $body_bytes_sent "$http_referer" '
-				'"$http_user_agent" "$http_x_forwarded_for"';
+						'$status $body_bytes_sent "$http_referer" '
+						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
 
 	sendfile        on;
 	#tcp_nopush     on;
 
-	keepalive_timeout  75;
+    keepalive_timeout  75;
+    proxy_read_timeout 60;
 
-	gzip_static off;
+		gzip_static off;
 
 
 	index index.html;
@@ -274,10 +279,11 @@ http {
 		listen 8080;
 
 		location /api {
-			proxy_pass http://localhost:9090;
+		proxy_pass http://localhost:9090;
 			proxy_http_version 1.1;
 			client_max_body_size 10m;
 		}
+		
 
 		location /web/ {
 			root /u01/static;
@@ -285,7 +291,7 @@ http {
 			add_header SomeHeader "SomeValue";
 		}
 		
-		location /web/index.html {
+				location /web/index.html {
 			root /u01/static;
 			gzip_static on;
 			gzip_vary on;
@@ -300,11 +306,12 @@ http {
 			add_header X-XSS-Protection "1; mode=block";
 		}
 		location /web/index_other.html {
-		root /u01/static;
-		add_header Cache-Control "max-age=60";
-		add_header X-XSS-Protection "0";
+			root /u01/static;
+			add_header Cache-Control "max-age=60";
+			add_header X-XSS-Protection "0";
 		}
 
+		
 		location =/ {
 			if ($request_method=HEAD) {
 				return 200;
@@ -337,7 +344,8 @@ http {
 	sendfile        on;
 	#tcp_nopush     on;
 
-	keepalive_timeout  75;
+    keepalive_timeout  75;
+    proxy_read_timeout 60;
 
 	gzip_static off;
 
@@ -367,7 +375,8 @@ http {
 	sendfile        on;
 	#tcp_nopush     on;
 
-	keepalive_timeout  75;
+    keepalive_timeout  75;
+    proxy_read_timeout 60;
 
 	gzip_static off;
 
@@ -618,6 +627,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
+	os.Setenv("NGINX_PROXY_READ_TIMEOUT", "5")
 	os.Setenv("PROXY_PASS_HOST", "127.0.0.1")
 	os.Setenv("PROXY_PASS_PORT", "9099")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithProxy.json", "testdata")
@@ -630,6 +640,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 	assert.Equal(t, cleanString(s), cleanString(ninxConfigFileWithCustomEnvParams))
 
 	// Clean up env params
+	os.Unsetenv("NGINX_PROXY_READ_TIMEOUT")
 	os.Unsetenv("PROXY_PASS_HOST")
 	os.Unsetenv("PROXY_PASS_PORT")
 }

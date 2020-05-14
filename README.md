@@ -46,6 +46,7 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 | NGINX_WORKER_CONNECTIONS | Number of worker connections for Nginx configuration. Default 1024.|
 | NGINX_WORKER_PROCESSES | Number of worker processes for Nginx configuration. Default 1.|
 | RADISH_SIGNAL_FORWARD_DELAY | The delay in second from a signal is received by radish until it is sent to the child process. Default is 0 |
+| NGINX_PROXY_READ_TIMEOUT | Read timeout configuration. Default is 60 |
 
 # Build:
 

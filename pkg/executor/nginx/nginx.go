@@ -36,7 +36,8 @@ http {
 	sendfile        on;
 	#tcp_nopush     on;
 
-	keepalive_timeout  75;
+    keepalive_timeout  75;
+    proxy_read_timeout {{.ProxyReadTimeout}};
 
 	{{.Gzip}}
 
@@ -194,6 +195,8 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		return nil, err
 	}
 
+	proxyReadTimeout := getEnvOrDefault("NGINX_PROXY_READ_TIMEOUT", "60")
+
 	workerConnections := getEnvOrDefault("NGINX_WORKER_CONNECTIONS", "1024")
 	workerProcesses := getEnvOrDefault("NGINX_WORKER_PROCESSES", "1")
 
@@ -218,6 +221,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		ProxyPassPort:      proxy.port,
 		WorkerConnections:  workerConnections,
 		WorkerProcesses:    workerProcesses,
+		ProxyReadTimeout:   proxyReadTimeout,
 		NotServingOnRoot:   notServingOnRoot,
 	}, nil
 }
