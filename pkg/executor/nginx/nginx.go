@@ -69,7 +69,7 @@ http {
 		{{.Locations}}
 		{{if .NotServingOnRoot}}
 		location =/ {
-			if ($request_method=HEAD) {
+			if ($request_method = HEAD) {
 				return 200;
 			}
 		}
