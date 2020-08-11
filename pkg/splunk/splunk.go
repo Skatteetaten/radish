@@ -224,7 +224,7 @@ func createAtsSplunkStanza(identifier *applicationIdentifier, index string) []sp
 
 func createAppdynamicsStanza(identifier *applicationIdentifier, index string) []splunkAppLogConfigElement {
 	return []splunkAppLogConfigElement{
-		newStanzaElement("APPDYNAMICS", index, "./logs/appdynamics/*.log", "log4j", ""),
+		newStanzaElement("APPDYNAMICS", index, "appdynamics/.../*.log", "log4j", ""),
 	}
 }
 
