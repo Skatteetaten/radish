@@ -32,6 +32,7 @@ http {
 
 	sendfile        on;
 	#tcp_nopush     on;
+	server_tokens  off;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
@@ -88,6 +89,7 @@ http {
 
 	sendfile        on;
 	#tcp_nopush     on;
+	server_tokens  off;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
@@ -146,6 +148,7 @@ http {
 
 	sendfile        on;
 	#tcp_nopush     on;
+	server_tokens  off;
 
     keepalive_timeout  75;
     proxy_read_timeout 5;
@@ -201,6 +204,7 @@ http {
 
 	sendfile        on;
 	#tcp_nopush     on;
+	server_tokens  off;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
@@ -266,6 +270,7 @@ http {
 
 	sendfile        on;
 	#tcp_nopush     on;
+	server_tokens  off;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
@@ -343,6 +348,7 @@ http {
 
 	sendfile        on;
 	#tcp_nopush     on;
+	server_tokens  off;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
@@ -374,6 +380,7 @@ http {
 
 	sendfile        on;
 	#tcp_nopush     on;
+	server_tokens  off;
 
     keepalive_timeout  75;
     proxy_read_timeout 60;
