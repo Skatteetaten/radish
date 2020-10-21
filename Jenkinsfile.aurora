@@ -1,19 +1,40 @@
-node {
-    stage  ('Load shared libraries') {
-        def version='v5'
-        fileLoader.withGit('https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git', version) {
-            maven = fileLoader.load('maven/maven')
-            git = fileLoader.load('git/git')
-            go = fileLoader.load('go/go')
-        }
-    }
+def overrides = [
+    scriptVersion  : 'v7',
+    pipelineScript: 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
+    credentialsId: "github",
+    checkstyle : false,
+    jiraFiksetIKomponentversjon: true,
+    chatRoom: "#sitj",
+    iq: false,
+    sonarQube: false,
+    applicationType: "go",
+    versionStrategy: [
+      [ branch: 'master', versionHint: '1' ]
+    ]
+]
 
+def git
+def go
+def properties
+def maven
+
+fileLoader.withGit(overrides.pipelineScript, overrides.scriptVersion) {
+  git = fileLoader.load('git/git')
+  go = fileLoader.load('go/go')
+  maven = fileLoader.load('maven/maven')
+  properties = fileLoader.load('utilities/properties')
+}
+
+Map props = properties.getDefaultProps(overrides)
+
+node(props.slaveSelector) {
+try {
   stage('Checkout') {
     checkout scm
   }
 
-  stage('Test and coverage'){
-    go.buildGoWithJenkinsSh("go-1.13")
+  stage('Build, Test & Coverage') {
+    go.buildGoWithJenkinsShUsingGlobalTools("go-1.14")
   }
 
   stage('Deploy to Nexus'){
@@ -39,5 +60,14 @@ node {
     maven.run('deploy:deploy-file', deployOpts)
 
   }
-
+ } catch (InterruptedException e) {
+      currentBuild.result="ABORTED"
+      throw e
+  } catch (e) {
+    currentBuild.result = "FAILURE"
+    echo "Failure ${e.message}"
+    throw e
+  } finally {
+    utilities.postActions(props)
+  }
 }
