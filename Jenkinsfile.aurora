@@ -9,7 +9,7 @@ def utilities
 def overrides = [
     applicationType          : "go",
     artifactId               : 'radish',
-    groupId                  : 'no.skatteetaten.aurora',
+    groupId                  : 'no.skatteetaten.aurora.openshift',
     scriptVersion            : 'v7',
     pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
     iqOrganizationName       : 'Team AOT',
@@ -70,9 +70,7 @@ timestamps {
 
         stage('Sonar') {
           def sonarPath = tool 'Sonar 4'
-          withSonarQubeEnv() {
-            sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
-          }
+          sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
         }
 
         if (props.isReleaseBuild && !props.tagExists) {
