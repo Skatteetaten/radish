@@ -70,7 +70,9 @@ timestamps {
 
         stage('Sonar') {
           def sonarPath = tool 'Sonar 4'
-          sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
+          withSonarQubeEnv() {
+            sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
+          }
         }
 
         if (props.isReleaseBuild && !props.tagExists) {
