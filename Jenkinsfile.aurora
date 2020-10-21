@@ -1,75 +1,142 @@
-def overrides = [
-    scriptVersion  : 'v7',
-    pipelineScript: 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
-    credentialsId: "github",
-    checkstyle : false,
-    jiraFiksetIKomponentversjon: true,
-    chatRoom: "#sitj",
-    iq: false,
-    sonarQube: false,
-    applicationType: "go",
-    versionStrategy: [
-      [ branch: 'master', versionHint: '1' ]
-    ]
-]
+#!/usr/bin/env groovy
 
 def git
 def go
-def properties
 def maven
+def properties
 def utilities
 
+def overrides = [
+    artifactId               : 'radish',
+    groupId                  : 'no.skatteetaten.aurora',
+    scriptVersion            : 'v7',
+    pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
+    iqOrganizationName       : 'Team AOT',
+    goVersion                : '1.14',
+    artifactPath             : 'bin/',
+    sonarQube                : true,
+    notifyChat               : true,
+    chatRoom                 : "#sitj",
+    versionStrategy          : [
+        [branch: 'master', versionHint: '1']
+        ]
+    ]
+
 fileLoader.withGit(overrides.pipelineScript, overrides.scriptVersion) {
-  git = fileLoader.load('git/git')
-  go = fileLoader.load('go/go')
-  maven = fileLoader.load('maven/maven')
-  properties = fileLoader.load('utilities/properties')
-  utilities = fileLoader.load('utilities/utilities')
-}
+    git = fileLoader.load('git/git')
+    go = fileLoader.load('go/go')
+    maven = fileLoader.load('maven/maven')
+    properties = fileLoader.load('utilities/properties')
+    utilities = fileLoader.load('utilities/utilities')
+  }
 
 Map props = properties.getDefaultProps(overrides)
 
-node(props.slaveSelector) {
-try {
-  stage('Checkout') {
-    checkout scm
-  }
-
-  stage('Build, Test & Coverage') {
-    go.buildGoWithJenkinsShUsingGlobalTools("go-1.14")
-  }
-
-  stage('Deploy to Nexus'){
-    def isMaster = env.BRANCH_NAME == 'master'
-    
-    def REPO_ID = isMaster ? 'releases' : 'snapshots'
-    def REPO_URL = 'https://aurora/nexus/content/repositories/' + REPO_ID
-    
-    def version = git.getTagFromCommit()
-
-    if (isMaster){
-      if (!git.tagExists("v${version}")) {
-        error "Commit is not tagged. Aborting build."
+timestamps {
+  node(props.slaveSelector) {
+    try {
+      stage('Checkout') {
+        checkout scm
+        //Get context
+        if (props.sporing) {
+          try {
+            props.sporingscontext = sporing.createContext(props.sporingstjeneste)
+          } catch(Exception e) {
+            props.sporingscontext = null
+            echo "[WARNING] Kunne ikke initialiserer sporing " + e.message
+          }
+        }
       }
-    }
 
-    def deployOpts = '-Durl=' + REPO_URL + 
-        ' -DrepositoryId=' + REPO_ID +
-        ' -DgroupId=no.skatteetaten.aurora.openshift -DartifactId=radish -Dversion=' + version +
-        ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/radish.tar.gz'
+      stage('Prepare') {
+          utilities.initProps(props, git)
+          if(props.sporing && props.sporingscontext != null) {
+            try {
+              sporing.addGitMetadata(props.sporingstjeneste, props.sporingscontext, props.git)
+            } catch (Exception e) {
+              echo "[WARNING] Kunne ikke tilføye Git metadata til sporing " + e.message
+            }
+          }
+        }
 
-    maven.setMavenVersion('Maven 3')
-    maven.run('deploy:deploy-file', deployOpts)
+        stage('Test and coverage') {
+          if (props.goVersion) {
+            go.buildGoWithJenkinsSh(props.goVersion)
+          } else {
+            error("You need to specify goVersion")
+          }
+        }
 
-  }
- } catch (InterruptedException e) {
-      currentBuild.result="ABORTED"
-      throw e
-  } catch (e) {
-    currentBuild.result = "FAILURE"
-    echo "Failure ${e.message}"
-    throw e
-  } finally {
-    utilities.postActions(props)
+        stage('Sonar') {
+          def sonarPath = tool 'Sonar 4'
+          sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
+        }
+
+        if (props.isReleaseBuild && !props.tagExists) {
+          stage("Tag") {
+            git.tagAndPush(props.credentialsId, "v$props.version")
+          }
+        }
+
+        stage('Deploy to Nexus') {
+        /*
+          if (props.artifactPath) {
+            maven.deployZipToNexusWithGroupId(props.artifactPath, props.artifactId, props.groupId, props.version, props.deliveryBundleClassifier)
+          } else {
+            error("You need to specify artifactPath")
+          }
+
+
+          def isMaster = env.BRANCH_NAME == 'master'
+
+          def REPO_ID = isMaster ? 'releases' : 'snapshots'
+          def REPO_URL = 'https://aurora/nexus/content/repositories/' + REPO_ID
+
+          def version = git.getTagFromCommit()
+
+          if (isMaster){
+            if (!git.tagExists("v${version}")) {
+              error "Commit is not tagged. Aborting build."
+            }
+          }
+
+          def deployOpts = '-Durl=' + REPO_URL +
+              ' -DrepositoryId=' + REPO_ID +
+              ' -DgroupId=no.skatteetaten.aurora.openshift -DartifactId=radish -Dversion=' + version +
+              ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/radish.tar.gz'
+
+          maven.setMavenVersion('Maven 3')
+          maven.run('deploy:deploy-file', deployOpts)
+        */
+        }
+
+        if(props.sporing && props.sporingscontext != null) {
+          try {
+            sporing.addNexusMetadata(props.sporingstjeneste, props.sporingscontext, props.nexus)
+          } catch (Exception e) {
+            echo "[WARNING] Kunne ikke tilføye Nexus metadata til sporing " + e.message
+          }
+        }
+
+        if (props.github.enabled) {
+          if (props.github.push) {
+            stage('Push to GitHub') {
+              git.withGitHubCredentials(props.github.credentialsId) {
+                sh "git remote | grep github || git remote add github ${props.github.repoUrl}"
+                sh "GIT_ASKPASS=true git push github HEAD:${env.BRANCH_NAME} --follow-tags"
+              }
+            }
+           }
+        }
+      } catch (InterruptedException e) {
+          currentBuild.result="ABORTED"
+          throw e
+      } catch (e) {
+        currentBuild.result = "FAILURE"
+        echo "Failure ${e.message}"
+        throw e
+      } finally {
+        utilities.postActions(props)
+      }
   }
 }
