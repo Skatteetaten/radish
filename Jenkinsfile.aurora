@@ -61,7 +61,7 @@ timestamps {
 
         stage('Test and coverage') {
           if (props.goVersion) {
-            go.buildGoWithJenkinsSh(props.goVersion)
+            go.buildGoWithJenkinsShUsingGlobalTools(props.goVersion)
           } else {
             error("You need to specify goVersion")
           }
