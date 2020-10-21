@@ -17,12 +17,14 @@ def git
 def go
 def properties
 def maven
+def utilities
 
 fileLoader.withGit(overrides.pipelineScript, overrides.scriptVersion) {
   git = fileLoader.load('git/git')
   go = fileLoader.load('go/go')
   maven = fileLoader.load('maven/maven')
   properties = fileLoader.load('utilities/properties')
+  utilities = fileLoader.load('utilities/utilities')
 }
 
 Map props = properties.getDefaultProps(overrides)
