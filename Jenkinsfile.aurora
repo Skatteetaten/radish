@@ -16,7 +16,7 @@ def overrides = [
     goVersion                : '1.14',
     artifactPath             : 'bin/',
     sonarQube                : true,
-    notifyChat               : "success, failure",
+    notifyChat               : "started,success,fixed,failure",
     chatRoom                 : "#sitj",
     versionStrategy          : [
         [branch: 'master', versionHint: '1']
@@ -33,8 +33,6 @@ fileLoader.withGit(overrides.pipelineScript, overrides.scriptVersion) {
 
 Map props = properties.getDefaultProps(overrides)
 
-echo "SLAVE SELECTOR: " + props.slaveSelector
-
 timestamps {
   node(props.slaveSelector) {
     try {
@@ -46,7 +44,7 @@ timestamps {
             props.sporingscontext = sporing.createContext(props.sporingstjeneste)
           } catch(Exception e) {
             props.sporingscontext = null
-            echo "[WARNING] Kunne ikke initialiserer sporing " + e.message
+            echo "[WARNING] Unable to initialize Sporingslogger " + e.message
           }
         }
       }
@@ -57,7 +55,7 @@ timestamps {
             try {
               sporing.addGitMetadata(props.sporingstjeneste, props.sporingscontext, props.git)
             } catch (Exception e) {
-              echo "[WARNING] Kunne ikke tilføye Git metadata til sporing " + e.message
+              echo "[WARNING] Unable to add git metadata to Sporingslogger " + e.message
             }
           }
         }
@@ -117,7 +115,7 @@ timestamps {
           try {
             sporing.addNexusMetadata(props.sporingstjeneste, props.sporingscontext, props.nexus)
           } catch (Exception e) {
-            echo "[WARNING] Kunne ikke tilføye Nexus metadata til sporing " + e.message
+            echo "[WARNING] Unable to add Nexus metadata to Sporingslogger " + e.message
           }
         }
 
