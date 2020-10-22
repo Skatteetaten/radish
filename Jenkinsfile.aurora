@@ -104,7 +104,7 @@ timestamps {
               ' -DrepositoryId=' + REPO_ID +
               ' -DgroupId=' + props.groupId +
               ' -DartifactId= ' + props.artifactId +
-              '-Dversion=' + props.version +
+              ' -Dversion=' + props.version +
               ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/radish.tar.gz'
 
           maven.setMavenVersion('Maven 3')
