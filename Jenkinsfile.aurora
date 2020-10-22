@@ -7,13 +7,13 @@ def properties
 def utilities
 
 def overrides = [
-    applicationType          : "go",
+    applicationType          : "doozer",
     artifactId               : 'radish',
     groupId                  : 'no.skatteetaten.aurora.openshift',
     scriptVersion            : 'v7',
     pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
     iqOrganizationName       : 'Team AOT',
-    goVersion                : 'go-1.14',
+    goVersion                : '1.14',
     artifactPath             : 'bin/',
     sonarQube                : true,
     notifyChat               : true,
