@@ -94,17 +94,17 @@ timestamps {
           def REPO_ID = props.isReleaseBuild ? 'releases' : 'snapshots'
           def REPO_URL = 'https://nexus.sits.no/service/rest/repository/browse/aup-baseimages-artifacts/' + REPO_ID
 
-          def version = git.getTagFromCommit()
-
           if (props.isReleaseBuild){
-            if (!git.tagExists("v${version}")) {
+            if (!git.tagExists("v${props.version}")) {
               error "Commit is not tagged. Aborting build."
             }
           }
 
           def deployOpts = '-Durl=' + REPO_URL +
               ' -DrepositoryId=' + REPO_ID +
-              ' -DgroupId=no.skatteetaten.aurora.openshift -DartifactId=radish -Dversion=' + version +
+              ' -DgroupId=' + props.groupId +
+              ' -DartifactId= ' + props.artifactId +
+              '-Dversion=' + props.version +
               ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/radish.tar.gz'
 
           maven.setMavenVersion('Maven 3')
