@@ -10,13 +10,13 @@ def overrides = [
     applicationType          : 'doozer',
     artifactId               : 'radish',
     groupId                  : 'no.skatteetaten.aurora.openshift',
-    scriptVersion            : 'v7-notify',
+    scriptVersion            : 'v7',
     pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
     iqOrganizationName       : 'Team AOT',
     goVersion                : '1.14',
     artifactPath             : 'bin/',
     sonarQube                : true,
-    notifyChat               : "started,success,fixed,failure",
+    notifyChat               : "fixed,failure",
     chatRoom                 : "#sitj",
     versionStrategy          : [
         [branch: 'master', versionHint: '1']
