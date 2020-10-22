@@ -19,6 +19,7 @@ def overrides = [
     sonarQube                : true,
     notifyChat               : "fixed,failure",
     chatRoom                 : "#sitj-build",
+    debug: true,
     versionStrategy          : [
         [branch: 'master', versionHint: '1']
         ]
