@@ -53,6 +53,7 @@ timestamps {
       }
 
       stage('Prepare') {
+          props.scriptVersionEffective = props.scriptVersion
           utilities.initProps(props, git)
         
           if(props.sporing && props.sporingscontext != null) {
