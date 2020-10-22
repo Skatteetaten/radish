@@ -91,12 +91,12 @@ timestamps {
 
         stage('Deploy to Nexus') {
           
-          def REPO_ID = properties.isReleaseBuild ? 'releases' : 'snapshots'
+          def REPO_ID = props.isReleaseBuild ? 'releases' : 'snapshots'
           def REPO_URL = 'https://nexus.sits.no/service/rest/repository/browse/aup-baseimages-artifacts/' + REPO_ID
 
           def version = git.getTagFromCommit()
 
-          if (properties.isReleaseBuild){
+          if (props.isReleaseBuild){
             if (!git.tagExists("v${version}")) {
               error "Commit is not tagged. Aborting build."
             }
