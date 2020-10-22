@@ -16,8 +16,8 @@ def overrides = [
     goVersion                : '1.14',
     artifactPath             : 'bin/',
     sonarQube                : true,
-    notifyChat               : "fixed,failure",
-    chatRoom                 : "#sitj",
+    notifyChat               : "success,fixed,failure",
+    chatRoom                 : "#sitj-build",
     versionStrategy          : [
         [branch: 'master', versionHint: '1']
         ]
@@ -60,7 +60,7 @@ timestamps {
           }
         }
 
-        stage('Test and coverage') {
+        stage('Build and test') {
           if (props.goVersion) {
             go.buildGoWithJenkinsSh(props.goVersion)
           } else {
