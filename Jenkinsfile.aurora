@@ -103,7 +103,7 @@ timestamps {
           def deployOpts = '-Durl=' + REPO_URL +
               ' -DrepositoryId=' + REPO_ID +
               ' -DgroupId=' + props.groupId +
-              ' -DartifactId= ' + props.artifactId +
+              ' -DartifactId=' + props.artifactId +
               ' -Dversion=' + props.version +
               ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/radish.tar.gz'
 
