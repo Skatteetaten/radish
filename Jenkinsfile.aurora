@@ -7,7 +7,7 @@ def properties
 def utilities
 
 def overrides = [
-    applicationType          : "doozer",
+    applicationType          : 'doozer',
     artifactId               : 'radish',
     groupId                  : 'no.skatteetaten.aurora.openshift',
     scriptVersion            : 'v7',
@@ -32,6 +32,8 @@ fileLoader.withGit(overrides.pipelineScript, overrides.scriptVersion) {
   }
 
 Map props = properties.getDefaultProps(overrides)
+
+echo "SLAVE SELECTOR: " + props.slaveSelector
 
 timestamps {
   node(props.slaveSelector) {
