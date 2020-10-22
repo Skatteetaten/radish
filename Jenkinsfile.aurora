@@ -89,24 +89,13 @@ timestamps {
         }
 
         stage('Deploy to Nexus') {
-        /*
-          if (props.artifactPath) {
-            maven.deployZipToNexusWithGroupId(props.artifactPath, props.artifactId, props.groupId, props.version, props.deliveryBundleClassifier)
-          } else {
-            error("You need to specify artifactPath")
-          }
-
-          def repoId = props.isReleaseBuild ? 'releases' : 'snapshots'
-          props.repositoryArtifactUrl = 'https://aurora/nexus/content/repositories/' + repoId
           
-          def isMaster = env.BRANCH_NAME == 'master'
-
-          def REPO_ID = isMaster ? 'releases' : 'snapshots'
-          def REPO_URL = 'https://aurora/nexus/content/repositories/' + REPO_ID
+          def REPO_ID = properties.isReleaseBuild ? 'releases' : 'snapshots'
+          def REPO_URL = 'https://nexus.sits.no/service/rest/repository/browse/aup-baseimages-artifacts/' + REPO_ID
 
           def version = git.getTagFromCommit()
 
-          if (isMaster){
+          if (properties.isReleaseBuild){
             if (!git.tagExists("v${version}")) {
               error "Commit is not tagged. Aborting build."
             }
@@ -119,7 +108,7 @@ timestamps {
 
           maven.setMavenVersion('Maven 3')
           maven.run('deploy:deploy-file', deployOpts)
-        */
+        
         }
 
         if(props.sporing && props.sporingscontext != null) {
