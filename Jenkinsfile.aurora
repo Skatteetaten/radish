@@ -10,7 +10,7 @@ def overrides = [
     applicationType          : 'doozer',
     artifactId               : 'radish',
     groupId                  : 'no.skatteetaten.aurora.openshift',
-    scriptVersion            : 'v7',
+    scriptVersion            : 'v7-notify',
     pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
     iqOrganizationName       : 'Team AOT',
     goVersion                : '1.14',
