@@ -16,7 +16,7 @@ def overrides = [
     goVersion                : '1.14',
     artifactPath             : 'bin/',
     sonarQube                : true,
-    notifyChat               : true,
+    notifyChat               : "success, failure",
     chatRoom                 : "#sitj",
     versionStrategy          : [
         [branch: 'master', versionHint: '1']
