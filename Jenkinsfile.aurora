@@ -5,6 +5,7 @@ def go
 def maven
 def properties
 def utilities
+def iq
 
 def overrides = [
     applicationType          : 'doozer',
@@ -16,7 +17,7 @@ def overrides = [
     goVersion                : '1.14',
     artifactPath             : 'bin/',
     sonarQube                : true,
-    notifyChat               : "success,fixed,failure",
+    notifyChat               : "fixed,failure",
     chatRoom                 : "#sitj-build",
     versionStrategy          : [
         [branch: 'master', versionHint: '1']
@@ -29,6 +30,7 @@ fileLoader.withGit(overrides.pipelineScript, overrides.scriptVersion) {
     maven = fileLoader.load('maven/maven')
     properties = fileLoader.load('utilities/properties')
     utilities = fileLoader.load('utilities/utilities')
+    iq = fileLoader.load('nexus/iq')
   }
 
 Map props = properties.getDefaultProps(overrides)
@@ -51,6 +53,7 @@ timestamps {
 
       stage('Prepare') {
           utilities.initProps(props, git)
+        
           if(props.sporing && props.sporingscontext != null) {
             try {
               sporing.addGitMetadata(props.sporingstjeneste, props.sporingscontext, props.git)
@@ -72,7 +75,11 @@ timestamps {
           def sonarPath = tool 'Sonar 4'
           sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
         }
-
+       
+        stage("Nexus IQ downstream") {
+          iq.triggerDownstreamIQJob(props)
+        }
+       
         if (props.isReleaseBuild && !props.tagExists) {
           stage("Tag") {
             git.tagAndPush(props.credentialsId, "v$props.version")
@@ -87,7 +94,9 @@ timestamps {
             error("You need to specify artifactPath")
           }
 
-
+          def repoId = props.isReleaseBuild ? 'releases' : 'snapshots'
+          props.repositoryArtifactUrl = 'https://aurora/nexus/content/repositories/' + repoId
+          
           def isMaster = env.BRANCH_NAME == 'master'
 
           def REPO_ID = isMaster ? 'releases' : 'snapshots'
