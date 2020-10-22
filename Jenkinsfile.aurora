@@ -79,7 +79,8 @@ timestamps {
         }
        
         stage("Nexus IQ downstream") {
-          iq.triggerDownstreamIQJob(props)
+          // Doesn't work for Go-builds due to missing properties in nexus-iq.template
+          // iq.triggerDownstreamIQJob(props)
         }
        
         if (props.isReleaseBuild && !props.tagExists) {
