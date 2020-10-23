@@ -11,7 +11,7 @@ def overrides = [
     applicationType          : 'doozer',
     artifactId               : 'radish',
     groupId                  : 'no.skatteetaten.aurora.openshift',
-    scriptVersion            : 'v7',
+    scriptVersion            : 'iq-go-aot-1098',
     pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
     iqOrganizationName       : 'Team AppSikk',
     goVersion                : '1.14',
@@ -78,8 +78,7 @@ timestamps {
         }
        
         stage("Nexus IQ downstream") {
-          // Doesn't work for Go-builds due to missing properties in nexus-iq.template
-          // iq.triggerDownstreamIQJob(props)
+          iq.triggerDownstreamIQJob(props)
         }
        
         if (props.isReleaseBuild && !props.tagExists) {
@@ -90,8 +89,7 @@ timestamps {
 
         stage('Deploy to Nexus') {
           
-          def REPO_ID = props.isReleaseBuild ? 'releases' : 'releases'
-          
+          def REPO_ID = props.isReleaseBuild ? 'releases' : 'snapshots'
           def REPO_URL = 'https://nexus.sits.no/service/rest/repository/browse/aup-baseimages-artifacts/' + REPO_ID
 
           if (props.isReleaseBuild){
@@ -107,6 +105,8 @@ timestamps {
               ' -Dversion=' + props.version +
               ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/radish.tar.gz'
 
+          // mvn wagon:upload-single -Dwagon.serverId=nexus -Dwagon.url=http://localhost:8081/repository/raw-hosted/ -Dwagon.fromFile=fileToUpload.txt
+          
           maven.setMavenVersion('Maven 3')
           maven.run('deploy:deploy-file', deployOpts)
         
