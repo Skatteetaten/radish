@@ -90,7 +90,8 @@ timestamps {
 
         stage('Deploy to Nexus') {
           
-          def REPO_ID = props.isReleaseBuild ? 'releases' : 'snapshots'
+          def REPO_ID = props.isReleaseBuild ? 'releases' : 'releases'
+          
           def REPO_URL = 'https://nexus.sits.no/service/rest/repository/browse/aup-baseimages-artifacts/' + REPO_ID
 
           if (props.isReleaseBuild){
