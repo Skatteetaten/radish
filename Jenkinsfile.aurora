@@ -100,7 +100,7 @@ timestamps {
           }
 
           def deployOpts = '-Durl=' + REPO_URL +
-              ' -DrepositoryId=' + REPO_ID +
+              ' -DrepositoryId=releases-nexus3' +
               ' -DgroupId=' + props.groupId +
               ' -DartifactId=' + props.artifactId +
               ' -Dversion=' + props.version +
