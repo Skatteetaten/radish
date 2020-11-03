@@ -12,7 +12,7 @@ def overrides = [
     applicationType          : 'doozer',
     artifactId               : 'radish',
     groupId                  : 'no.skatteetaten.aurora.openshift',
-    scriptVersion            : 'feature/AOS-5036-golang-nexus-iq-mattermost',
+    scriptVersion            : 'v7',
     pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
     iqOrganizationName       : 'Team AppSikk',
     goVersion                : '1.14',
