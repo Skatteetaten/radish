@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+import no.skatteetaten.sikkerhet.audit.*
 
 def git
 def go
