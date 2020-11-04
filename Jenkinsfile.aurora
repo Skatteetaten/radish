@@ -89,7 +89,6 @@ timestamps {
         }
 
         stage('Deploy to Nexus') {
-          
           def REPO_ID = props.isReleaseBuild ? 'releases' : 'snapshots' 
           def REPO_URL = 'https://nexus.sits.no/repository/maven-aup-baseimages-artifacts-' + REPO_ID
           
@@ -105,11 +104,9 @@ timestamps {
               ' -DartifactId=' + props.artifactId +
               ' -Dversion=' + props.version +
               ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/radish.tar.gz'
-
           
           maven.setMavenVersion('Maven 3')
           maven.run('deploy:deploy-file', deployOpts)
-        
         }
 
         if(props.sporing && props.sporingscontext != null) {
