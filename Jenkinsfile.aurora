@@ -1,43 +1,141 @@
-node {
-    stage  ('Load shared libraries') {
-        def version='v5'
-        fileLoader.withGit('https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git', version) {
-            maven = fileLoader.load('maven/maven')
-            git = fileLoader.load('git/git')
-            go = fileLoader.load('go/go')
+#!/usr/bin/env groovy
+import no.skatteetaten.sikkerhet.audit.*
+
+def git
+def go
+def maven
+def properties
+def utilities
+def iq
+
+def overrides = [
+    applicationType          : 'doozer',
+    artifactId               : 'radish',
+    groupId                  : 'no.skatteetaten.aurora.openshift',
+    scriptVersion            : 'v7',
+    pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
+    iqOrganizationName       : 'Team AppSikk',
+    goVersion                : '1.14',
+    artifactPath             : 'bin/',
+    sonarQube                : true,
+    sporing                  : true,
+    chatRoom                 : "#sitj-build",
+    versionStrategy          : [
+        [branch: 'master', versionHint: '2']
+        ]
+    ]
+
+fileLoader.withGit(overrides.pipelineScript, overrides.scriptVersion) {
+    git = fileLoader.load('git/git')
+    go = fileLoader.load('go/go')
+    maven = fileLoader.load('maven/maven')
+    properties = fileLoader.load('utilities/properties')
+    utilities = fileLoader.load('utilities/utilities')
+    iq = fileLoader.load('nexus/iq')
+  }
+
+Map props = properties.getDefaultProps(overrides)
+
+timestamps {
+  node(props.slaveSelector) {
+    try {
+      stage('Checkout') {
+        checkout scm
+        //Get context
+        if (props.sporing) {
+          try {
+            props.sporingscontext = sporing.createContext(props.sporingstjeneste)
+          } catch(Exception e) {
+            props.sporingscontext = null
+            echo "[WARNING] Unable to initialize Sporingslogger " + e.message
+          }
         }
-    }
-
-  stage('Checkout') {
-    checkout scm
-  }
-
-  stage('Test and coverage'){
-    go.buildGoWithJenkinsSh("go-1.13")
-  }
-
-  stage('Deploy to Nexus'){
-    def isMaster = env.BRANCH_NAME == 'master'
-    
-    def REPO_ID = isMaster ? 'releases' : 'snapshots'
-    def REPO_URL = 'https://aurora/nexus/content/repositories/' + REPO_ID
-    
-    def version = git.getTagFromCommit()
-
-    if (isMaster){
-      if (!git.tagExists("v${version}")) {
-        error "Commit is not tagged. Aborting build."
       }
-    }
 
-    def deployOpts = '-Durl=' + REPO_URL + 
-        ' -DrepositoryId=' + REPO_ID +
-        ' -DgroupId=no.skatteetaten.aurora.openshift -DartifactId=radish -Dversion=' + version +
-        ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/radish.tar.gz'
+      stage('Prepare') {
+          props.scriptVersionEffective = props.scriptVersion
+          utilities.initProps(props, git)
+        
+          if(props.sporing && props.sporingscontext != null) {
+            try {
+              sporing.addGitMetadata(props.sporingstjeneste, props.sporingscontext, props.git)
+            } catch (Exception e) {
+              echo "[WARNING] Unable to add git metadata to Sporingslogger " + e.message
+            }
+          }
+        }
 
-    maven.setMavenVersion('Maven 3')
-    maven.run('deploy:deploy-file', deployOpts)
+        stage('Build and test') {
+          if (props.goVersion) {
+            go.buildGoWithJenkinsSh(props.goVersion)
+          } else {
+            error("You need to specify goVersion")
+          }
+        }
 
+        stage('Sonar') {
+          def sonarPath = tool 'Sonar 4'
+          sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
+        }
+       
+        stage("Nexus IQ downstream") {
+          iq.triggerDownstreamIQJob(props)
+        }
+       
+        if (props.isReleaseBuild && !props.tagExists) {
+          stage("Tag") {
+            git.tagAndPush(props.credentialsId, "v$props.version")
+          }
+        }
+
+        stage('Deploy to Nexus') {
+          def REPO_ID = props.isReleaseBuild ? 'releases' : 'snapshots' 
+          def REPO_URL = 'https://nexus.sits.no/repository/maven-aup-baseimages-artifacts-' + REPO_ID
+          
+          if (props.isReleaseBuild){
+            if (!git.tagExists("v${props.version}")) {
+              error "Commit is not tagged. Aborting build."
+            }
+          }
+
+          def deployOpts = '-Durl=' + REPO_URL +
+              ' -DrepositoryId=releases-nexus3' +
+              ' -DgroupId=' + props.groupId +
+              ' -DartifactId=' + props.artifactId +
+              ' -Dversion=' + props.version +
+              ' -Dpackaging=tar.gz -DgeneratePom=true -Dfile=bin/radish.tar.gz'
+          
+          maven.setMavenVersion('Maven 3')
+          maven.run('deploy:deploy-file', deployOpts)
+        }
+
+        if(props.sporing && props.sporingscontext != null) {
+          try {
+            sporing.addNexusMetadata(props.sporingstjeneste, props.sporingscontext, props.nexus)
+          } catch (Exception e) {
+            echo "[WARNING] Unable to add Nexus metadata to Sporingslogger " + e.message
+          }
+        }
+
+        if (props.github.enabled) {
+          if (props.github.push) {
+            stage('Push to GitHub') {
+              git.withGitHubCredentials(props.github.credentialsId) {
+                sh "git remote | grep github || git remote add github ${props.github.repoUrl}"
+                sh "GIT_ASKPASS=true git push github HEAD:${env.BRANCH_NAME} --follow-tags"
+              }
+            }
+           }
+        }
+      } catch (InterruptedException e) {
+          currentBuild.result="ABORTED"
+          throw e
+      } catch (e) {
+        currentBuild.result = "FAILURE"
+        echo "Failure ${e.message}"
+        throw e
+      } finally {
+        utilities.postActions(props)
+      }
   }
-
 }
