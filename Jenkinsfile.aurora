@@ -14,6 +14,7 @@ def overrides = [
     groupId                  : 'no.skatteetaten.aurora.openshift',
     scriptVersion            : 'v7',
     pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
+    credentialsId            : "github",
     iqOrganizationName       : 'Team AppSikk',
     goVersion                : '1.14',
     artifactPath             : 'bin/',
