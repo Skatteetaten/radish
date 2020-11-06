@@ -15,7 +15,7 @@ def overrides = [
     scriptVersion            : 'v7',
     pipelineScript           : 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
     credentialsId            : "github",
-    iqOrganizationName       : 'Team AppSikk',
+    iqOrganizationName       : 'Team APS',
     goVersion                : '1.14',
     artifactPath             : 'bin/',
     sonarQube                : true,
