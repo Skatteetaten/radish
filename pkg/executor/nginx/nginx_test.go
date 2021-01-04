@@ -14,6 +14,7 @@ import (
 const ninxConfigFile = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -29,6 +30,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
@@ -71,6 +73,7 @@ http {
 const nginxConfigFileWithGzipStatic = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -86,6 +89,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
@@ -130,6 +134,7 @@ http {
 const ninxConfigFileWithCustomEnvParams = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -145,6 +150,7 @@ http {
 					'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
@@ -186,6 +192,7 @@ http {
 const nginxConfigWithExclude = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -201,6 +208,7 @@ http {
 				'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
@@ -252,6 +260,7 @@ http {
 const nginxConfWithCustomLocations = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -267,6 +276,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
@@ -330,6 +340,7 @@ http {
 const nginxConfPrefix = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -345,6 +356,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
@@ -362,6 +374,7 @@ http {
 const nginxConfPrefixWithChangedWorkerConnsAndProcesses = `
 worker_processes  2;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  2048;
@@ -377,6 +390,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;

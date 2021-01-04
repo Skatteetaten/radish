@@ -17,6 +17,7 @@ import (
 const nginxConfigTemplate string = `
 worker_processes  {{.WorkerProcesses}};
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  {{.WorkerConnections}};
@@ -32,6 +33,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
