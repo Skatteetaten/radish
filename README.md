@@ -9,7 +9,7 @@ The first task of Radish is a small process wrapper that:
 * Reap child processes (PID 1)
 * Rewrites exit codes from JVM
 * Handles crash reports (currently passing to stdout)
-* Generates JVM arguments based on Cgroup-limits and runtime config. See [source](pkg/executor/java_options.go)
+* Generates JVM arguments based on Cgroup-limits and runtime config. See [source](pkg/executor/java/java_options.go)
 
 The execution is based on a [radish descriptor](pkg/executor/testdata/testconfig.json)
 
