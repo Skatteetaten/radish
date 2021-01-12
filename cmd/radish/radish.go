@@ -166,11 +166,19 @@ Takes a number of flags:
 			nginxPath = cmd.Flag("nginxPath").Value.String()
 		}
 
-		err := radish.GenerateNginxConfiguration(openshiftConfigPath, nginxPath)
-		if err != nil {
-			logrus.Fatalf("Nginx config generation failed: %s", err)
-			os.Exit(1)
+		config, found := os.LookupEnv("NGINX_CONFIG_BASE_64_ENCODED")
+		if found {
+			err := radish.UseNginxConfiguration(nginxPath, config)
+			if err != nil {
+				logrus.Fatalf("Could not use provided nginx configuration: %s", err)
+			}
+		} else {
+			err := radish.GenerateNginxConfiguration(openshiftConfigPath, nginxPath)
+			if err != nil {
+				logrus.Fatalf("Nginx config generation failed: %s", err)
+			}
 		}
+
 	},
 }
 

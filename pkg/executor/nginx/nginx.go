@@ -2,9 +2,12 @@ package nginx
 
 import (
 	"bytes"
+	b64 "encoding/base64"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -111,6 +114,21 @@ func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) er
 		return errors.Wrap(err, "Error writing nginx configuration")
 	}
 
+	return nil
+}
+
+//UseNginxConfiguration :
+func UseNginxConfiguration(nginxPath string, config string) error {
+	transformed := make([]byte, b64.StdEncoding.DecodedLen(len(config)))
+	b64.StdEncoding.Decode(transformed, []byte(config))
+
+	err := ioutil.WriteFile(filepath.Join(nginxPath, "nginx.conf"), transformed, 0644)
+	if err != nil {
+		return errors.Wrap(err, "Could not write nginx.conf")
+	}
+
+	logrus.Info("nginx.conf")
+	fmt.Print(string(transformed))
 	return nil
 }
 
