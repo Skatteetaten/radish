@@ -178,7 +178,6 @@ Takes a number of flags:
 				logrus.Fatalf("Nginx config generation failed: %s", err)
 			}
 		}
-
 	},
 }
 
