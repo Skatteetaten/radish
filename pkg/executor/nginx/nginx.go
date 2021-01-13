@@ -122,12 +122,12 @@ func UseNginxConfiguration(nginxPath string, config string) error {
 	transformed := make([]byte, b64.StdEncoding.DecodedLen(len(config)))
 	b64.StdEncoding.Decode(transformed, []byte(config))
 
-	err := os.MkdirAll(nginxPath, 0644)
+	err := os.MkdirAll(nginxPath, os.ModeDir|0755)
 	if err != nil {
 		return errors.Wrap(err, "Could not create the config directory")
 	}
 
-	err = ioutil.WriteFile(filepath.Join(nginxPath, "nginx.conf"), transformed, 0644)
+	err = ioutil.WriteFile(filepath.Join(nginxPath, "nginx.conf"), transformed, os.ModeDir|0755)
 	if err != nil {
 		return errors.Wrap(err, "Could not write nginx.conf")
 	}
