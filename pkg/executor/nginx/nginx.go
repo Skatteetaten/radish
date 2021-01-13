@@ -4,7 +4,6 @@ import (
 	"bytes"
 	b64 "encoding/base64"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -119,21 +118,23 @@ func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) er
 
 //UseNginxConfiguration :
 func UseNginxConfiguration(nginxPath string, config string) error {
-	transformed := make([]byte, b64.StdEncoding.DecodedLen(len(config)))
-	b64.StdEncoding.Decode(transformed, []byte(config))
 
-	err := os.MkdirAll(nginxPath, os.ModeDir|0755)
+	decoded, err := b64.StdEncoding.DecodeString(config)
+	if err != nil {
+		return errors.Wrap(err, "Error decoding nginx config")
+	}
+
+	err = os.MkdirAll(nginxPath, os.ModeDir|0755)
 	if err != nil {
 		return errors.Wrap(err, "Could not create the config directory")
 	}
 
-	err = ioutil.WriteFile(filepath.Join(nginxPath, "nginx.conf"), transformed, os.ModeDir|0755)
+	err = ioutil.WriteFile(filepath.Join(nginxPath, "nginx.conf"), decoded, os.ModeDir|0755)
 	if err != nil {
 		return errors.Wrap(err, "Could not write nginx.conf")
 	}
 
-	logrus.Info("nginx.conf")
-	fmt.Print(string(transformed))
+	fmt.Print(string(decoded))
 	return nil
 }
 
