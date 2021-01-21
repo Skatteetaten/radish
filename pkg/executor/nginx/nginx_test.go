@@ -480,6 +480,7 @@ const expectedNginxConfigWithOverrides = `
 			proxy_pass http://localhost:9090;
 			proxy_http_version 1.1;
 			client_max_body_size 5m;
+			proxy_buffer_size 14k;
 		}
 
 
@@ -598,6 +599,7 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 				Main: "test.json",
 				Overrides: map[string]string{
 					"client_max_body_size": "5m",
+					"proxy_buffer_size":    "14k",
 				},
 			},
 		},

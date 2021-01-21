@@ -18,7 +18,7 @@ def overrides = [
     iqOrganizationName       : 'Team APS',
     goVersion                : '1.14',
     artifactPath             : 'bin/',
-    sonarQube                : true,
+    sonarQube                : false,
     sporing                  : true,
     chatRoom                 : "#sitj-build",
     versionStrategy          : [
@@ -74,11 +74,11 @@ timestamps {
           }
         }
 
-        stage('Sonar') {
+      /*  stage('Sonar') {
           def sonarPath = tool 'Sonar 4'
           sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
         }
-       
+      */
         stage("Nexus IQ downstream") {
           iq.triggerDownstreamIQJob(props)
         }
