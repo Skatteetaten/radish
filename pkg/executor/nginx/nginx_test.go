@@ -481,6 +481,7 @@ const expectedNginxConfigWithOverrides = `
 			proxy_http_version 1.1;
 			client_max_body_size 5m;
 			proxy_buffer_size 14k;
+			proxy_buffers 4 14k;
 		}
 
 
@@ -600,6 +601,7 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 				Overrides: map[string]string{
 					"client_max_body_size": "5m",
 					"proxy_buffer_size":    "14k",
+					"proxy_buffers":        "4 14k",
 				},
 			},
 		},

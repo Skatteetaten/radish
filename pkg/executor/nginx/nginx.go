@@ -247,13 +247,24 @@ var allowedNginxOverrides = map[string]func(string) error{
 		return nil
 	},
 	"proxy_buffer_size": func(s string) error {
-		// between 1 and 128 k
-		match, err := regexp.MatchString("^([1-9]|[1-4][0-9]|[5][0])k$", s)
+		// between 1 and 129 k (easier regex than 128;))
+		match, err := regexp.MatchString("^([1-9]|[1-9][0-9]|[1][1-2][0-9])k$", s)
 		if err != nil {
 			return err
 		}
 		if !match {
 			return errors.New("Value on proxy_buffer_size should be on the form Nk where N is between 1 and 128")
+		}
+		return nil
+	},
+	"proxy_buffers": func(s string) error {
+		// 1-9 buffers, between 1 and 129 k (easier regex than 128;))
+		match, err := regexp.MatchString("^[1-9] ([1-9]|[1-9][0-9]|[1][1-2][0-9])k$", s)
+		if err != nil {
+			return err
+		}
+		if !match {
+			return errors.New("Value on proxy_buffer should be on the form N Mk where N is between 1 and 9 and M is between 1 and 128")
 		}
 		return nil
 	},
