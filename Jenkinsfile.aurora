@@ -76,9 +76,9 @@ timestamps {
 
         stage('Sonar') {
           def sonarPath = tool 'Sonar 4'
-          sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
+          sh "${sonarPath}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.login=${props.sonarQubeTempToken}"
         }
-       
+
         stage("Nexus IQ downstream") {
           iq.triggerDownstreamIQJob(props)
         }
