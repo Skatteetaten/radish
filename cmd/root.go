@@ -40,6 +40,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(radish.RunJava)
+	rootCmd.AddCommand(radish.RunNginx)
 	rootCmd.AddCommand(radish.PrintClasspath)
 
 	rootCmd.AddCommand(radish.GenerateNginxConfiguration)

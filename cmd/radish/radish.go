@@ -185,6 +185,15 @@ var RunJava = &cobra.Command{
 	},
 }
 
+//RunNginx :
+var RunNginx = &cobra.Command{
+	Use:   "runNginx",
+	Short: "Runs a Nginx process with radish",
+	Run: func(cmd *cobra.Command, args []string) {
+		radish.RunNginx(args)
+	},
+}
+
 //PrintClasspath :
 var PrintClasspath = &cobra.Command{
 	Use:   "printCP",

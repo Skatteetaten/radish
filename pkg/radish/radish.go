@@ -43,6 +43,30 @@ func RunRadish(args []string) {
 	os.Exit(int(exitCode))
 }
 
+//RunNginx :
+func RunNginx(args []string) {
+	e := nginx.NewNginxExecutor(1, []string{"/u01/logs/nginx.access"})
+
+	cmd := e.PrepareForNginxRun()
+
+	err := cmd.Start()
+	if err != nil {
+		logrus.Fatalf("Unable to start nginx: %v", err)
+	}
+
+	reaper.Start()
+	signal.Ignore(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL)
+	pid := cmd.Process.Pid
+	e.StartLogRotate(pid, 10000)
+	signaler.Start(cmd.Process, findGraceTime())
+	var wstatus syscall.WaitStatus
+
+	syscall.Wait4(int(pid), &wstatus, 0, nil)
+	logrus.Infof("Exit code %d", wstatus.ExitStatus())
+	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
+	os.Exit(int(exitCode))
+}
+
 func findGraceTime() time.Duration {
 	signalForward := os.Getenv("RADISH_SIGNAL_FORWARD_DELAY")
 	if signalForward == "" {
