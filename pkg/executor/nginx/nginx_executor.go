@@ -42,7 +42,7 @@ func NewNginxExecutor(rotateAfterSize int64, logfiles []string) Executor {
 }
 
 func (m nginxExecutor) PrepareForNginxRun() *exec.Cmd {
-	cmd := exec.Command("exec nginx -g 'daemon off;' -c /tmp/nginx/nginx.conf")
+	cmd := exec.Command("sh", "-c", "exec nginx -g 'daemon off;' -c /tmp/nginx/nginx.conf")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

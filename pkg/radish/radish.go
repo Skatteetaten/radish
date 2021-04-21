@@ -49,6 +49,9 @@ func RunNginx(args []string) {
 
 	cmd := e.PrepareForNginxRun()
 
+	logrus.Infof("Cmd %s", cmd.Path)
+	logrus.Infof("Args: %s", cmd.Args)
+
 	err := cmd.Start()
 	if err != nil {
 		logrus.Fatalf("Unable to start nginx: %v", err)
@@ -57,10 +60,15 @@ func RunNginx(args []string) {
 	reaper.Start()
 	signal.Ignore(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL)
 	pid := cmd.Process.Pid
+
+	logrus.Infof("Started nginx with pid=%d", cmd.Process.Pid)
+
 	e.StartLogRotate(pid, 10000)
 	signaler.Start(cmd.Process, findGraceTime())
+
 	var wstatus syscall.WaitStatus
 
+	logrus.Infof("Wait for change in state=%d", pid)
 	syscall.Wait4(int(pid), &wstatus, 0, nil)
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
