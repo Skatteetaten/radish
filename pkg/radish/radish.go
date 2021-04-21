@@ -48,10 +48,6 @@ func RunNginx(args []string) {
 	e := nginx.NewNginxExecutor(1, []string{"/u01/logs/nginx.access"})
 
 	cmd := e.PrepareForNginxRun()
-
-	logrus.Infof("Cmd %s", cmd.Path)
-	logrus.Infof("Args: %s", cmd.Args)
-
 	err := cmd.Start()
 	if err != nil {
 		logrus.Fatalf("Unable to start nginx: %v", err)
@@ -62,12 +58,11 @@ func RunNginx(args []string) {
 
 	logrus.Infof("Started nginx with pid=%d", cmd.Process.Pid)
 
-	e.StartLogRotate(pid, 10000)
+	e.StartLogRotate(pid, 1000)
 	signaler.Start(cmd.Process, findGraceTime())
 
 	var wstatus syscall.WaitStatus
 
-	logrus.Infof("Wait for change in state=%d", pid)
 	syscall.Wait4(int(pid), &wstatus, 0, nil)
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
