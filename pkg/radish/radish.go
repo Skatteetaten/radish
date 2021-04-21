@@ -56,9 +56,8 @@ func RunNginx(args []string) {
 	if err != nil {
 		logrus.Fatalf("Unable to start nginx: %v", err)
 	}
-
 	reaper.Start()
-	signal.Ignore(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL)
+	signal.Ignore(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGUSR1)
 	pid := cmd.Process.Pid
 
 	logrus.Infof("Started nginx with pid=%d", cmd.Process.Pid)
