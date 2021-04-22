@@ -63,7 +63,10 @@ func (m nginxLogRotate) StartLogRotate(pid int, checkRotateAfterMs int64) {
 				for _, path := range m.paths {
 					file, err := os.Open(path)
 					if err != nil {
-						continue
+						if os.IsNotExist(err) {
+							continue
+						}
+						logrus.Errorf("Could not open log file %s: %v", path, err)
 					}
 					fileinfo, err := file.Stat()
 					if err != nil {
