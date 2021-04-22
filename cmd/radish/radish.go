@@ -190,7 +190,15 @@ var RunNginx = &cobra.Command{
 	Use:   "runNginx",
 	Short: "Runs a Nginx process with radish",
 	Run: func(cmd *cobra.Command, args []string) {
-		radish.RunNginx(args)
+
+		nginxPath := ""
+		if cmd.Flag("nginxPath") != nil {
+			nginxPath = cmd.Flag("nginxPath").Value.String()
+		} else {
+			logrus.Fatal("nginx config path not present")
+		}
+
+		radish.RunNginx(nginxPath)
 	},
 }
 

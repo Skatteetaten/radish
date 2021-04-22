@@ -44,10 +44,10 @@ func RunRadish(args []string) {
 }
 
 //RunNginx :
-func RunNginx(args []string) {
+func RunNginx(nginxConfigPath string) {
 	e := nginx.NewNginxExecutor(1, []string{"/u01/logs/nginx.access"})
 
-	cmd := e.PrepareForNginxRun()
+	cmd := e.PrepareForNginxRun(nginxConfigPath)
 	err := cmd.Start()
 	if err != nil {
 		logrus.Fatalf("Unable to start nginx: %v", err)

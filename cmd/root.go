@@ -40,12 +40,14 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(radish.RunJava)
-	rootCmd.AddCommand(radish.RunNginx)
 	rootCmd.AddCommand(radish.PrintClasspath)
 
 	rootCmd.AddCommand(radish.GenerateNginxConfiguration)
 	radish.GenerateNginxConfiguration.Flags().StringVarP(&openshiftConfigPath, "radishConfigPath", "", "", "path to the radish config file")
 	radish.GenerateNginxConfiguration.Flags().StringVarP(&nginxPath, "nginxPath", "", "", "The nginxPath is the location (including file name) where the file is saved.")
+
+	rootCmd.AddCommand(radish.RunNginx)
+	radish.RunNginx.Flags().StringVarP(&nginxPath, "nginxPath", "", "", "The nginxPath is the location (including file name) where the config file is stored.")
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&templateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")

@@ -12,7 +12,7 @@ import (
 
 //Executor :
 type Executor interface {
-	PrepareForNginxRun() *exec.Cmd
+	PrepareForNginxRun(nginxConfigPath string) *exec.Cmd
 	HandleExit(exitCode int, pid int) int
 	StartLogRotate(pid int, timeInMs int64)
 }
@@ -41,8 +41,8 @@ func NewNginxExecutor(rotateAfterSize int64, logfiles []string) Executor {
 	}
 }
 
-func (m nginxExecutor) PrepareForNginxRun() *exec.Cmd {
-	cmd := exec.Command("sh", "-c", "exec nginx -g 'daemon off;' -c /tmp/nginx/nginx.conf")
+func (m nginxExecutor) PrepareForNginxRun(nginxConfigPath string) *exec.Cmd {
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("exec nginx -g 'daemon off;' -c %s", nginxConfigPath))
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
