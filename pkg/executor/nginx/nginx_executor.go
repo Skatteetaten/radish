@@ -102,7 +102,6 @@ func (m nginxLogRotate) rotate(pid int, path string) error {
 		return errors.Wrap(err, "Could not signal nginx")
 	}
 
-	//Write test
 	if err := os.Remove(oldLog); err != nil {
 		return errors.Wrap(err, "Could not delete old log file")
 	}

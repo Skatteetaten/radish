@@ -40,4 +40,5 @@ type TemplateInput struct {
 	WorkerProcesses    string
 	ProxyReadTimeout   string
 	NotServingOnRoot   bool
+	LogToFile          bool
 }

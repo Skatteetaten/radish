@@ -17,8 +17,7 @@ import (
 const nginxConfigTemplate string = `
 worker_processes  {{.WorkerProcesses}};
 error_log stderr;
-error_log /u01/logs/nginx.log;
-
+{{if .LogToFile}}error_log /u01/logs/nginx.log;{{end}}
 events {
 	worker_connections  {{.WorkerConnections}};
 }
@@ -33,8 +32,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
-	access_log /u01/logs/nginx.access;
-
+	{{if .LogToFile}}access_log /u01/logs/nginx.access;{{end}}
 	sendfile        on;
 	#tcp_nopush     on;
 	server_tokens  off;
@@ -203,12 +201,18 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 	workerConnections := getEnvOrDefault("NGINX_WORKER_CONNECTIONS", "1024")
 	workerProcesses := getEnvOrDefault("NGINX_WORKER_PROCESSES", "1")
 
+	logIndexStrategy := getEnvOrDefault("LOG_INDEX_STRATEGY", "stdout")
+
 	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
 	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
 
 	notServingOnRoot := true
 	if path == "/" {
 		notServingOnRoot = false
+	}
+	logToFile := false
+	if logIndexStrategy == "file" || logIndexStrategy == "both" {
+		logToFile = true
 	}
 
 	return &executor.TemplateInput{
@@ -226,6 +230,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		WorkerProcesses:    workerProcesses,
 		ProxyReadTimeout:   proxyReadTimeout,
 		NotServingOnRoot:   notServingOnRoot,
+		LogToFile:          logToFile,
 	}, nil
 }
 
