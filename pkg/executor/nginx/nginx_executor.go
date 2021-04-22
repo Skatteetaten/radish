@@ -61,22 +61,18 @@ func (m nginxLogRotate) StartLogRotate(pid int, checkRotateAfterMs int64) {
 			case t := <-ticker.C:
 				//Check file size of all files
 				for _, path := range m.paths {
-					file, err := os.Open(path)
+
+					fileinfo, err := os.Stat(path)
 					if err != nil {
 						if os.IsNotExist(err) {
 							continue
 						}
-						logrus.Errorf("Could not open log file %s: %v", path, err)
-					}
-					fileinfo, err := file.Stat()
-					if err != nil {
 						logrus.Errorf("Could not stat file %s. Err %v", path, err)
 						continue
 					}
 
 					size := fileinfo.Size() >> 20
 					//close file
-					_ = file.Close()
 
 					if size >= m.rotateAfterSize {
 						logrus.Debugf("Rotate log at %s", t)
