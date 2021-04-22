@@ -2,6 +2,7 @@ package nginx
 
 import (
 	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
 	"os"
@@ -74,9 +75,13 @@ func TestHandleLogRotate(t *testing.T) {
 }
 
 func TestPrepareCommand(t *testing.T) {
-	//e := NewNginxExecutor(0, nil)
-	//cmd := e.PrepareForNginxRun()
-	//assert.Equal(t, "exec nginx -g 'daemon off;' -c /tmp/nginx/nginx.conf", cmd.Path)
+	e := NewNginxExecutor(0, nil)
+	cmd := e.PrepareForNginxRun()
+	assert.Equal(t, "/bin/sh", cmd.Path)
+	assert.Equal(t, "sh", cmd.Args[0])
+	assert.Equal(t, "-c", cmd.Args[1])
+	assert.Equal(t, "exec nginx -g 'daemon off;' -c /tmp/nginx/nginx.conf", cmd.Args[2])
+
 }
 
 //https://golang.org/src/os/signal/signal_test.go
