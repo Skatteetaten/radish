@@ -46,7 +46,7 @@ func RunRadish(args []string) {
 //RunNginx :
 func RunNginx(nginxConfigPath string) {
 	//TODO: Config ?
-	e := nginx.NewNginxExecutor(100, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
+	e := nginx.NewNginxExecutor(1, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
 
 	cmd := e.PrepareForNginxRun(nginxConfigPath)
 	err := cmd.Start()
