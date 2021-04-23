@@ -91,9 +91,9 @@ func (m nginxLogRotate) rotate(pid int, path string) error {
 
 	var extension = filepath.Ext(path)
 	var base = path[0 : len(path)-len(extension)]
-	oldLog := fmt.Sprintf("%s.0%s", base, extension)
+	oldLog := fmt.Sprintf("%s.1%s", base, extension)
 
-	//mv access.log access.0.log
+	//mv access.log access.1.log
 	if err := os.Rename(path, oldLog); err != nil {
 		return errors.Wrap(err, "Could not rename log file")
 	}
