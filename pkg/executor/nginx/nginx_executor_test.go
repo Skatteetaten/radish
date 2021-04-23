@@ -1,12 +1,14 @@
 package nginx
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"testing"
 	"time"
@@ -81,6 +83,17 @@ func TestPrepareCommand(t *testing.T) {
 	assert.Equal(t, "-c", cmd.Args[1])
 	assert.Equal(t, "exec nginx -g 'daemon off;' -c /tmp/nginx/nginx.conf", cmd.Args[2])
 
+}
+
+func TestNameArchive(t *testing.T) {
+
+	path := "/u01/logs/nginx.access"
+
+	extension := filepath.Ext(path)
+	base := path[0 : len(path)-len(extension)]
+	oldLog := fmt.Sprintf("%s.0%s", base, extension)
+
+	assert.Equal(t, "/u01/logs/nginx.0.access", oldLog)
 }
 
 //https://golang.org/src/os/signal/signal_test.go

@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"syscall"
 	"time"
 )
@@ -88,9 +89,11 @@ func (m nginxLogRotate) StartLogRotate(pid int, checkRotateAfterMs int64) {
 
 func (m nginxLogRotate) rotate(pid int, path string) error {
 
-	oldLog := fmt.Sprintf("%s.0", path)
+	var extension = filepath.Ext(path)
+	var base = path[0 : len(path)-len(extension)]
+	oldLog := fmt.Sprintf("%s.0%s", base, extension)
 
-	//mv access.log access.log.0
+	//mv access.log access.0.log
 	if err := os.Rename(path, oldLog); err != nil {
 		return errors.Wrap(err, "Could not rename log file")
 	}
@@ -99,11 +102,6 @@ func (m nginxLogRotate) rotate(pid int, path string) error {
 	if err := syscall.Kill(pid, syscall.SIGUSR1); err != nil {
 		return errors.Wrap(err, "Could not signal nginx")
 	}
-
-	if err := os.Remove(oldLog); err != nil {
-		return errors.Wrap(err, "Could not delete old log file")
-	}
-	logrus.Infof("Removed %s", oldLog)
 
 	return nil
 }
