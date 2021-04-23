@@ -189,6 +189,7 @@ var RunJava = &cobra.Command{
 var RunNginx = &cobra.Command{
 	Use:   "runNginx",
 	Short: "Runs a Nginx process with radish",
+	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
 		nginxPath := ""

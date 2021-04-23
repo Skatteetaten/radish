@@ -37,16 +37,15 @@ func RunRadish(args []string) {
 	pid := cmd.Process.Pid
 	signaler.Start(cmd.Process, findGraceTime())
 	var wstatus syscall.WaitStatus
-	syscall.Wait4(int(pid), &wstatus, 0, nil)
+	syscall.Wait4(pid, &wstatus, 0, nil)
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
-	os.Exit(int(exitCode))
+	os.Exit(exitCode)
 }
 
 //RunNginx :
 func RunNginx(nginxConfigPath string) {
-	//TODO: Config ?
-	e := nginx.NewNginxExecutor(1, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
+	e := nginx.NewNginxExecutor(50, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
 
 	cmd := e.PrepareForNginxRun(nginxConfigPath)
 	err := cmd.Start()
@@ -64,10 +63,10 @@ func RunNginx(nginxConfigPath string) {
 
 	var wstatus syscall.WaitStatus
 
-	syscall.Wait4(int(pid), &wstatus, 0, nil)
+	syscall.Wait4(pid, &wstatus, 0, nil)
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
-	os.Exit(int(exitCode))
+	os.Exit(exitCode)
 }
 
 func findGraceTime() time.Duration {
