@@ -76,7 +76,7 @@ Example:
 
 Will start the nginx server with nginx configuration located at /tmp/nginx/nginx.conf
 
-If `NGINX_INDEX_STRATEGY` is set to `file` logs are written to `/u01/logs/nginx.log` and `/u01/logs/nginx.access`
+If `NGINX_INDEX_STRATEGY` is set to `file` logs are written to `/u01/logs/nginx.log` and `/u01/logs/nginx.access` in addition to stdout /stderr
 
 # Usage - CLI mode
 
