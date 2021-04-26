@@ -42,22 +42,6 @@ func TestRotateSignal(t *testing.T) {
 	waitSig(t, c, syscall.SIGUSR1)
 }
 
-func TestHandleExit(t *testing.T) {
-	executor := NewNginxExecutor(0, nil)
-
-	termCode := int(syscall.SIGTERM) + 128
-	termHandled := executor.HandleExit(termCode, 1)
-	if termHandled != 0 {
-		t.Errorf("Handler returned wrong value. Got %d, want %d", termHandled, 0)
-	}
-
-	sigintCode := int(syscall.SIGINT) + 128
-	sigIntHandled := executor.HandleExit(sigintCode, 1)
-	if sigIntHandled != 0 {
-		t.Errorf("Handler returned wrong value. Got %d, want %d", sigIntHandled, 0)
-	}
-}
-
 func TestHandleLogRotate(t *testing.T) {
 
 	file, err := ioutil.TempFile("/tmp", "logrotate")
@@ -81,7 +65,7 @@ func TestPrepareCommand(t *testing.T) {
 	cmd := e.PrepareForNginxRun("/tmp/nginx/nginx.conf")
 	assert.Equal(t, "sh", cmd.Args[0])
 	assert.Equal(t, "-c", cmd.Args[1])
-	assert.Equal(t, "exec nginx -g 'daemon off;' -c /tmp/nginx/nginx.conf", cmd.Args[2])
+	assert.Equal(t, "nginx -g 'daemon off;' -c /tmp/nginx/nginx.conf", cmd.Args[2])
 
 }
 

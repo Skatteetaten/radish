@@ -64,9 +64,15 @@ func RunNginx(nginxConfigPath string) {
 	var wstatus syscall.WaitStatus
 
 	syscall.Wait4(pid, &wstatus, 0, nil)
+
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
-	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
-	os.Exit(exitCode)
+
+	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
+		logrus.Info("Nginx exited sucessfully")
+	} else {
+		logrus.Info("Nginx terminated with exit code %d ", wstatus.ExitStatus())
+	}
+	os.Exit(wstatus.ExitStatus())
 }
 
 func findGraceTime() time.Duration {

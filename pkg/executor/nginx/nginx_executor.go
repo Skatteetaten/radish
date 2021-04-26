@@ -14,7 +14,6 @@ import (
 //Executor :
 type Executor interface {
 	PrepareForNginxRun(nginxConfigPath string) *exec.Cmd
-	HandleExit(exitCode int, pid int) int
 	StartLogRotate(pid int, timeInMs int64)
 }
 
@@ -43,7 +42,7 @@ func NewNginxExecutor(rotateAfterSize int64, logfiles []string) Executor {
 }
 
 func (m nginxExecutor) PrepareForNginxRun(nginxConfigPath string) *exec.Cmd {
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("exec nginx -g 'daemon off;' -c %s", nginxConfigPath))
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("nginx -g 'daemon off;' -c %s", nginxConfigPath))
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -104,17 +103,4 @@ func (m nginxLogRotate) rotate(pid int, path string) error {
 	}
 
 	return nil
-}
-
-func (m nginxExitHandler) HandleExit(exitCode int, pid int) int {
-
-	if exitCode == int(syscall.SIGINT)+128 {
-		logrus.Info("Nginx terminated successfully from a SIGINT")
-		return 0
-	}
-	if exitCode == int(syscall.SIGTERM)+128 {
-		logrus.Info("Nginx terminated successfully from a SIGTERM")
-		return 0
-	}
-	return exitCode
 }
