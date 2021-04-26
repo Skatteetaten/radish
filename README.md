@@ -21,7 +21,7 @@ The second task of Radish is a CLI to accomplish a number of tasks:
   generateSplunkStanzas      Use to generate Splunk stanzas. If a stanza template file is provided, use it, if not, use default stanzas.
   printCP                    Prints complete classpath Radish will use with java application
   runJava                    Runs a Java process with Radish
-
+  runNnginx                  Runs a Nginx process with support for logrotate. 
 ```
 
 # Config read by Radish
@@ -47,6 +47,7 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 | NGINX_WORKER_PROCESSES | Number of worker processes for Nginx configuration. Default 1.|
 | RADISH_SIGNAL_FORWARD_DELAY | The delay in second from a signal is received by radish until it is sent to the child process. Default is 0 |
 | NGINX_PROXY_READ_TIMEOUT | Read timeout configuration. Default is 60 |
+| LOG_INDEX_STRATEGY | log indexing strategy is either set to `file` or `stdout`. Note: The `stdout` strategy is only available in OCP3 clusters.
 
 # Build:
 
