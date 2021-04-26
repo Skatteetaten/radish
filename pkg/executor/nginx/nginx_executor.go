@@ -72,10 +72,10 @@ func (m nginxLogRotate) StartLogRotate(pid int, checkRotateAfterMs int64) {
 						continue
 					}
 
-					size := fileinfo.Size() >> 20
+					sizeInMb := fileinfo.Size() >> 20
 					//close file
 
-					if size >= m.rotateAfterSize {
+					if sizeInMb >= m.rotateAfterSize {
 						logrus.Debugf("Rotate log at %s", t)
 						if err := m.rotate(pid, path); err != nil {
 							logrus.Errorf("Could not rotate logfile %s", path)

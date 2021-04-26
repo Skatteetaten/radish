@@ -659,7 +659,7 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
-	os.Setenv("LOG_INDEX_STRATEGY", "file")
+	os.Setenv("NGINX_INDEX_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfig.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -668,11 +668,11 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(ninxConfigFile), cleanString(s))
-	os.Unsetenv("LOG_INDEX_STRATEGY")
+	os.Unsetenv("NGINX_INDEX_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
-	os.Setenv("LOG_INDEX_STRATEGY", "file")
+	os.Setenv("NGINX_INDEX_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithGzipStatic.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -681,14 +681,14 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(nginxConfigFileWithGzipStatic), cleanString(s))
-	os.Unsetenv("LOG_INDEX_STRATEGY")
+	os.Unsetenv("NGINX_INDEX_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
 	os.Setenv("NGINX_PROXY_READ_TIMEOUT", "5")
 	os.Setenv("PROXY_PASS_HOST", "127.0.0.1")
 	os.Setenv("PROXY_PASS_PORT", "9099")
-	os.Setenv("LOG_INDEX_STRATEGY", "file")
+	os.Setenv("NGINX_INDEX_STRATEGY", "file")
 
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithProxy.json", "testdata")
 	assert.Equal(t, nil, err)
@@ -703,7 +703,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 	os.Unsetenv("NGINX_PROXY_READ_TIMEOUT")
 	os.Unsetenv("PROXY_PASS_HOST")
 	os.Unsetenv("PROXY_PASS_PORT")
-	os.Unsetenv("LOG_INDEX_STRATEGY")
+	os.Unsetenv("NGINX_INDEX_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationWithProxyShouldFailWhenEnvsAreMissing(t *testing.T) {
@@ -714,7 +714,7 @@ func TestGenerateNginxConfigurationWithProxyShouldFailWhenEnvsAreMissing(t *test
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) {
-	os.Setenv("LOG_INDEX_STRATEGY", "both")
+	os.Setenv("NGINX_INDEX_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithExclude.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -723,12 +723,12 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) 
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(nginxConfigWithExclude), cleanString(s))
-	os.Unsetenv("LOG_INDEX_STRATEGY")
+	os.Unsetenv("NGINX_INDEX_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvParam(t *testing.T) {
 	os.Setenv("IGNORE_NGINX_EXCLUDE", "true")
-	os.Setenv("LOG_INDEX_STRATEGY", "file")
+	os.Setenv("NGINX_INDEX_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithExclude.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -740,11 +740,11 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvP
 
 	// Clean up env params
 	os.Unsetenv("IGNORE_NGINX_EXCLUDE")
-	os.Unsetenv("LOG_INDEX_STRATEGY")
+	os.Unsetenv("NGINX_INDEX_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *testing.T) {
-	os.Setenv("LOG_INDEX_STRATEGY", "file")
+	os.Setenv("NGINX_INDEX_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithCustomLocations.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -753,7 +753,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *tes
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(nginxConfWithCustomLocations), cleanString(s))
-	os.Unsetenv("LOG_INDEX_STRATEGY")
+	os.Unsetenv("NGINX_INDEX_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {

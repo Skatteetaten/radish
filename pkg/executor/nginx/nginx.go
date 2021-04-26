@@ -201,7 +201,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 	workerConnections := getEnvOrDefault("NGINX_WORKER_CONNECTIONS", "1024")
 	workerProcesses := getEnvOrDefault("NGINX_WORKER_PROCESSES", "1")
 
-	logIndexStrategy := getEnvOrDefault("LOG_INDEX_STRATEGY", "stdout")
+	nginxIndexStrategy := getEnvOrDefault("NGINX_INDEX_STRATEGY", "stdout")
 
 	nginxGzipForTemplate := nginxGzipMapToString(openshiftConfig.Web.Gzip)
 	nginxLocationForTemplate := nginxLocationsMapToString(openshiftConfig.Web.Locations, documentRoot, path)
@@ -211,7 +211,7 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 		notServingOnRoot = false
 	}
 	logToFile := false
-	if logIndexStrategy == "file" || logIndexStrategy == "both" {
+	if nginxIndexStrategy == "file" {
 		logToFile = true
 	}
 
