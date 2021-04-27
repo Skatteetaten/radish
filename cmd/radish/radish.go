@@ -199,7 +199,17 @@ var RunNginx = &cobra.Command{
 			logrus.Fatal("nginx config path not present")
 		}
 
-		radish.RunNginx(nginxPath)
+		rotateLogsAfterSize, err := cmd.Flags().GetInt("rotateLogsAfterSize")
+		if err != nil {
+			logrus.Fatalf("Could not read value rotateLogsAfterSize: %v", err)
+		}
+
+		checkRotateAfter, err := cmd.Flags().GetInt("checkRotateAfter")
+		if err != nil {
+			logrus.Fatalf("Could not read value checkRotateAfter: %v", err)
+		}
+
+		radish.RunNginx(nginxPath, rotateLogsAfterSize, checkRotateAfter)
 	},
 }
 

@@ -14,7 +14,7 @@ import (
 //Executor :
 type Executor interface {
 	PrepareForNginxRun(nginxConfigPath string) *exec.Cmd
-	StartLogRotate(pid int, timeInMs int64)
+	StartLogRotate(pid int)
 }
 
 type nginxExecutor struct {
@@ -26,17 +26,19 @@ type nginxExitHandler struct {
 }
 
 type nginxLogRotate struct {
-	paths           []string
-	rotateAfterSize int64
+	paths            []string
+	rotateAfterSize  int
+	checkRotateAfter int
 }
 
 //NewNginxExecutor :
-func NewNginxExecutor(rotateAfterSize int64, logfiles []string) Executor {
+func NewNginxExecutor(rotateAfterSize int, checkRotateAfter int, logfiles []string) Executor {
 	return nginxExecutor{
 		nginxExitHandler{},
 		nginxLogRotate{
-			paths:           logfiles,
-			rotateAfterSize: rotateAfterSize,
+			paths:            logfiles,
+			rotateAfterSize:  rotateAfterSize,
+			checkRotateAfter: checkRotateAfter,
 		},
 	}
 }
@@ -49,8 +51,8 @@ func (m nginxExecutor) PrepareForNginxRun(nginxConfigPath string) *exec.Cmd {
 	return cmd
 }
 
-func (m nginxLogRotate) StartLogRotate(pid int, checkRotateAfterMs int64) {
-	ticker := time.NewTicker(time.Duration(checkRotateAfterMs) * time.Millisecond)
+func (m nginxLogRotate) StartLogRotate(pid int) {
+	ticker := time.NewTicker(time.Duration(m.checkRotateAfter) * time.Millisecond)
 	done := make(chan bool)
 
 	go func() {
@@ -74,7 +76,7 @@ func (m nginxLogRotate) StartLogRotate(pid int, checkRotateAfterMs int64) {
 					sizeInMb := fileinfo.Size() >> 20
 					//close file
 
-					if sizeInMb >= m.rotateAfterSize {
+					if int(sizeInMb) >= m.rotateAfterSize {
 						logrus.Debugf("Rotate log at %s", t)
 						if err := m.rotate(pid, path); err != nil {
 							logrus.Errorf("Could not rotate logfile %s", path)

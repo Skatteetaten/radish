@@ -27,6 +27,7 @@ var hostName string
 
 var openshiftConfigPath string
 var nginxPath string
+var rotateLogsAfterMB int
 
 //Execute :
 func Execute() {
@@ -48,6 +49,8 @@ func init() {
 
 	rootCmd.AddCommand(radish.RunNginx)
 	radish.RunNginx.Flags().StringVarP(&nginxPath, "nginxPath", "", "", "The nginxPath is the location (including file name) where the config file is stored.")
+	radish.RunNginx.Flags().Int("rotateLogsAfterSize", 50, "Rotate logs when log size is above this value. Value is in MB")
+	radish.RunNginx.Flags().Int("checkRotateAfter", 1000, "The interval in which we check log rotation")
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&templateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")

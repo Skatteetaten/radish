@@ -50,18 +50,18 @@ func TestHandleLogRotate(t *testing.T) {
 	}
 	defer os.Remove(file.Name())
 
-	e := NewNginxExecutor(0, []string{file.Name()})
+	e := NewNginxExecutor(0, 600, []string{file.Name()})
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGUSR1)
 	pid := syscall.Getpid()
-	e.StartLogRotate(pid, 600)
+	e.StartLogRotate(pid)
 
 	waitSig(t, c, syscall.SIGUSR1)
 }
 
 func TestPrepareCommand(t *testing.T) {
-	e := NewNginxExecutor(0, nil)
+	e := NewNginxExecutor(0, 0, nil)
 	cmd := e.PrepareForNginxRun("/tmp/nginx/nginx.conf")
 	assert.Equal(t, "sh", cmd.Args[0])
 	assert.Equal(t, "-c", cmd.Args[1])

@@ -44,8 +44,8 @@ func RunRadish(args []string) {
 }
 
 //RunNginx :
-func RunNginx(nginxConfigPath string) {
-	e := nginx.NewNginxExecutor(50, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
+func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int) {
+	e := nginx.NewNginxExecutor(rotateLogsAfterSize, checkRotateAfter, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
 
 	cmd := e.PrepareForNginxRun(nginxConfigPath)
 	err := cmd.Start()
@@ -58,7 +58,7 @@ func RunNginx(nginxConfigPath string) {
 
 	logrus.Infof("Started nginx with pid=%d", cmd.Process.Pid)
 
-	e.StartLogRotate(pid, 1000)
+	e.StartLogRotate(pid)
 	signaler.Start(cmd.Process, findGraceTime())
 
 	var wstatus syscall.WaitStatus
