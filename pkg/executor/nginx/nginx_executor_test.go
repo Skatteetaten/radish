@@ -60,15 +60,6 @@ func TestHandleLogRotate(t *testing.T) {
 	waitSig(t, c, syscall.SIGUSR1)
 }
 
-func TestPrepareCommand(t *testing.T) {
-	e := NewNginxExecutor(0, 0, nil)
-	cmd := e.PrepareForNginxRun("/tmp/nginx/nginx.conf")
-	assert.Equal(t, "sh", cmd.Args[0])
-	assert.Equal(t, "-c", cmd.Args[1])
-	assert.Equal(t, "nginx -g 'daemon off;' -c /tmp/nginx/nginx.conf", cmd.Args[2])
-
-}
-
 func TestNameArchive(t *testing.T) {
 
 	path := "/u01/logs/nginx.access"

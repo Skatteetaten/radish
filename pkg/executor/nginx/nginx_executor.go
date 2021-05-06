@@ -44,7 +44,7 @@ func NewNginxExecutor(rotateAfterSize int, checkRotateAfter int, logfiles []stri
 }
 
 func (m nginxExecutor) PrepareForNginxRun(nginxConfigPath string) *exec.Cmd {
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("nginx -g 'daemon off;' -c %s", nginxConfigPath))
+	cmd := exec.Command("nginx", "-g", "daemon off;", "-c", nginxConfigPath)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
