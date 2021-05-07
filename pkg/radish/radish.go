@@ -37,10 +37,42 @@ func RunRadish(args []string) {
 	pid := cmd.Process.Pid
 	signaler.Start(cmd.Process, findGraceTime())
 	var wstatus syscall.WaitStatus
-	syscall.Wait4(int(pid), &wstatus, 0, nil)
+	syscall.Wait4(pid, &wstatus, 0, nil)
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
-	os.Exit(int(exitCode))
+	os.Exit(exitCode)
+}
+
+//RunNginx :
+func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int) {
+	e := nginx.NewNginxExecutor(rotateLogsAfterSize, checkRotateAfter, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
+
+	cmd := e.PrepareForNginxRun(nginxConfigPath)
+	err := cmd.Start()
+	if err != nil {
+		logrus.Fatalf("Unable to start nginx: %v", err)
+	}
+	reaper.Start()
+	signal.Ignore(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGUSR1)
+	pid := cmd.Process.Pid
+
+	logrus.Infof("Started nginx with pid=%d", cmd.Process.Pid)
+
+	e.StartLogRotate(pid)
+	signaler.Start(cmd.Process, findGraceTime())
+
+	var wstatus syscall.WaitStatus
+
+	syscall.Wait4(pid, &wstatus, 0, nil)
+
+	logrus.Infof("Exit code %d", wstatus.ExitStatus())
+
+	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
+		logrus.Info("Nginx exited sucessfully")
+	} else {
+		logrus.Info("Nginx terminated with exit code %d ", wstatus.ExitStatus())
+	}
+	os.Exit(wstatus.ExitStatus())
 }
 
 func findGraceTime() time.Duration {

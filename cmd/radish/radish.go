@@ -185,6 +185,34 @@ var RunJava = &cobra.Command{
 	},
 }
 
+//RunNginx :
+var RunNginx = &cobra.Command{
+	Use:   "runNginx",
+	Short: "Runs a Nginx process with radish",
+	Args:  cobra.MaximumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+
+		nginxPath := ""
+		if cmd.Flag("nginxPath") != nil {
+			nginxPath = cmd.Flag("nginxPath").Value.String()
+		} else {
+			logrus.Fatal("nginx config path not present")
+		}
+
+		rotateLogsAfterSize, err := cmd.Flags().GetInt("rotateLogsAfterSize")
+		if err != nil {
+			logrus.Fatalf("Could not read value rotateLogsAfterSize: %v", err)
+		}
+
+		checkRotateAfter, err := cmd.Flags().GetInt("checkRotateAfter")
+		if err != nil {
+			logrus.Fatalf("Could not read value checkRotateAfter: %v", err)
+		}
+
+		radish.RunNginx(nginxPath, rotateLogsAfterSize, checkRotateAfter)
+	},
+}
+
 //PrintClasspath :
 var PrintClasspath = &cobra.Command{
 	Use:   "printCP",

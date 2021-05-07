@@ -14,6 +14,7 @@ import (
 const ninxConfigFile = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -30,6 +31,8 @@ http {
 
 	access_log  /dev/stdout;
 
+	access_log /u01/logs/nginx.access;
+	
 	sendfile        on;
 	#tcp_nopush     on;
 	server_tokens  off;
@@ -71,6 +74,7 @@ http {
 const nginxConfigFileWithGzipStatic = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -86,6 +90,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
@@ -130,6 +135,7 @@ http {
 const ninxConfigFileWithCustomEnvParams = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -145,7 +151,8 @@ http {
 					'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
-
+	access_log /u01/logs/nginx.access;
+	
 	sendfile        on;
 	#tcp_nopush     on;
 	server_tokens  off;
@@ -186,6 +193,7 @@ http {
 const nginxConfigWithExclude = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -201,6 +209,7 @@ http {
 				'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
@@ -252,6 +261,7 @@ http {
 const nginxConfWithCustomLocations = `
 worker_processes  1;
 error_log stderr;
+error_log /u01/logs/nginx.log;
 
 events {
 	worker_connections  1024;
@@ -267,6 +277,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
 
 	sendfile        on;
 	#tcp_nopush     on;
@@ -326,6 +337,39 @@ http {
 	}
 }
 `
+const nginxConfPrefixWithFileLogging = `
+worker_processes  1;
+error_log stderr;
+error_log /u01/logs/nginx.log;
+
+events {
+	worker_connections  1024;
+}
+
+
+http {
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
+
+	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+						'$status $body_bytes_sent "$http_referer" '
+						'"$http_user_agent" "$http_x_forwarded_for"';
+
+	access_log  /dev/stdout;
+	access_log /u01/logs/nginx.access;
+
+	sendfile        on;
+	#tcp_nopush     on;
+	server_tokens  off;
+
+    keepalive_timeout  75;
+    proxy_read_timeout 60;
+
+	gzip_static off;
+
+
+	index index.html;
+`
 
 const nginxConfPrefix = `
 worker_processes  1;
@@ -345,7 +389,7 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
-
+	
 	sendfile        on;
 	#tcp_nopush     on;
 	server_tokens  off;
@@ -377,7 +421,6 @@ http {
 						'"$http_user_agent" "$http_x_forwarded_for"';
 
 	access_log  /dev/stdout;
-
 	sendfile        on;
 	#tcp_nopush     on;
 	server_tokens  off;
@@ -616,6 +659,7 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
+	os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfig.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -624,9 +668,11 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(ninxConfigFile), cleanString(s))
+	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
+	os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithGzipStatic.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -635,12 +681,15 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(nginxConfigFileWithGzipStatic), cleanString(s))
+	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
 	os.Setenv("NGINX_PROXY_READ_TIMEOUT", "5")
 	os.Setenv("PROXY_PASS_HOST", "127.0.0.1")
 	os.Setenv("PROXY_PASS_PORT", "9099")
+	os.Setenv("NGINX_LOG_STRATEGY", "file")
+
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithProxy.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -648,12 +697,13 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, cleanString(s), cleanString(ninxConfigFileWithCustomEnvParams))
+	assert.Equal(t, cleanString(ninxConfigFileWithCustomEnvParams), cleanString(s))
 
 	// Clean up env params
 	os.Unsetenv("NGINX_PROXY_READ_TIMEOUT")
 	os.Unsetenv("PROXY_PASS_HOST")
 	os.Unsetenv("PROXY_PASS_PORT")
+	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationWithProxyShouldFailWhenEnvsAreMissing(t *testing.T) {
@@ -664,6 +714,7 @@ func TestGenerateNginxConfigurationWithProxyShouldFailWhenEnvsAreMissing(t *test
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) {
+	os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithExclude.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -671,11 +722,13 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) 
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, cleanString(s), cleanString(nginxConfigWithExclude))
+	assert.Equal(t, cleanString(nginxConfigWithExclude), cleanString(s))
+	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvParam(t *testing.T) {
 	os.Setenv("IGNORE_NGINX_EXCLUDE", "true")
+	os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithExclude.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -683,13 +736,15 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvP
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, cleanString(s), cleanString(ninxConfigFile))
+	assert.Equal(t, cleanString(ninxConfigFile), cleanString(s))
 
 	// Clean up env params
 	os.Unsetenv("IGNORE_NGINX_EXCLUDE")
+	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *testing.T) {
+	os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithCustomLocations.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -697,7 +752,8 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *tes
 	assert.Equal(t, nil, err)
 
 	s := string(data[:])
-	assert.Equal(t, cleanString(s), cleanString(nginxConfWithCustomLocations))
+	assert.Equal(t, cleanString(nginxConfWithCustomLocations), cleanString(s))
+	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {
