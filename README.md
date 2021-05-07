@@ -47,7 +47,7 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 | NGINX_WORKER_PROCESSES | Number of worker processes for Nginx configuration. Default 1.|
 | RADISH_SIGNAL_FORWARD_DELAY | The delay in second from a signal is received by radish until it is sent to the child process. Default is 0 |
 | NGINX_PROXY_READ_TIMEOUT | Read timeout configuration. Default is 60 |
-| NGINX_INDEX_STRATEGY | Nginx indexing strategy is either set to `file` or `stdout`. Note: The `stdout` strategy is only available in OCP3 clusters. 
+| NGINX_LOG_STRATEGY | Nginx indexing strategy is either set to `file` or `stdout`. Note: The `stdout` strategy is only available in OCP3 clusters. 
 
 # Build:
 
@@ -76,7 +76,7 @@ Example:
 
 Will start the nginx server with nginx configuration located at /tmp/nginx/nginx.conf
 
-If `NGINX_INDEX_STRATEGY` is set to `file` logs are written to `/u01/logs/nginx.log` and `/u01/logs/nginx.access` in addition to stdout /stderr
+If `NGINX_LOG_STRATEGY` is set to `file` logs are written to `/u01/logs/nginx.log` and `/u01/logs/nginx.access` in addition to stdout /stderr
 
 # Usage - CLI mode
 
