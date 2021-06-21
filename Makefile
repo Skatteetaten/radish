@@ -25,15 +25,23 @@ all: fmt lint test-xml $(BIN) ; $(info $(M) building executable…) @ ## Build p
 		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
 		-o $(BIN)/$(PACKAGE) main.go
 
+
+.PHONY: binary
+binary: fmt lint ; $(info $(M) building executable while skipping tests)
+	$Q $(GO) build \
+    		-tags release \
+    		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
+    		-o $(BIN)/$(PACKAGE) main.go
+
 # Tools
 
 $(BIN):
 	@mkdir -p $@
 $(BIN)/%: | $(BIN) ; $(info $(M) building $(REPOSITORY)…)
 	$Q tmp=$$(mktemp -d); \
-	   env GO111MODULE=off GOPATH=$$tmp GOBIN=$(BIN) $(GO) get $(REPOSITORY) \
+		env GO111MODULE=off GOPATH=$$tmp GOBIN=$(BIN) $(GO) get $(REPOSITORY) \
 		|| ret=$$?; \
-	   rm -rf $$tmp ; exit $$ret
+		rm -rf $$tmp ; exit $$ret
 
 GOLINT = $(BIN)/golint
 $(BIN)/golint: REPOSITORY=golang.org/x/lint/golint

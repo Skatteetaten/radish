@@ -1,4 +1,5 @@
 # Radish
+
 <img align="right" width=280px src="https://images.pexels.com/photos/244393/pexels-photo-244393.jpeg?cs=srgb&dl=close-up-colors-farm-produce-244393.jpg&fm=jpg">
 For the dozers of Fraggle Rock, radishes are the beginning of everything they build, because dozer sticks are made from it.
 For Aurora, Radish is the beginning of every running java application. 
@@ -47,15 +48,35 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 | NGINX_WORKER_PROCESSES | Number of worker processes for Nginx configuration. Default 1.|
 | RADISH_SIGNAL_FORWARD_DELAY | The delay in second from a signal is received by radish until it is sent to the child process. Default is 0 |
 | NGINX_PROXY_READ_TIMEOUT | Read timeout configuration. Default is 60 |
-| NGINX_LOG_STRATEGY | Nginx indexing strategy is either set to `file` or `stdout`. Note: The `stdout` strategy is only available in OCP3 clusters. 
+| NGINX_LOG_STRATEGY | Nginx indexing strategy is either set to `file` or `stdout`. Note: The `stdout` strategy is only available in OCP3 clusters.
 
 # Build:
 
-Install go dep (https://github.com/golang/dep)
+We use go modules
 
-* dep ensure
-* make
+Dependencies are managed via `go.mod`. Remember to run `go mod tidy` after dependency update.
 
+The build is orchestrated on Jenkins, with Jenkinsfile.
+
+### Local build
+
+We use nginx when validating the generated nginx configuration, thus nginx is required to run tests locally.
+
+Nginx can be installed in one of the following ways:
+
+Mac:
+
+`brew install nginx`
+
+Linux (Ubuntu)
+
+`sudo apt install nginx`
+
+Build commands:
+```
+make                       # Build and test
+make binary                # Build and skip tests
+```
 
 # Usage - Process wrapper mode:
 
@@ -76,7 +97,8 @@ Example:
 
 Will start the nginx server with nginx configuration located at /tmp/nginx/nginx.conf
 
-If `NGINX_LOG_STRATEGY` is set to `file` logs are written to `/u01/logs/nginx.log` and `/u01/logs/nginx.access` in addition to stdout /stderr
+If `NGINX_LOG_STRATEGY` is set to `file` logs are written to `/u01/logs/nginx.log` and `/u01/logs/nginx.access` in
+addition to stdout /stderr
 
 # Usage - CLI mode
 

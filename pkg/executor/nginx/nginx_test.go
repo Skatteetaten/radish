@@ -2,8 +2,11 @@ package nginx
 
 import (
 	"bytes"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
 	"strings"
 	"testing"
 
@@ -554,6 +557,8 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFilePartial), cleanString(actual))
+
+	validateNginxConfig(t, actual)
 }
 
 func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
@@ -576,6 +581,8 @@ func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
 
 	assert.Equal(t, cleanString(nginxConfPrefixWithChangedWorkerConnsAndProcesses+expectedNginxConfFilePartial), cleanString(actual))
 
+	validateNginxConfig(t, actual)
+
 	os.Unsetenv("NGINX_WORKER_CONNECTIONS")
 	os.Unsetenv("NGINX_WORKER_PROCESSES")
 }
@@ -597,6 +604,8 @@ func TestGeneratedFilesWhenNodeJSIsDisabled(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFileNoNodejsPartial), cleanString(data))
+
+	validateNginxConfig(t, data)
 }
 
 func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
@@ -627,10 +636,14 @@ func TestThatCustomHeadersIsPresentInNginxConfig(t *testing.T) {
 
 	openshiftJSON.Web.WebApp.DisableTryfiles = true
 
+	validateNginxConfig(t, actual)
+
 	err = generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
 
 	assert.NoError(t, err)
 	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfFileNoSpaAndCustomHeaders), cleanString(actual))
+
+	validateNginxConfig(t, actual)
 }
 
 func TestThatOverrideInNginxIsSet(t *testing.T) {
@@ -656,6 +669,8 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, cleanString(nginxConfPrefix+expectedNginxConfigWithOverrides), cleanString(actual))
 
+	validateNginxConfig(t, actual)
+
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
@@ -668,6 +683,9 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(ninxConfigFile), cleanString(s))
+
+	validateNginxConfig(t, s)
+
 	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
@@ -681,6 +699,9 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(nginxConfigFileWithGzipStatic), cleanString(s))
+
+	validateNginxConfig(t, s)
+
 	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
@@ -698,6 +719,8 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(ninxConfigFileWithCustomEnvParams), cleanString(s))
+
+	validateNginxConfig(t, s)
 
 	// Clean up env params
 	os.Unsetenv("NGINX_PROXY_READ_TIMEOUT")
@@ -723,6 +746,9 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) 
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(nginxConfigWithExclude), cleanString(s))
+
+	validateNginxConfig(t, s)
+
 	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
@@ -737,6 +763,8 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvP
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(ninxConfigFile), cleanString(s))
+
+	validateNginxConfig(t, s)
 
 	// Clean up env params
 	os.Unsetenv("IGNORE_NGINX_EXCLUDE")
@@ -753,6 +781,9 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *tes
 
 	s := string(data[:])
 	assert.Equal(t, cleanString(nginxConfWithCustomLocations), cleanString(s))
+
+	validateNginxConfig(t, s)
+
 	os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
@@ -775,4 +806,28 @@ func testFileWriter(res *string) util.FileWriter {
 func cleanString(in string) string {
 	replacer := strings.NewReplacer("\n", "", "\t", "")
 	return replacer.Replace(in)
+}
+
+func validateNginxConfig(t *testing.T, config string) {
+	//Not relevant for syntax checking
+	config = strings.Replace(config, "include       /etc/nginx/mime.types;", "", -1)
+
+	file, err := ioutil.TempFile("/tmp", "nginx.*.conf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+
+	err = ioutil.WriteFile(file.Name(), []byte(config), 0)
+	if err != nil {
+		t.Error(err)
+	}
+
+	result, err := exec.Command("nginx", "-t", "-c", file.Name()).CombinedOutput()
+	logrus.Infof(string(result))
+
+	if !strings.Contains(string(result), "syntax is ok") && err != nil {
+		t.Fatalf("Could not validate nginx.conf: %v", err)
+	}
+
 }
