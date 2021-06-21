@@ -50,11 +50,13 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 | NGINX_LOG_STRATEGY | Nginx indexing strategy is either set to `file` or `stdout`. Note: The `stdout` strategy is only available in OCP3 clusters. 
 
 # Build:
+We use go modules
 
-Install go dep (https://github.com/golang/dep)
+Dependencies are managed via `go.mod`. Remember to run `go mod tidy` after dependency update.
 
-* dep ensure
-* make
+The build is orchestrated on Jenkins, with Jenkinsfile.
+
+Run `make` to build locally.
 
 # Test
 We use nginx when validating the generated nginx configuration, thus nginx is required to test locally.
