@@ -56,6 +56,8 @@ Install go dep (https://github.com/golang/dep)
 * dep ensure
 * make
 
+# Test
+We use nginx when validating the generated nginx configuration, thus nginx is required to test locally.
 
 # Usage - Process wrapper mode:
 
