@@ -823,12 +823,11 @@ func validateNginxConfig(t *testing.T, config string) {
 		t.Error(err)
 	}
 
-	cmd := exec.Command("nginx", "-t", "-c", file.Name())
-	result, err := cmd.CombinedOutput()
+	result, err := exec.Command("nginx", "-t", "-c", file.Name()).CombinedOutput()
+	logrus.Infof(string(result))
 
 	if !strings.Contains(string(result), "syntax is ok") && err != nil {
-		logrus.Info(string(result))
 		t.Fatalf("Could not validate nginx.conf: %v", err)
 	}
-	logrus.Infof(string(result))
+
 }
