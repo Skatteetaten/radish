@@ -56,10 +56,20 @@ Dependencies are managed via `go.mod`. Remember to run `go mod tidy` after depen
 
 The build is orchestrated on Jenkins, with Jenkinsfile.
 
-Run `make` to build locally.
+### Local build
+We use nginx when validating the generated nginx configuration, thus nginx is required to test and build locally.
 
-# Test
-We use nginx when validating the generated nginx configuration, thus nginx is required to test locally.
+Nginx can be installed in one of the following ways:
+
+Mac:
+
+`brew install nginx`
+
+Linux (Ubuntu)
+
+`sudo apt install nginx`
+
+Then run `make` to build and test locally.
 
 # Usage - Process wrapper mode:
 
