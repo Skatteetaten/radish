@@ -816,6 +816,7 @@ func validateNginxConfig(t *testing.T, config string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer os.Remove(file.Name())
 
 	err = ioutil.WriteFile(file.Name(), []byte(config), 0)
 	if err != nil {
@@ -826,10 +827,8 @@ func validateNginxConfig(t *testing.T, config string) {
 	result, err := cmd.CombinedOutput()
 
 	if !strings.Contains(string(result), "syntax is ok") && err != nil {
-		logrus.Info(result)
+		logrus.Info(string(result))
 		t.Fatalf("Could not validate nginx.conf: %v", err)
 	}
-	logrus.Infof("%s", string(result))
-
-	defer os.Remove(file.Name())
+	logrus.Infof(string(result))
 }
