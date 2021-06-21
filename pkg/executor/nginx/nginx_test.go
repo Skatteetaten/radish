@@ -809,6 +809,7 @@ func cleanString(in string) string {
 }
 
 func validateNginxConfig(t *testing.T, config string) {
+	//Not relevant for syntax checking
 	config = strings.Replace(config, "include       /etc/nginx/mime.types;", "", -1)
 
 	file, err := ioutil.TempFile("/tmp", "nginx.*.conf")
