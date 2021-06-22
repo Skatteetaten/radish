@@ -12,9 +12,14 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-go 1.13
+replace (
+	github.com/coreos/etcd => github.com/coreos/etcd v3.3.25+incompatible
+	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
+	golang.org/x/text => golang.org/x/text v0.3.4
+)
+
+go 1.16
