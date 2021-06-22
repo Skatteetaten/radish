@@ -16,4 +16,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
+replace (
+	github.com/coreos/etcd => github.com/coreos/etcd v3.3.25+incompatible
+	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
+	golang.org/x/text => golang.org/x/text v0.3.4
+)
+
 go 1.16
