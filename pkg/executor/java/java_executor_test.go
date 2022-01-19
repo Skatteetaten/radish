@@ -52,3 +52,34 @@ func TestBuildClasspathSubpath(t *testing.T) {
 		cp,
 	)
 }
+
+func TestThatUnknownJavaVersionCausesPanic(t *testing.T) {
+	defer func() {
+		if recover() == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	resolveArgumentModificators(javaVersionLookupFor("UNKNOWN VERSION"))
+}
+
+func TestJava8ArgumentModificators(t *testing.T) {
+	argumentModificators := resolveArgumentModificators(javaVersionLookupFor("8"))
+	assert.Equal(t, Java8ArgumentsModificators, argumentModificators)
+}
+
+func TestJava11ArgumentModificators(t *testing.T) {
+	argumentModificators := resolveArgumentModificators(javaVersionLookupFor("11"))
+	assert.Equal(t, Java11ArgumentsModificators, argumentModificators)
+}
+
+func TestJava17ArgumentModificators(t *testing.T) {
+	argumentModificators := resolveArgumentModificators(javaVersionLookupFor("17"))
+	assert.Equal(t, Java17ArgumentsModificators, argumentModificators)
+}
+
+func javaVersionLookupFor(javaVersion string) func(string) string {
+	return func(s string) string {
+		return javaVersion
+	}
+}

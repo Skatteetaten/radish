@@ -58,6 +58,16 @@ func TestJava11DefaultOptions(t *testing.T) {
 	assert.Len(t, modifiedArgs, 5)
 }
 
+func TestJava17DefaultOptions(t *testing.T) {
+	env := make(map[string]string)
+	ctx := createTestContext(env)
+	modifiedArgs := applyArguments(Java17ArgumentsModificators, ctx)
+	assert.Contains(t, modifiedArgs, "-XX:HeapDumpPath=/tmp")
+	assert.Contains(t, modifiedArgs, "-XX:+HeapDumpOnOutOfMemoryError")
+	assert.Contains(t, modifiedArgs, "-XX:MaxRAMPercentage=75.0")
+	assert.Len(t, modifiedArgs, 5)
+}
+
 func TestOptionsJolokia(t *testing.T) {
 	env := make(map[string]string)
 	env["ENABLE_JOLOKIA"] = "true"

@@ -65,13 +65,21 @@ func (m *generatedJavaExecutor) BuildClasspath(radishDescriptor string) (string,
 }
 
 func resolveArgumentModificators(env func(string) string) []ArgumentModificator {
+	// This is set by the base image (wingnut<X>):
 	majorVersion := env("JAVA_VERSION_MAJOR")
-	if majorVersion == "11" {
+	switch majorVersion {
+	case "8":
+		logrus.Debug("Starting Java 8 process")
+		return Java8ArgumentsModificators
+	case "11":
 		logrus.Debug("Starting Java 11 process")
 		return Java11ArgumentsModificators
+	case "17":
+		logrus.Debug("Starting Java 17 process")
+		return Java17ArgumentsModificators
+	default:
+		panic(fmt.Sprintf("Unsupported JAVA_VERSION_MAJOR: %s", majorVersion))
 	}
-	logrus.Debug("Starting Java 8 process")
-	return Java8ArgumentsModificators
 }
 
 func (m *javaExitHandler) HandleExit(exitCode int, pid int) int {
