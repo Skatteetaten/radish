@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestMain(t *testing.T) {
+func TestMainMethod(t *testing.T) {
 	t.Log("testing TestMain")
 	os.Setenv("POD_NAMESPACE", "1")
 	os.Setenv("APP_NAME", "appname")

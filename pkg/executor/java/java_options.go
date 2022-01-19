@@ -46,18 +46,21 @@ var Java11ArgumentsModificators = []ArgumentModificator{
 	&descriptorJavaOptionsOverride{},
 	&enableExitOnOom{},
 	&debugOptions{},
-	&java11DiagnosticsOptions{},
+	&java11PlusDiagnosticsOptions{},
 	&jolokiaOptions{},
 	&appDynamicsOptions{},
-	&java11MemoryOptions{},
+	&java11PlusMemoryOptions{},
 	&heapDumpOptions{},
 }
 
-type java11DiagnosticsOptions struct {
+//Java17ArgumentsModificators :
+var Java17ArgumentsModificators = Java11ArgumentsModificators
+
+type java11PlusDiagnosticsOptions struct {
 	diagnosticsOptions
 }
 
-func (m *java11DiagnosticsOptions) modifyArguments(context ArgumentsContext) []string {
+func (m *java11PlusDiagnosticsOptions) modifyArguments(context ArgumentsContext) []string {
 	args := make([]string, 0, 3)
 	args = append(args, "-XX:NativeMemoryTracking=summary",
 		"-Xlog:gc",
@@ -321,14 +324,14 @@ func (m *java8MemoryOptions) modifyArguments(context ArgumentsContext) []string 
 	return args
 }
 
-type java11MemoryOptions struct {
+type java11PlusMemoryOptions struct {
 }
 
-func (m *java11MemoryOptions) shouldModifyArguments(context ArgumentsContext) bool {
+func (m *java11PlusMemoryOptions) shouldModifyArguments(context ArgumentsContext) bool {
 	return !containsArgument(context.Arguments, memoryArguments...)
 }
 
-func (m *java11MemoryOptions) modifyArguments(context ArgumentsContext) []string {
+func (m *java11PlusMemoryOptions) modifyArguments(context ArgumentsContext) []string {
 	args := removeArguments(context.Arguments, memoryArguments)
 	maxMemory, exists := context.Environment("JAVA_MAX_RAM_PERCENTAGE")
 	var percent float64
