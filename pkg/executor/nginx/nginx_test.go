@@ -105,7 +105,7 @@ http {
 	gzip_static on;
 	gzip_vary on;
 	gzip_proxied any;
-
+	gzip on;
 
 	index index.html;
 
@@ -315,6 +315,7 @@ http {
 			gzip_static on;
 			gzip_vary on;
 			gzip_proxied any;
+			gzip on;
 			add_header Cache-Control "no-cache";
 			add_header X-Frame-Options "DENY";
 			add_header X-XSS-Protection "1";

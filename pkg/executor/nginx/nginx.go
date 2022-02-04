@@ -349,6 +349,7 @@ func getGzipConfAsString(gzip nginxGzip, location string, indent string) string 
 		location = fmt.Sprintf("%s%sgzip_static on;\n", location, indent)
 		location = fmt.Sprintf("%s%sgzip_vary on;\n", location, indent)
 		location = fmt.Sprintf("%s%sgzip_proxied any;\n", location, indent)
+		location = fmt.Sprintf("%s%sgzip on;\n", location, indent)
 	} else {
 		location = fmt.Sprintf("%s%sgzip_static off;\n", location, indent)
 	}
