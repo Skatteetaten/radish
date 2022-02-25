@@ -243,13 +243,13 @@ For example; Accepting very large client_max_body_size would make a DOS attack v
 */
 var allowedNginxOverrides = map[string]func(string) error{
 	"client_max_body_size": func(s string) error {
-		// between 1 and 50
-		match, err := regexp.MatchString("^([1-9]|[1-4][0-9]|[5][0])m$", s)
+		// between 1 and 100
+		match, err := regexp.MatchString("^([1-9]|[1-9][0-9]|[1][0][0])m$", s)
 		if err != nil {
 			return err
 		}
 		if !match {
-			return errors.New("Value on client_max_body_size should be on the form Nm where N is between 1 and 50")
+			return errors.New("Value on client_max_body_size should be on the form Nm where N is between 1 and 100")
 		}
 		return nil
 	},
