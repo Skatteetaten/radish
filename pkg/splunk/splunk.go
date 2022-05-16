@@ -3,12 +3,14 @@ package splunk
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
+	"text/template"
+
 	"github.com/pkg/errors"
 	"github.com/plaid/go-envvar/envvar"
 	"github.com/sirupsen/logrus"
+
 	"github.com/skatteetaten/radish/pkg/util"
-	"io/ioutil"
-	"text/template"
 )
 
 const splunkAppLogConfigTemplate string = `# --- start/stanza {{.NameOfIndexInComment}}

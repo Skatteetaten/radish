@@ -2,10 +2,11 @@ package auroraenv
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"bytes"
 	"io"

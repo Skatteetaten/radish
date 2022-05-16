@@ -2,10 +2,12 @@ package java
 
 import (
 	"bytes"
-	"github.com/skatteetaten/radish/pkg/util"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/skatteetaten/radish/pkg/util"
 )
 
 var env = make(map[string]string)

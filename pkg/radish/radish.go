@@ -2,21 +2,23 @@ package radish
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"github.com/skatteetaten/radish/pkg/executor/java"
-	"github.com/skatteetaten/radish/pkg/executor/nginx"
-	"github.com/skatteetaten/radish/pkg/reaper"
-	"github.com/skatteetaten/radish/pkg/signaler"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	"github.com/skatteetaten/radish/pkg/executor/java"
+	"github.com/skatteetaten/radish/pkg/executor/nginx"
+	"github.com/skatteetaten/radish/pkg/reaper"
+	"github.com/skatteetaten/radish/pkg/signaler"
 )
 
-//RunRadish :
+// RunRadish :
 func RunRadish(args []string) {
 	e := java.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
@@ -43,7 +45,7 @@ func RunRadish(args []string) {
 	os.Exit(exitCode)
 }
 
-//RunNginx :
+// RunNginx :
 func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int) {
 	e := nginx.NewNginxExecutor(rotateLogsAfterSize, checkRotateAfter, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
 
@@ -70,7 +72,7 @@ func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int)
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
 		logrus.Info("Nginx exited sucessfully")
 	} else {
-		logrus.Info("Nginx terminated with exit code %d ", wstatus.ExitStatus())
+		logrus.Infof("Nginx terminated with exit code %d ", wstatus.ExitStatus())
 	}
 	os.Exit(wstatus.ExitStatus())
 }
@@ -89,7 +91,7 @@ func findGraceTime() time.Duration {
 	return time.Duration(int64(sf) * int64(time.Second))
 }
 
-//PrintRadishCP :
+// PrintRadishCP :
 func PrintRadishCP(args []string) {
 	e := java.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
@@ -125,7 +127,7 @@ func locateRadishDescriptor(args []string) (string, error) {
 	return "", errors.New("No radish descriptor found")
 }
 
-//GenerateNginxConfiguration :
+// GenerateNginxConfiguration :
 func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
 	return nginx.GenerateNginxConfiguration(openshiftConfigPath, nginxPath)
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+
 	"github.com/skatteetaten/radish/cmd"
 	"github.com/skatteetaten/radish/pkg/radish"
 )

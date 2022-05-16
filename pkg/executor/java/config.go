@@ -2,12 +2,13 @@ package java
 
 import (
 	"encoding/json"
-	"github.com/kballard/go-shellquote"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/kballard/go-shellquote"
 
 	"github.com/skatteetaten/radish/pkg/util"
 

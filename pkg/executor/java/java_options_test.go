@@ -1,9 +1,11 @@
 package java
 
 import (
-	"github.com/skatteetaten/radish/pkg/util"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/skatteetaten/radish/pkg/util"
 )
 
 func TestJava8Options(t *testing.T) {

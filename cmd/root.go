@@ -7,8 +7,9 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/skatteetaten/radish/cmd/radish"
 	"github.com/spf13/cobra"
+
+	"github.com/skatteetaten/radish/cmd/radish"
 )
 
 var rootCmd = &cobra.Command{

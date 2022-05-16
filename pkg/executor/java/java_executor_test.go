@@ -1,9 +1,10 @@
 package java
 
 import (
-	"github.com/stretchr/testify/assert"
 	"syscall"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHandleExit(t *testing.T) {

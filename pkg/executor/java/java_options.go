@@ -8,6 +8,7 @@ import (
 
 	"github.com/kballard/go-shellquote"
 	"github.com/sirupsen/logrus"
+
 	"github.com/skatteetaten/radish/pkg/util"
 )
 

@@ -1,5 +1,7 @@
 module github.com/skatteetaten/radish
 
+go 1.18
+
 // direct dependencies:
 require (
 	github.com/drone/envsubst v1.0.3
@@ -9,24 +11,22 @@ require (
 	github.com/plaid/go-envvar v1.1.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 )
 
-// indirect dependencis:
+// indirect dependencies:
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	golang.org/x/sys v0.0.0-20220513210249-45d2b4557a2a // indirect
+	gopkg.in/yaml.v3 v3.0.0-20220512140231-539c8e751b99 // indirect
 )
 
 replace (
-	github.com/coreos/etcd => github.com/coreos/etcd v3.3.26+incompatible
+	github.com/coreos/etcd => github.com/coreos/etcd v3.5.4+incompatible
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
-	github.com/miekg/dns => github.com/miekg/dns v1.1.43
+	github.com/miekg/dns => github.com/miekg/dns v1.1.49
 	golang.org/x/text => golang.org/x/text v0.3.7
 )
-
-go 1.17

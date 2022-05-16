@@ -1,12 +1,13 @@
 package util
 
 import (
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 //https://www.kernel.org/doc/Documentation/cgroup-v1/memory.txt

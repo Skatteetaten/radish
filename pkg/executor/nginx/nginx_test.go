@@ -2,7 +2,6 @@ package nginx
 
 import (
 	"bytes"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"log"
 	"os"
@@ -10,8 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skatteetaten/radish/pkg/util"
+	"github.com/sirupsen/logrus"
+
 	"github.com/stretchr/testify/assert"
+
+	"github.com/skatteetaten/radish/pkg/util"
 )
 
 const ninxConfigFile = `

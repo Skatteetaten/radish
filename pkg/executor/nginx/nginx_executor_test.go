@@ -2,8 +2,6 @@ package nginx
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,6 +10,9 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 var settleTime = 1000 * time.Millisecond

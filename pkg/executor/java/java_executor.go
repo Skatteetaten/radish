@@ -3,14 +3,16 @@ package java
 import (
 	"bytes"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/skatteetaten/radish/pkg/executor"
-	"github.com/skatteetaten/radish/pkg/util"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/skatteetaten/radish/pkg/executor"
+	"github.com/skatteetaten/radish/pkg/util"
 )
 
 type javaExitHandler struct {
