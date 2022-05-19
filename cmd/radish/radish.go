@@ -213,6 +213,23 @@ var RunNginx = &cobra.Command{
 	},
 }
 
+//RunNodeJS :
+var RunNodeJS = &cobra.Command{
+	Use:   "runNodeJS",
+	Short: "Runs a NodeJS process with radish",
+	Args:  cobra.MaximumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+
+		mainJavascriptFile := ""
+		if cmd.Flag("mainJavascriptFile") != nil {
+			mainJavascriptFile = cmd.Flag("mainJavascriptFile").Value.String()
+		} else {
+			logrus.Fatal("mainJavascriptFile not present")
+		}
+		radish.RunNodeJS(mainJavascriptFile)
+	},
+}
+
 //PrintClasspath :
 var PrintClasspath = &cobra.Command{
 	Use:   "printCP",

@@ -1,19 +1,25 @@
 package radish
 
 import (
+	"bufio"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"github.com/skatteetaten/radish/pkg/executor/java"
-	"github.com/skatteetaten/radish/pkg/executor/nginx"
-	"github.com/skatteetaten/radish/pkg/reaper"
-	"github.com/skatteetaten/radish/pkg/signaler"
+	"log"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	logw "git.aurora.skead.no/apsi/logwriter/log"
+
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/skatteetaten/radish/pkg/executor/java"
+	"github.com/skatteetaten/radish/pkg/executor/nginx"
+	"github.com/skatteetaten/radish/pkg/executor/nodejs"
+	"github.com/skatteetaten/radish/pkg/reaper"
+	"github.com/skatteetaten/radish/pkg/signaler"
 )
 
 //RunRadish :
@@ -43,20 +49,82 @@ func RunRadish(args []string) {
 	os.Exit(exitCode)
 }
 
+//RunNodeJS :
+func RunNodeJS(mainJavaScriptFile string) {
+	e := nodejs.NewNodeJSExecutor()
+
+	cmd := e.PrepareForNodeJSRun(mainJavaScriptFile)
+
+	writer := logw.NewLogWriter(logw.WithLogLocation("/tmp"), logw.WithFilename("nodejs_stdout.log"), logw.WithWriteToFile(true))
+
+	stdoutReader, pipeerr := cmd.StdoutPipe()
+	if pipeerr != nil {
+		logrus.Fatalf("Something wrong with stdoutpipe: %s", pipeerr)
+	}
+	scanner := bufio.NewScanner(stdoutReader)
+
+	go func() {
+		for scanner.Scan() {
+			line := scanner.Bytes()
+			writer.Write(line)
+			writer.Write([]byte("\n"))
+		}
+	}()
+
+	err1 := cmd.Start()
+	if err1 != nil {
+		logrus.Fatalf("Unable to start nodeJS: %v", err1)
+	}
+
+	reaper.Start()
+	signal.Ignore(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGUSR1)
+
+	pid := cmd.Process.Pid
+	logrus.Infof("Started nodejs with pid=%d", pid)
+
+	if err := cmd.Wait(); err != nil {
+		log.Fatal(err)
+	}
+
+	signaler.Start(cmd.Process, findGraceTime())
+
+	var wstatus syscall.WaitStatus
+
+	syscall.Wait4(pid, &wstatus, 0, nil)
+
+	logrus.Infof("Exit code %d", wstatus.ExitStatus())
+
+	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
+		logrus.Info("NodeJS exited successfully")
+	} else {
+		logrus.Info("NodeJS terminated with exit code %d ", wstatus.ExitStatus())
+	}
+	os.Exit(wstatus.ExitStatus())
+
+}
+
 //RunNginx :
 func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int) {
 	e := nginx.NewNginxExecutor(rotateLogsAfterSize, checkRotateAfter, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
 
 	cmd := e.PrepareForNginxRun(nginxConfigPath)
-	err := cmd.Start()
+
+	// open the out file for writing
+	outfile, err := os.Create("./out.txt")
 	if err != nil {
-		logrus.Fatalf("Unable to start nginx: %v", err)
+		panic(err)
+	}
+	defer outfile.Close()
+
+	err1 := cmd.Start()
+	if err1 != nil {
+		logrus.Fatalf("Unable to start nginx: %v", err1)
 	}
 	reaper.Start()
 	signal.Ignore(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGUSR1)
 	pid := cmd.Process.Pid
 
-	logrus.Infof("Started nginx with pid=%d", cmd.Process.Pid)
+	logrus.Infof("Started nginx with pid=%d", pid)
 
 	e.StartLogRotate(pid)
 	signaler.Start(cmd.Process, findGraceTime())
@@ -68,7 +136,7 @@ func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int)
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
-		logrus.Info("Nginx exited sucessfully")
+		logrus.Info("Nginx exited successfully")
 	} else {
 		logrus.Info("Nginx terminated with exit code %d ", wstatus.ExitStatus())
 	}
