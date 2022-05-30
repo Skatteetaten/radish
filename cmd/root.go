@@ -28,7 +28,11 @@ var hostName string
 var openshiftConfigPath string
 var nginxPath string
 var rotateLogsAfterMB int
+
 var mainJavascriptFile string
+var stdoutLogLocation string
+var stdoutLogFile string
+var stdoutFileSize int
 
 //Execute :
 func Execute() {
@@ -55,6 +59,9 @@ func init() {
 
 	rootCmd.AddCommand(radish.RunNodeJS)
 	radish.RunNodeJS.Flags().StringVarP(&mainJavascriptFile, "mainJavascriptFile", "", "", "The file name of the nodeJS program to run")
+	radish.RunNodeJS.Flags().StringVarP(&stdoutLogLocation, "stdoutLogLocation", "", "/u01/logs", "Where the log is put - default /u01/logs")
+	radish.RunNodeJS.Flags().StringVarP(&stdoutLogFile, "stdoutLogFile", "", "nodejs_stdout.log", "The file name for the file the nodejs stdout log ends up in. Default nodejs_stdout.log")
+	radish.RunNodeJS.Flags().Int("stdoutFileSize", 50, "The size of the log file - default file size is 50MB")
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&templateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")

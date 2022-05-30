@@ -3,6 +3,7 @@ package radish
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -50,22 +51,28 @@ func RunRadish(args []string) {
 }
 
 //RunNodeJS :
-func RunNodeJS(mainJavaScriptFile string) {
+func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string, logFileSize int) {
 	e := nodejs.NewNodeJSExecutor()
 
 	cmd := e.PrepareForNodeJSRun(mainJavaScriptFile)
 
-	writer := logw.NewLogWriter(logw.WithLogLocation("/tmp"), logw.WithFilename("nodejs_stdout.log"), logw.WithWriteToFile(true))
+	writer := logw.NewLogWriter(logw.WithLogLocation(logLocation), logw.WithFilename(logFilename), logw.WithWriteToFile(true), logw.WithRotateSize(logFileSize))
 
-	stdoutReader, pipeerr := cmd.StdoutPipe()
+	stdoutPipe, pipeerr := cmd.StdoutPipe()
 	if pipeerr != nil {
-		logrus.Fatalf("Something wrong with stdoutpipe: %s", pipeerr)
+		logrus.Fatalf("Something wrong with stdout pipe: %s", pipeerr)
 	}
-	scanner := bufio.NewScanner(stdoutReader)
+
+	stderrPipe, pipeerr := cmd.StderrPipe()
+	if pipeerr != nil {
+		logrus.Fatalf("Something wrong with stderr pipe: %s", pipeerr)
+	}
 
 	go func() {
-		for scanner.Scan() {
-			line := scanner.Bytes()
+		mergedPipeReader := io.MultiReader(stdoutPipe, stderrPipe)
+		mergedPipeScanner := bufio.NewScanner(mergedPipeReader)
+		for mergedPipeScanner.Scan() {
+			line := mergedPipeScanner.Bytes()
 			writer.Write(line)
 			writer.Write([]byte("\n"))
 		}
@@ -109,16 +116,9 @@ func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int)
 
 	cmd := e.PrepareForNginxRun(nginxConfigPath)
 
-	// open the out file for writing
-	outfile, err := os.Create("./out.txt")
+	err := cmd.Start()
 	if err != nil {
-		panic(err)
-	}
-	defer outfile.Close()
-
-	err1 := cmd.Start()
-	if err1 != nil {
-		logrus.Fatalf("Unable to start nginx: %v", err1)
+		logrus.Fatalf("Unable to start nginx: %v", err)
 	}
 	reaper.Start()
 	signal.Ignore(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGUSR1)

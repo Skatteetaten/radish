@@ -2,6 +2,7 @@ package radish
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -220,13 +221,41 @@ var RunNodeJS = &cobra.Command{
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
+		//the nodeJS file to execute
 		mainJavascriptFile := ""
 		if cmd.Flag("mainJavascriptFile") != nil {
 			mainJavascriptFile = cmd.Flag("mainJavascriptFile").Value.String()
 		} else {
 			logrus.Fatal("mainJavascriptFile not present")
 		}
-		radish.RunNodeJS(mainJavascriptFile)
+
+		//where the log is put - default /u01/logs
+		stdoutLogLocation := ""
+		if cmd.Flag("stdoutLogLocation") != nil {
+			stdoutLogLocation = cmd.Flag("stdoutLogLocation").Value.String()
+		} else {
+			stdoutLogLocation = "/u01/logs"
+		}
+
+		//file name for the file the nodejs stdout log ends up in
+		stdoutLogFile := ""
+		if cmd.Flag("stdoutLogFile") != nil {
+			stdoutLogFile = cmd.Flag("stdoutLogFile").Value.String()
+		} else {
+			logrus.Fatal("stdoutLogFile not present")
+		}
+
+		//default file size is 50MB
+		stdoutFileSize := 50
+		if cmd.Flag("stdoutFileSize") != nil {
+			stdoutFileSizeStr := cmd.Flag("stdoutFileSize").Value.String()
+			stdoutFileSize1, err := strconv.Atoi(stdoutFileSizeStr)
+			if err != nil {
+				logrus.Fatal("stdoutFileSize is not an integer")
+			}
+			stdoutFileSize = stdoutFileSize1
+		}
+		radish.RunNodeJS(mainJavascriptFile, stdoutLogLocation, stdoutLogFile, stdoutFileSize)
 	},
 }
 
