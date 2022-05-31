@@ -221,7 +221,6 @@ var RunNodeJS = &cobra.Command{
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
-		//the nodeJS file to execute
 		mainJavascriptFile := ""
 		if cmd.Flag("mainJavascriptFile") != nil {
 			mainJavascriptFile = cmd.Flag("mainJavascriptFile").Value.String()
@@ -229,7 +228,6 @@ var RunNodeJS = &cobra.Command{
 			logrus.Fatal("mainJavascriptFile not present")
 		}
 
-		//where the log is put - default /u01/logs
 		stdoutLogLocation := ""
 		if cmd.Flag("stdoutLogLocation") != nil {
 			stdoutLogLocation = cmd.Flag("stdoutLogLocation").Value.String()
@@ -237,7 +235,6 @@ var RunNodeJS = &cobra.Command{
 			stdoutLogLocation = "/u01/logs"
 		}
 
-		//file name for the file the nodejs stdout log ends up in
 		stdoutLogFile := ""
 		if cmd.Flag("stdoutLogFile") != nil {
 			stdoutLogFile = cmd.Flag("stdoutLogFile").Value.String()
@@ -245,17 +242,16 @@ var RunNodeJS = &cobra.Command{
 			logrus.Fatal("stdoutLogFile not present")
 		}
 
-		//default file size is 50MB
-		stdoutFileSize := 50
-		if cmd.Flag("stdoutFileSize") != nil {
-			stdoutFileSizeStr := cmd.Flag("stdoutFileSize").Value.String()
-			stdoutFileSize1, err := strconv.Atoi(stdoutFileSizeStr)
+		stdoutFileRotateSize := 50
+		if cmd.Flag("stdoutFileRotateSize") != nil {
+			stdoutFileRotateSizeStr := cmd.Flag("stdoutFileRotateSize").Value.String()
+			stdoutFileRotateSizeInt, err := strconv.Atoi(stdoutFileRotateSizeStr)
 			if err != nil {
-				logrus.Fatal("stdoutFileSize is not an integer")
+				logrus.Fatal("stdoutFileRotateSize is not an integer")
 			}
-			stdoutFileSize = stdoutFileSize1
+			stdoutFileRotateSize = stdoutFileRotateSizeInt
 		}
-		radish.RunNodeJS(mainJavascriptFile, stdoutLogLocation, stdoutLogFile, stdoutFileSize)
+		radish.RunNodeJS(mainJavascriptFile, stdoutLogLocation, stdoutLogFile, stdoutFileRotateSize)
 	},
 }
 

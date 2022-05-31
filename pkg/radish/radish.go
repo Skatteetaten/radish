@@ -51,12 +51,12 @@ func RunRadish(args []string) {
 }
 
 //RunNodeJS :
-func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string, logFileSize int) {
+func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string, logFileRotateSize int) {
 	e := nodejs.NewNodeJSExecutor()
 
 	cmd := e.PrepareForNodeJSRun(mainJavaScriptFile)
 
-	writer := logw.NewLogWriter(logw.WithLogLocation(logLocation), logw.WithFilename(logFilename), logw.WithWriteToFile(true), logw.WithRotateSize(logFileSize))
+	writer := logw.NewLogWriter(logw.WithLogLocation(logLocation), logw.WithFilename(logFilename), logw.WithWriteToFile(true), logw.WithRotateSize(logFileRotateSize))
 
 	stdoutPipe, pipeerr := cmd.StdoutPipe()
 	if pipeerr != nil {
@@ -72,6 +72,9 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 		mergedPipeReader := io.MultiReader(stdoutPipe, stderrPipe)
 		mergedPipeScanner := bufio.NewScanner(mergedPipeReader)
 		for mergedPipeScanner.Scan() {
+			if mergedPipeScanner.Err() != nil {
+				writer.Write([]byte("Stdout scan error encountered: " + mergedPipeScanner.Err().Error()))
+			}
 			line := mergedPipeScanner.Bytes()
 			writer.Write(line)
 			writer.Write([]byte("\n"))
