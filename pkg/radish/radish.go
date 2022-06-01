@@ -71,14 +71,17 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 	go func() {
 		mergedPipeReader := io.MultiReader(stdoutPipe, stderrPipe)
 		mergedPipeScanner := bufio.NewScanner(mergedPipeReader)
+		warningsGiven := 0
 		for mergedPipeScanner.Scan() {
-			if mergedPipeScanner.Err() != nil {
-				writer.Write([]byte("Stdout scan error encountered: " + mergedPipeScanner.Err().Error()))
+			if mergedPipeScanner.Err() != nil && warningsGiven < 3 {
+				writer.Write([]byte("ERROR - Stdout scan error encountered: " + mergedPipeScanner.Err().Error()))
+				warningsGiven++
 			}
 			line := mergedPipeScanner.Bytes()
 			writer.Write(line)
 			writer.Write([]byte("\n"))
 		}
+
 	}()
 
 	err1 := cmd.Start()
