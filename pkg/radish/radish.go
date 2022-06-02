@@ -105,8 +105,6 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 
 	syscall.Wait4(pid, &wstatus, 0, nil)
 
-	logrus.Infof("Exit code %d", wstatus.ExitStatus())
-
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
 		logrus.Info("NodeJS exited successfully")
 	} else {
@@ -138,8 +136,6 @@ func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int)
 	var wstatus syscall.WaitStatus
 
 	syscall.Wait4(pid, &wstatus, 0, nil)
-
-	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
 		logrus.Info("Nginx exited successfully")
