@@ -18,7 +18,6 @@ var rootCmd = &cobra.Command{
 }
 
 var templateFilePath string
-var configFilePath string
 var outputFilePath string
 var splunkIndex string
 var podNamespace string
@@ -27,7 +26,10 @@ var hostName string
 
 var openshiftConfigPath string
 var nginxPath string
-var rotateLogsAfterMB int
+
+var mainJavascriptFile string
+var stdoutLogLocation string
+var stdoutLogFile string
 
 //Execute :
 func Execute() {
@@ -51,6 +53,12 @@ func init() {
 	radish.RunNginx.Flags().StringVarP(&nginxPath, "nginxPath", "", "", "The nginxPath is the location (including file name) where the config file is stored.")
 	radish.RunNginx.Flags().Int("rotateLogsAfterSize", 50, "Rotate logs when log size is above this value. Value is in MB")
 	radish.RunNginx.Flags().Int("checkRotateAfter", 1000, "The interval in which we check log rotation")
+
+	rootCmd.AddCommand(radish.RunNodeJS)
+	radish.RunNodeJS.Flags().StringVarP(&mainJavascriptFile, "mainJavascriptFile", "", "", "The file name of the nodeJS program to run")
+	radish.RunNodeJS.Flags().StringVarP(&stdoutLogLocation, "stdoutLogLocation", "", "/u01/logs", "Where the log is put - default /u01/logs")
+	radish.RunNodeJS.Flags().StringVarP(&stdoutLogFile, "stdoutLogFile", "", "nodejs_stdout.log", "The file name for the file the nodejs stdout log ends up in. Default nodejs_stdout.log")
+	radish.RunNodeJS.Flags().Int("stdoutFileRotateSize", 50, "The maximum size of the log file before log rotation - default max file size is 50MB")
 
 	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
 	radish.GenerateSplunkStanzas.Flags().StringVarP(&templateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")

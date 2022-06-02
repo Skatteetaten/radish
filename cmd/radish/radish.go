@@ -2,6 +2,7 @@ package radish
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -210,6 +211,47 @@ var RunNginx = &cobra.Command{
 		}
 
 		radish.RunNginx(nginxPath, rotateLogsAfterSize, checkRotateAfter)
+	},
+}
+
+//RunNodeJS :
+var RunNodeJS = &cobra.Command{
+	Use:   "runNodeJS",
+	Short: "Runs a NodeJS process with radish",
+	Args:  cobra.MaximumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+
+		mainJavascriptFile := ""
+		if cmd.Flag("mainJavascriptFile") != nil {
+			mainJavascriptFile = cmd.Flag("mainJavascriptFile").Value.String()
+		} else {
+			logrus.Fatal("mainJavascriptFile not present")
+		}
+
+		stdoutLogLocation := ""
+		if cmd.Flag("stdoutLogLocation") != nil {
+			stdoutLogLocation = cmd.Flag("stdoutLogLocation").Value.String()
+		} else {
+			stdoutLogLocation = "/u01/logs"
+		}
+
+		stdoutLogFile := ""
+		if cmd.Flag("stdoutLogFile") != nil {
+			stdoutLogFile = cmd.Flag("stdoutLogFile").Value.String()
+		} else {
+			logrus.Fatal("stdoutLogFile not present")
+		}
+
+		stdoutFileRotateSize := 50
+		if cmd.Flag("stdoutFileRotateSize") != nil {
+			stdoutFileRotateSizeStr := cmd.Flag("stdoutFileRotateSize").Value.String()
+			stdoutFileRotateSizeInt, err := strconv.Atoi(stdoutFileRotateSizeStr)
+			if err != nil {
+				logrus.Fatal("stdoutFileRotateSize is not an integer")
+			}
+			stdoutFileRotateSize = stdoutFileRotateSizeInt
+		}
+		radish.RunNodeJS(mainJavascriptFile, stdoutLogLocation, stdoutLogFile, stdoutFileRotateSize)
 	},
 }
 
