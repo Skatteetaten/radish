@@ -341,39 +341,6 @@ http {
 	}
 }
 `
-const nginxConfPrefixWithFileLogging = `
-worker_processes  1;
-error_log stderr;
-error_log /u01/logs/nginx.log;
-
-events {
-	worker_connections  1024;
-}
-
-
-http {
-	include       /etc/nginx/mime.types;
-	default_type  application/octet-stream;
-
-	log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-						'$status $body_bytes_sent "$http_referer" '
-						'"$http_user_agent" "$http_x_forwarded_for"';
-
-	access_log  /dev/stdout;
-	access_log /u01/logs/nginx.access;
-
-	sendfile        on;
-	#tcp_nopush     on;
-	server_tokens  off;
-
-    keepalive_timeout  75;
-    proxy_read_timeout 60;
-
-	gzip_static off;
-
-
-	index index.html;
-`
 
 const nginxConfPrefix = `
 worker_processes  1;
@@ -563,8 +530,8 @@ func TestGeneratedNginxFileWhenNodeJSIsEnabled(t *testing.T) {
 }
 
 func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
-	os.Setenv("NGINX_WORKER_CONNECTIONS", "2048")
-	os.Setenv("NGINX_WORKER_PROCESSES", "2")
+	_ = os.Setenv("NGINX_WORKER_CONNECTIONS", "2048")
+	_ = os.Setenv("NGINX_WORKER_PROCESSES", "2")
 	openshiftJSON := OpenshiftConfig{
 		Docker: Docker{
 			Maintainer: "Tullebukk",
@@ -584,8 +551,8 @@ func TestGeneratedNginxFileWhenWorkerConnsAndProcessesAreChanged(t *testing.T) {
 
 	validateNginxConfig(t, actual)
 
-	os.Unsetenv("NGINX_WORKER_CONNECTIONS")
-	os.Unsetenv("NGINX_WORKER_PROCESSES")
+	_ = os.Unsetenv("NGINX_WORKER_CONNECTIONS")
+	_ = os.Unsetenv("NGINX_WORKER_PROCESSES")
 }
 
 func TestGeneratedFilesWhenNodeJSIsDisabled(t *testing.T) {
@@ -674,8 +641,31 @@ func TestThatOverrideInNginxIsSet(t *testing.T) {
 
 }
 
+func TestThatUnknownOverrideInNginxIsPrevented(t *testing.T) {
+	openshiftJSON := OpenshiftConfig{
+		Docker: Docker{
+			Maintainer: "Tullebukk",
+		},
+		Web: Web{
+			Nodejs: Nodejs{
+				Main: "test.json",
+				Overrides: map[string]string{
+					"unknown_override": "5m",
+				},
+			},
+		},
+	}
+
+	var actual string
+	err := generateNginxConfiguration(openshiftJSON, testFileWriter(&actual))
+
+	if assert.Error(t, err) {
+		assert.Equal(t, "Error mapping data to template: Config unknown_override is not allowed to override with Architect.", err.Error())
+	}
+}
+
 func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
-	os.Setenv("NGINX_LOG_STRATEGY", "file")
+	_ = os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfig.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -687,11 +677,11 @@ func TestGenerateNginxConfigurationFromDefaultTemplate(t *testing.T) {
 
 	validateNginxConfig(t, s)
 
-	os.Unsetenv("NGINX_LOG_STRATEGY")
+	_ = os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
-	os.Setenv("NGINX_LOG_STRATEGY", "file")
+	_ = os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithGzipStatic.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -703,14 +693,14 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithGzip(t *testing.T) {
 
 	validateNginxConfig(t, s)
 
-	os.Unsetenv("NGINX_LOG_STRATEGY")
+	_ = os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T) {
-	os.Setenv("NGINX_PROXY_READ_TIMEOUT", "5")
-	os.Setenv("PROXY_PASS_HOST", "127.0.0.1")
-	os.Setenv("PROXY_PASS_PORT", "9099")
-	os.Setenv("NGINX_LOG_STRATEGY", "file")
+	_ = os.Setenv("NGINX_PROXY_READ_TIMEOUT", "5")
+	_ = os.Setenv("PROXY_PASS_HOST", "127.0.0.1")
+	_ = os.Setenv("PROXY_PASS_PORT", "9099")
+	_ = os.Setenv("NGINX_LOG_STRATEGY", "file")
 
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithProxy.json", "testdata")
 	assert.Equal(t, nil, err)
@@ -724,10 +714,10 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithEnvParams(t *testing.T
 	validateNginxConfig(t, s)
 
 	// Clean up env params
-	os.Unsetenv("NGINX_PROXY_READ_TIMEOUT")
-	os.Unsetenv("PROXY_PASS_HOST")
-	os.Unsetenv("PROXY_PASS_PORT")
-	os.Unsetenv("NGINX_LOG_STRATEGY")
+	_ = os.Unsetenv("NGINX_PROXY_READ_TIMEOUT")
+	_ = os.Unsetenv("PROXY_PASS_HOST")
+	_ = os.Unsetenv("PROXY_PASS_PORT")
+	_ = os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationWithProxyShouldFailWhenEnvsAreMissing(t *testing.T) {
@@ -738,7 +728,7 @@ func TestGenerateNginxConfigurationWithProxyShouldFailWhenEnvsAreMissing(t *test
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) {
-	os.Setenv("NGINX_LOG_STRATEGY", "file")
+	_ = os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithExclude.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -750,12 +740,12 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithExclude(t *testing.T) 
 
 	validateNginxConfig(t, s)
 
-	os.Unsetenv("NGINX_LOG_STRATEGY")
+	_ = os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvParam(t *testing.T) {
-	os.Setenv("IGNORE_NGINX_EXCLUDE", "true")
-	os.Setenv("NGINX_LOG_STRATEGY", "file")
+	_ = os.Setenv("IGNORE_NGINX_EXCLUDE", "true")
+	_ = os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithExclude.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -768,12 +758,12 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithIgnoreExcludeNginxEnvP
 	validateNginxConfig(t, s)
 
 	// Clean up env params
-	os.Unsetenv("IGNORE_NGINX_EXCLUDE")
-	os.Unsetenv("NGINX_LOG_STRATEGY")
+	_ = os.Unsetenv("IGNORE_NGINX_EXCLUDE")
+	_ = os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *testing.T) {
-	os.Setenv("NGINX_LOG_STRATEGY", "file")
+	_ = os.Setenv("NGINX_LOG_STRATEGY", "file")
 	err := GenerateNginxConfiguration("testdata/testRadishConfigWithCustomLocations.json", "testdata")
 	assert.Equal(t, nil, err)
 
@@ -785,7 +775,7 @@ func TestGenerateNginxConfigurationFromDefaultTemplateWithCustomLocations(t *tes
 
 	validateNginxConfig(t, s)
 
-	os.Unsetenv("NGINX_LOG_STRATEGY")
+	_ = os.Unsetenv("NGINX_LOG_STRATEGY")
 }
 
 func TestGenerateNginxConfigurationNoContent(t *testing.T) {
@@ -817,7 +807,10 @@ func validateNginxConfig(t *testing.T, config string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.Remove(file.Name())
+
+	defer func(name string) {
+		_ = os.Remove(name)
+	}(file.Name())
 
 	err = ioutil.WriteFile(file.Name(), []byte(config), 0)
 	if err != nil {

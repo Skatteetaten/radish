@@ -118,7 +118,7 @@ func generateNginxConfiguration(openshiftConfig OpenshiftConfig, fileWriter util
 
 	input, err := mapDataDescToTemplateInput(openshiftConfig)
 	if err != nil {
-		return fmt.Errorf("Error mapping data to template")
+		return errors.Wrap(err, "Error mapping data to template")
 	}
 
 	writer := util.NewTemplateWriter(input, "nginx.conf", nginxConfigTemplate)
@@ -305,7 +305,7 @@ func (m nginxLocations) sort() []string {
 }
 
 func (m headers) sort() []string {
-	index := []string{}
+	var index []string
 	for k := range m {
 		index = append(index, k)
 	}
