@@ -68,6 +68,7 @@ http {
 			if ($request_method = HEAD) {
 			return 200;
 		}
+		return 404 "Application is served under /web/";
 		}
 	
 	}
@@ -129,6 +130,7 @@ http {
 			if ($request_method = HEAD) {
 				return 200;
 			}
+			return 404 "Application is served under /web/";
 		}
 	
 	}
@@ -188,6 +190,7 @@ http {
 			if ($request_method = HEAD) {
 				return 200;
 			}
+			return 404 "Application is served under /web/";
 		}
 	}
 }
@@ -254,6 +257,7 @@ http {
 			if ($request_method = HEAD) {
 				return 200;
 			}
+			return 404 "Application is served under /web/";
 		}
 		
 		
@@ -336,6 +340,7 @@ http {
 			if ($request_method = HEAD) {
 				return 200;
 			}
+			return 404 "Application is served under /web/";
 		}
 
 	}
