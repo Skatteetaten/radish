@@ -19,7 +19,6 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 ```
   generateEnvScript          Use to set environment variables from appropriate properties files, based on app- and aurora versions.
   generateNginxConfiguration Use to generate Nginx configuration files based on a Radish descriptor
-  generateSplunkStanzas      Use to generate Splunk stanzas. If a stanza template file is provided, use it, if not, use default stanzas.
   printCP                    Prints complete classpath Radish will use with java application
   runJava                    Runs a Java process with Radish
   runNnginx                  Runs a Nginx process with support for logrotate. 

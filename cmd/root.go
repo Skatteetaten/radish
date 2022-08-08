@@ -60,17 +60,6 @@ func init() {
 	radish.RunNodeJS.Flags().StringVarP(&stdoutLogFile, "stdoutLogFile", "", "nodejs_stdout.log", "The file name for the file the nodejs stdout log ends up in. Default nodejs_stdout.log")
 	radish.RunNodeJS.Flags().Int("stdoutFileRotateSize", 50, "The maximum size of the log file before log rotation - default max file size is 50MB")
 
-	rootCmd.AddCommand(radish.GenerateSplunkStanzas)
-	radish.GenerateSplunkStanzas.Flags().StringVarP(&templateFilePath, "templateFilePath", "t", "", "path of template. Will use default if not provided")
-
-	radish.GenerateSplunkStanzas.Flags().StringVarP(&splunkIndex, "splunkIndex", "s", "", "SplunkIndex value - template variable, will attempt to use environment variable SPLUNK_INDEX if not set. ")
-	radish.GenerateSplunkStanzas.Flags().StringVarP(&podNamespace, "podNamespace", "p", "", "PodNamespace value - template variable, will attempt to use environment variable POD_NAMESPACE if not set.")
-	radish.GenerateSplunkStanzas.Flags().StringVarP(&appName, "appName", "a", "", "AppName value - template variable, will attempt to use environment variable APP_NAME if not set.")
-	radish.GenerateSplunkStanzas.Flags().StringVarP(&hostName, "hostName", "n", "", "HostName value - template variable, will attempt to use environment variable HOST_NAME if not set.")
-
-	radish.GenerateSplunkStanzas.Flags().StringVarP(&outputFilePath, "outputFilePath", "o", "", "path of output file")
-	radish.GenerateSplunkStanzas.MarkFlagRequired("outputFilePath")
-
 	rootCmd.AddCommand(radish.GenerateEnvScript)
 
 	// Here you will define your flags and configuration settings.
