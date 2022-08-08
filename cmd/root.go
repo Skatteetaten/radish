@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"strings"
@@ -17,13 +16,6 @@ var rootCmd = &cobra.Command{
 	Long:  `Radish CLI`,
 }
 
-var templateFilePath string
-var outputFilePath string
-var splunkIndex string
-var podNamespace string
-var appName string
-var hostName string
-
 var openshiftConfigPath string
 var nginxPath string
 
@@ -34,8 +26,7 @@ var stdoutLogFile string
 //Execute :
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		logrus.Info(err)
+		logrus.Error(err)
 		os.Exit(1)
 	}
 }
@@ -61,16 +52,6 @@ func init() {
 	radish.RunNodeJS.Flags().Int("stdoutFileRotateSize", 50, "The maximum size of the log file before log rotation - default max file size is 50MB")
 
 	rootCmd.AddCommand(radish.GenerateEnvScript)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports Persistent Flags, which, if defined here,
-	// will be global for your application.
-
-	//RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.architect.yaml)")
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	//RootCmd.Flags().BoolP("verbose", "v", false, "Verbose logging")
-
 }
 
 // initConfig reads in config file and ENV variables if set.
