@@ -46,7 +46,7 @@ func RunRadish(args []string) {
 	var wstatus syscall.WaitStatus
 	_, err = syscall.Wait4(pid, &wstatus, 0, nil)
 	if err != nil {
-		panic(err)
+		logrus.Error(err)
 	}
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
