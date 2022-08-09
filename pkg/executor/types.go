@@ -1,28 +1,20 @@
 package executor
 
-import (
-	"os/exec"
-)
+import "os/exec"
 
-//Executor :
+// Executor :
 type Executor interface {
-	/**
-	Build a command
-	*/
+	// Build a command
 	BuildCmd(string) (*exec.Cmd, error)
 
-	/**
-	Handles exit code and rewrites exit code
-	*/
+	// Handles exit code and rewrites exit code
 	HandleExit(exitCode int, pid int) int
 
-	/**
-	Build classpath based on radish descriptor
-	*/
+	// Build classpath based on radish descriptor
 	BuildClasspath(string) (string, error)
 }
 
-//TemplateInput :
+//TemplateInput template values used when generating the nginx configuration
 type TemplateInput struct {
 	Baseimage          string
 	NginxOverrides     map[string]string

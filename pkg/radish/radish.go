@@ -44,7 +44,10 @@ func RunRadish(args []string) {
 	pid := cmd.Process.Pid
 	signaler.Start(cmd.Process, findGraceTime())
 	var wstatus syscall.WaitStatus
-	syscall.Wait4(pid, &wstatus, 0, nil)
+	_, err = syscall.Wait4(pid, &wstatus, 0, nil)
+	if err != nil {
+		logrus.Error(err)
+	}
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
 	os.Exit(exitCode)
