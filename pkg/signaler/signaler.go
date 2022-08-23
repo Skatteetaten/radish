@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Start : Used to forward signals to child processes
+// Start : Used to forward signals to child processes
 func Start(p *os.Process, forwardGracetime time.Duration) {
 	c := make(chan os.Signal, 10)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGUSR1)

@@ -21,14 +21,14 @@ import (
 // local COMPLETE_VERSION=$3  //=$AURORA_VERSION
 // local APP_VERSION=$4       //=$APP_VERSION
 
-//EnvData : Struct for the required elements in the configuration json
+// EnvData : Struct for the required elements in the configuration json
 type EnvData struct {
 	HomeFolder    string `envvar:"HOME"`
 	AuroraVersion string `envvar:"AURORA_VERSION"`
 	AppVersion    string `envvar:"APP_VERSION"`
 }
 
-//GenerateEnvScript :
+// GenerateEnvScript :
 func GenerateEnvScript() (string, error) {
 	vars := EnvData{}
 	if err := envvar.Parse(&vars); err != nil {

@@ -71,7 +71,7 @@ func TestNameArchive(t *testing.T) {
 	assert.Equal(t, "/u01/logs/nginx.0.access", oldLog)
 }
 
-//https://golang.org/src/os/signal/signal_test.go
+// https://golang.org/src/os/signal/signal_test.go
 func waitSig(t *testing.T, c <-chan os.Signal, sig os.Signal) {
 
 	t.Helper()
@@ -79,7 +79,7 @@ func waitSig(t *testing.T, c <-chan os.Signal, sig os.Signal) {
 	waitSig1(t, c, sig, false)
 }
 
-//https://golang.org/src/os/signal/signal_test.go
+// https://golang.org/src/os/signal/signal_test.go
 func waitSig1(t *testing.T, c <-chan os.Signal, sig os.Signal, all bool) {
 
 	t.Helper()

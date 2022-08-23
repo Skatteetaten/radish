@@ -20,7 +20,7 @@ type generatedJavaExecutor struct {
 	javaExitHandler
 }
 
-//NewJavaExecutor :
+// NewJavaExecutor :
 func NewJavaExecutor() executor.Executor {
 	return &generatedJavaExecutor{
 		javaExitHandler: javaExitHandler{},

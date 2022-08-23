@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//Executor :
+// Executor :
 type Executor interface {
 	PrepareForNginxRun(nginxConfigPath string) *exec.Cmd
 	StartLogRotate(pid int)
@@ -31,7 +31,7 @@ type nginxLogRotate struct {
 	checkRotateAfter int
 }
 
-//NewNginxExecutor :
+// NewNginxExecutor :
 func NewNginxExecutor(rotateAfterSize int, checkRotateAfter int, logfiles []string) Executor {
 	return nginxExecutor{
 		nginxExitHandler{},

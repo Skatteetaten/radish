@@ -14,7 +14,7 @@ type Executor interface {
 	BuildClasspath(string) (string, error)
 }
 
-//TemplateInput template values used when generating the nginx configuration
+// TemplateInput template values used when generating the nginx configuration
 type TemplateInput struct {
 	Baseimage          string
 	NginxOverrides     map[string]string

@@ -5,13 +5,13 @@ import (
 	"io"
 )
 
-//Docker :
+// Docker :
 type Docker struct {
 	Maintainer string            `json:"maintainer"`
 	Labels     map[string]string `json:"labels"`
 }
 
-//Web :
+// Web :
 type Web struct {
 	ConfigurableProxy bool           `json:"configurableProxy"`
 	Nodejs            Nodejs         `json:"nodejs"`
@@ -21,13 +21,13 @@ type Web struct {
 	Locations         nginxLocations `json:"locations"`
 }
 
-//Nodejs :
+// Nodejs :
 type Nodejs struct {
 	Main      string            `json:"main"`
 	Overrides map[string]string `json:"overrides"`
 }
 
-//WebApp :
+// WebApp :
 type WebApp struct {
 	Content         string            `json:"content"`
 	Path            string            `json:"path"`
@@ -35,7 +35,7 @@ type WebApp struct {
 	Headers         map[string]string `json:"headers"`
 }
 
-//OpenshiftConfig :
+// OpenshiftConfig :
 type OpenshiftConfig struct {
 	Docker Docker `json:"docker"`
 	Web    Web    `json:"web"`
@@ -54,7 +54,7 @@ type nginxGzip struct {
 	UseStatic string `json:"use_static"`
 }
 
-//UnmarshallOpenshiftConfig :
+// UnmarshallOpenshiftConfig :
 func UnmarshallOpenshiftConfig(buffer io.Reader) (OpenshiftConfig, error) {
 	var data OpenshiftConfig
 	err := json.NewDecoder(buffer).Decode(&data)

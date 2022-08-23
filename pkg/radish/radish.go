@@ -23,7 +23,7 @@ import (
 	"github.com/skatteetaten/radish/pkg/signaler"
 )
 
-//RunRadish :
+// RunRadish :
 func RunRadish(args []string) {
 	e := java.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
@@ -53,7 +53,7 @@ func RunRadish(args []string) {
 	os.Exit(exitCode)
 }
 
-//RunNodeJS :
+// RunNodeJS :
 func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string, logFileRotateSize int) {
 	e := nodejs.NewNodeJSExecutor()
 
@@ -117,7 +117,7 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 
 }
 
-//RunNginx :
+// RunNginx :
 func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int) {
 	e := nginx.NewNginxExecutor(rotateLogsAfterSize, checkRotateAfter, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
 
@@ -162,7 +162,7 @@ func findGraceTime() time.Duration {
 	return time.Duration(int64(sf) * int64(time.Second))
 }
 
-//PrintRadishCP :
+// PrintRadishCP :
 func PrintRadishCP(args []string) {
 	e := java.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
@@ -198,7 +198,7 @@ func locateRadishDescriptor(args []string) (string, error) {
 	return "", errors.New("No radish descriptor found")
 }
 
-//GenerateNginxConfiguration :
+// GenerateNginxConfiguration :
 func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
 	return nginx.GenerateNginxConfiguration(openshiftConfigPath, nginxPath)
 }
