@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -18,11 +17,13 @@ var settleTime = 1000 * time.Millisecond
 
 func TestRotateSignal(t *testing.T) {
 
-	file, err := ioutil.TempFile("/tmp", "logrotate")
+	file, err := os.CreateTemp("/tmp", "logrotate")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.Remove(file.Name())
+	defer func(name string) {
+		_ = os.Remove(name)
+	}(file.Name())
 
 	r := nginxLogRotate{
 		paths:           []string{file.Name()},
@@ -44,11 +45,13 @@ func TestRotateSignal(t *testing.T) {
 
 func TestHandleLogRotate(t *testing.T) {
 
-	file, err := ioutil.TempFile("/tmp", "logrotate")
+	file, err := os.CreateTemp("/tmp", "logrotate")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.Remove(file.Name())
+	defer func(name string) {
+		_ = os.Remove(name)
+	}(file.Name())
 
 	e := NewNginxExecutor(0, 600, []string{file.Name()})
 

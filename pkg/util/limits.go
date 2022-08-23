@@ -2,7 +2,6 @@ package util
 
 import (
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
@@ -49,7 +48,7 @@ func ReadCGroupLimits() CGroupLimits {
 }
 
 func readCGroupLimit(cgroupFilePath string) int {
-	dat, err := ioutil.ReadFile(cgroupFilePath)
+	dat, err := os.ReadFile(cgroupFilePath)
 	if os.IsNotExist(err) {
 		logrus.Debugf("File %s does not exist", cgroupFilePath)
 		return -1

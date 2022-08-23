@@ -77,12 +77,12 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 		warningsGiven := 0
 		for mergedPipeScanner.Scan() {
 			if mergedPipeScanner.Err() != nil && warningsGiven < 3 {
-				writer.Write([]byte("ERROR - Stdout scan error encountered: " + mergedPipeScanner.Err().Error()))
+				_, _ = writer.Write([]byte("ERROR - Stdout scan error encountered: " + mergedPipeScanner.Err().Error()))
 				warningsGiven++
 			}
 			line := mergedPipeScanner.Bytes()
-			writer.Write(line)
-			writer.Write([]byte("\n"))
+			_, _ = writer.Write(line)
+			_, _ = writer.Write([]byte("\n"))
 		}
 
 	}()
@@ -106,7 +106,7 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 
 	var wstatus syscall.WaitStatus
 
-	syscall.Wait4(pid, &wstatus, 0, nil)
+	_, _ = syscall.Wait4(pid, &wstatus, 0, nil)
 
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
 		logrus.Info("NodeJS exited successfully")
@@ -138,7 +138,7 @@ func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int)
 
 	var wstatus syscall.WaitStatus
 
-	syscall.Wait4(pid, &wstatus, 0, nil)
+	_, _ = syscall.Wait4(pid, &wstatus, 0, nil)
 
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
 		logrus.Info("Nginx exited successfully")

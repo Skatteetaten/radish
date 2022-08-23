@@ -3,7 +3,6 @@ package nginx
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"sort"
@@ -90,7 +89,7 @@ func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) er
 	var openshiftConfig OpenshiftConfig
 
 	if openshiftConfigPath != "" {
-		data, err := ioutil.ReadFile(openshiftConfigPath)
+		data, err := os.ReadFile(openshiftConfigPath)
 		if err != nil {
 			return fmt.Errorf("Error reading file: " + openshiftConfigPath)
 		}
