@@ -11,7 +11,7 @@ import (
 	"github.com/skatteetaten/radish/pkg/util"
 )
 
-//ArgumentsContext :
+// ArgumentsContext :
 type ArgumentsContext struct {
 	Arguments    []string
 	Environment  func(string) (string, bool)
@@ -19,13 +19,13 @@ type ArgumentsContext struct {
 	CGroupLimits util.CGroupLimits
 }
 
-//ArgumentModificator :
+// ArgumentModificator :
 type ArgumentModificator interface {
 	shouldModifyArguments(context ArgumentsContext) bool
 	modifyArguments(context ArgumentsContext) []string
 }
 
-//Java8ArgumentsModificators :
+// Java8ArgumentsModificators :
 var Java8ArgumentsModificators = []ArgumentModificator{
 	&environmentJavaOptionsOverride{},
 	&descriptorJavaOptionsOverride{},
@@ -40,7 +40,7 @@ var Java8ArgumentsModificators = []ArgumentModificator{
 	&heapDumpOptions{},
 }
 
-//Java11ArgumentsModificators :
+// Java11ArgumentsModificators :
 var Java11ArgumentsModificators = []ArgumentModificator{
 	&environmentJavaOptionsOverride{},
 	&descriptorJavaOptionsOverride{},
@@ -53,7 +53,7 @@ var Java11ArgumentsModificators = []ArgumentModificator{
 	&heapDumpOptions{},
 }
 
-//Java17ArgumentsModificators :
+// Java17ArgumentsModificators :
 var Java17ArgumentsModificators = Java11ArgumentsModificators
 
 type java11PlusDiagnosticsOptions struct {

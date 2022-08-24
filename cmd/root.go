@@ -23,7 +23,7 @@ var mainJavascriptFile string
 var stdoutLogLocation string
 var stdoutLogFile string
 
-//Execute :
+// Execute :
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		logrus.Error(err)

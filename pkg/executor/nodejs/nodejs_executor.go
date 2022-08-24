@@ -4,7 +4,7 @@ import (
 	"os/exec"
 )
 
-//Executor :
+// Executor :
 type Executor interface {
 	PrepareForNodeJSRun(mainJavaScriptFile string) *exec.Cmd
 }
@@ -16,7 +16,7 @@ type nodeJSExecutor struct {
 type nodeJSExitHandler struct {
 }
 
-//NewNodeJSExecutor :
+// NewNodeJSExecutor :
 func NewNodeJSExecutor() Executor {
 	return nodeJSExecutor{
 		nodeJSExitHandler{},

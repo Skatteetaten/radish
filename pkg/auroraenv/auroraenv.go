@@ -21,14 +21,14 @@ import (
 // local COMPLETE_VERSION=$3  //=$AURORA_VERSION
 // local APP_VERSION=$4       //=$APP_VERSION
 
-//EnvData : Struct for the required elements in the configuration json
+// EnvData : Struct for the required elements in the configuration json
 type EnvData struct {
 	HomeFolder    string `envvar:"HOME"`
 	AuroraVersion string `envvar:"AURORA_VERSION"`
 	AppVersion    string `envvar:"APP_VERSION"`
 }
 
-//GenerateEnvScript :
+// GenerateEnvScript :
 func GenerateEnvScript() (string, error) {
 	vars := EnvData{}
 	if err := envvar.Parse(&vars); err != nil {
@@ -84,13 +84,13 @@ func GenerateEnvScript() (string, error) {
 
 	buffer := &bytes.Buffer{}
 	for _, dir := range configDirs {
-		path := path.Join(dir.basedir, dir.dir)
-		logrus.Debugf("Processing dir: %s", path)
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			logrus.Infof("No configdir %s", path)
+		filePath := path.Join(dir.basedir, dir.dir)
+		logrus.Debugf("Processing dir: %s", filePath)
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			logrus.Infof("No configdir %s", filePath)
 			continue
 		}
-		configVersion, err := findConfigVersion(versions, path)
+		configVersion, err := findConfigVersion(versions, filePath)
 		if err != nil {
 			logrus.Debug("Error reading config")
 			return "", errors.Wrap(err, "Error reading config")
@@ -98,7 +98,7 @@ func GenerateEnvScript() (string, error) {
 			logrus.Infof("No config in %s", dir.dir)
 			continue
 		}
-		err = exportPropertiesAsEnvVars(buffer, path+"/"+configVersion+".properties", dir.shouldMask)
+		err = exportPropertiesAsEnvVars(buffer, filePath+"/"+configVersion+".properties", dir.shouldMask)
 		if err != nil {
 			logrus.Debugf("Returning with error after export: %s", err.Error())
 			return "", err
@@ -130,7 +130,7 @@ func exportPropertiesAsEnvVars(writer io.Writer, filepath string, maskValue bool
 	for _, key := range p.Keys() {
 		if isValidEnvironmentVariable(key) {
 			val := p.MustGetString(key)
-			fmt.Fprintf(writer, "export %s=%s\n", key, val)
+			_, _ = fmt.Fprintf(writer, "export %s=%s\n", key, val)
 			if maskValue {
 				logrus.Debugf("export %s=******", key)
 			} else {

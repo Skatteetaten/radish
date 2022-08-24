@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -18,11 +17,13 @@ var settleTime = 1000 * time.Millisecond
 
 func TestRotateSignal(t *testing.T) {
 
-	file, err := ioutil.TempFile("/tmp", "logrotate")
+	file, err := os.CreateTemp("/tmp", "logrotate")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.Remove(file.Name())
+	defer func(name string) {
+		_ = os.Remove(name)
+	}(file.Name())
 
 	r := nginxLogRotate{
 		paths:           []string{file.Name()},
@@ -44,11 +45,13 @@ func TestRotateSignal(t *testing.T) {
 
 func TestHandleLogRotate(t *testing.T) {
 
-	file, err := ioutil.TempFile("/tmp", "logrotate")
+	file, err := os.CreateTemp("/tmp", "logrotate")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.Remove(file.Name())
+	defer func(name string) {
+		_ = os.Remove(name)
+	}(file.Name())
 
 	e := NewNginxExecutor(0, 600, []string{file.Name()})
 
@@ -71,7 +74,7 @@ func TestNameArchive(t *testing.T) {
 	assert.Equal(t, "/u01/logs/nginx.0.access", oldLog)
 }
 
-//https://golang.org/src/os/signal/signal_test.go
+// https://golang.org/src/os/signal/signal_test.go
 func waitSig(t *testing.T, c <-chan os.Signal, sig os.Signal) {
 
 	t.Helper()
@@ -79,7 +82,7 @@ func waitSig(t *testing.T, c <-chan os.Signal, sig os.Signal) {
 	waitSig1(t, c, sig, false)
 }
 
-//https://golang.org/src/os/signal/signal_test.go
+// https://golang.org/src/os/signal/signal_test.go
 func waitSig1(t *testing.T, c <-chan os.Signal, sig os.Signal, all bool) {
 
 	t.Helper()

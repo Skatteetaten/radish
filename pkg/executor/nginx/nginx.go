@@ -3,7 +3,6 @@ package nginx
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"sort"
@@ -85,12 +84,12 @@ type proxy struct {
 	port     string
 }
 
-//GenerateNginxConfiguration :
+// GenerateNginxConfiguration :
 func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
 	var openshiftConfig OpenshiftConfig
 
 	if openshiftConfigPath != "" {
-		data, err := ioutil.ReadFile(openshiftConfigPath)
+		data, err := os.ReadFile(openshiftConfigPath)
 		if err != nil {
 			return fmt.Errorf("Error reading file: " + openshiftConfigPath)
 		}
@@ -235,11 +234,9 @@ func mapDataDescToTemplateInput(openshiftConfig OpenshiftConfig) (*executor.Temp
 }
 
 /*
-
 We sanitize the input.... Don't want to large inputs.
 
 For example; Accepting very large client_max_body_size would make a DOS attack very easy to implement...
-
 */
 var allowedNginxOverrides = map[string]func(string) error{
 	"client_max_body_size": func(s string) error {

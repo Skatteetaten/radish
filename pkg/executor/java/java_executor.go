@@ -6,7 +6,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/skatteetaten/radish/pkg/executor"
 	"github.com/skatteetaten/radish/pkg/util"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -20,7 +19,7 @@ type generatedJavaExecutor struct {
 	javaExitHandler
 }
 
-//NewJavaExecutor :
+// NewJavaExecutor :
 func NewJavaExecutor() executor.Executor {
 	return &generatedJavaExecutor{
 		javaExitHandler: javaExitHandler{},
@@ -28,7 +27,7 @@ func NewJavaExecutor() executor.Executor {
 }
 
 func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, error) {
-	dat, err := ioutil.ReadFile(radishDescriptor)
+	dat, err := os.ReadFile(radishDescriptor)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +48,7 @@ func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, er
 }
 
 func (m *generatedJavaExecutor) BuildClasspath(radishDescriptor string) (string, error) {
-	dat, err := ioutil.ReadFile(radishDescriptor)
+	dat, err := os.ReadFile(radishDescriptor)
 	if err != nil {
 		return "", err
 	}
@@ -101,7 +100,7 @@ func (m *javaExitHandler) HandleExit(exitCode int, pid int) int {
 
 func printCoreFileToStdOut(pid int) {
 	report := fmt.Sprintf("hs_err_pid%d.log", pid)
-	crashReport, err := ioutil.ReadFile(report)
+	crashReport, err := os.ReadFile(report)
 	if err != nil {
 		logrus.Errorf("Error reading crash report %s", report)
 		return

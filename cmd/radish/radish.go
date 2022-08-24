@@ -13,7 +13,7 @@ import (
 	"github.com/skatteetaten/radish/pkg/radish"
 )
 
-//GenerateEnvScript : Use to set environment variables from appropriate properties files, based on app- and aurora versions.
+// GenerateEnvScript : Use to set environment variables from appropriate properties files, based on app- and aurora versions.
 var GenerateEnvScript = &cobra.Command{
 	Use:   "generateEnvScript",
 	Short: "Use to set environment variables from appropriate properties files, based on app- and aurora versions.",
@@ -38,7 +38,7 @@ var GenerateEnvScript = &cobra.Command{
 	},
 }
 
-//GenerateNginxConfiguration : Use to generate Nginx configuration files.
+// GenerateNginxConfiguration : Use to generate Nginx configuration files.
 var GenerateNginxConfiguration = &cobra.Command{
 	Use:   "generateNginxConfiguration",
 	Short: "Use to generate Nginx configuration files based on a Radish descriptor",
@@ -98,7 +98,7 @@ Takes a number of flags:
 	},
 }
 
-//RunJava :
+// RunJava :
 var RunJava = &cobra.Command{
 	Use:   "runJava",
 	Short: "Runs a Java process with Radish",
@@ -109,7 +109,7 @@ var RunJava = &cobra.Command{
 	},
 }
 
-//RunNginx :
+// RunNginx :
 var RunNginx = &cobra.Command{
 	Use:   "runNginx",
 	Short: "Runs a Nginx process with radish",
@@ -137,7 +137,7 @@ var RunNginx = &cobra.Command{
 	},
 }
 
-//RunNodeJS :
+// RunNodeJS :
 var RunNodeJS = &cobra.Command{
 	Use:   "runNodeJS",
 	Short: "Runs a NodeJS process with radish",
@@ -178,7 +178,7 @@ var RunNodeJS = &cobra.Command{
 	},
 }
 
-//PrintClasspath :
+// PrintClasspath :
 var PrintClasspath = &cobra.Command{
 	Use:   "printCP",
 	Short: "Prints complete classpath Radish will use with java application",

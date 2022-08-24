@@ -11,16 +11,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-//FileWriter :
+// FileWriter :
 type FileWriter func(WriterFunc, ...string) error
 
-//WriterFunc :
+// WriterFunc :
 type WriterFunc func(io.Writer) error
 
-//ByteFunc :
+// ByteFunc :
 type ByteFunc func(bytes.Buffer) error
 
-//NewTemplateWriter :
+// NewTemplateWriter :
 func NewTemplateWriter(input interface{}, templatename string, templateString string) WriterFunc {
 	return func(writer io.Writer) error {
 		tmpl, err := template.New(templatename).Parse(templateString)
@@ -35,31 +35,24 @@ func NewTemplateWriter(input interface{}, templatename string, templateString st
 	}
 }
 
-//NewStringWriter :
-func NewStringWriter(input interface{}, content string) WriterFunc {
-	return func(writer io.Writer) error {
-		tmpl := bytes.NewBufferString(content)
-		_, err := tmpl.WriteTo(writer)
-		if err != nil {
-			return errors.Wrap(err, "Error processing template")
-		}
-		return nil
-	}
-}
-
-//NewFileWriter :
+// NewFileWriter :
 func NewFileWriter(targetFolder string) FileWriter {
 	return func(writerFunc WriterFunc, elem ...string) error {
 		elem = append(elem, "")
 		copy(elem[1:], elem[0:])
 		elem[0] = targetFolder
 		fp := filepath.Join(elem...)
-		os.MkdirAll(path.Dir(fp), os.ModeDir|0755)
+		err := os.MkdirAll(path.Dir(fp), os.ModeDir|0755)
+		if err != nil && !os.IsExist(err) {
+			return err
+		}
 		fileToWriteTo, err := os.Create(fp)
 		if err != nil {
 			return errors.Wrapf(err, "Error creating %+t", elem)
 		}
-		defer fileToWriteTo.Close()
+		defer func(fileToWriteTo *os.File) {
+			_ = fileToWriteTo.Close()
+		}(fileToWriteTo)
 		err = writerFunc(fileToWriteTo)
 		if err != nil {
 			return errors.Wrap(err, "Error error writing data")

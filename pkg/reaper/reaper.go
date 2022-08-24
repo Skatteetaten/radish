@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Start : start the reaping of child processes.
+// Start : start the reaping of child processes.
 func Start() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGCHLD)

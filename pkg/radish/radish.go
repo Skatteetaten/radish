@@ -23,7 +23,7 @@ import (
 	"github.com/skatteetaten/radish/pkg/signaler"
 )
 
-//RunRadish :
+// RunRadish :
 func RunRadish(args []string) {
 	e := java.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
@@ -53,7 +53,7 @@ func RunRadish(args []string) {
 	os.Exit(exitCode)
 }
 
-//RunNodeJS :
+// RunNodeJS :
 func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string, logFileRotateSize int) {
 	e := nodejs.NewNodeJSExecutor()
 
@@ -77,12 +77,12 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 		warningsGiven := 0
 		for mergedPipeScanner.Scan() {
 			if mergedPipeScanner.Err() != nil && warningsGiven < 3 {
-				writer.Write([]byte("ERROR - Stdout scan error encountered: " + mergedPipeScanner.Err().Error()))
+				_, _ = writer.Write([]byte("ERROR - Stdout scan error encountered: " + mergedPipeScanner.Err().Error()))
 				warningsGiven++
 			}
 			line := mergedPipeScanner.Bytes()
-			writer.Write(line)
-			writer.Write([]byte("\n"))
+			_, _ = writer.Write(line)
+			_, _ = writer.Write([]byte("\n"))
 		}
 
 	}()
@@ -106,7 +106,7 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 
 	var wstatus syscall.WaitStatus
 
-	syscall.Wait4(pid, &wstatus, 0, nil)
+	_, _ = syscall.Wait4(pid, &wstatus, 0, nil)
 
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
 		logrus.Info("NodeJS exited successfully")
@@ -117,7 +117,7 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 
 }
 
-//RunNginx :
+// RunNginx :
 func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int) {
 	e := nginx.NewNginxExecutor(rotateLogsAfterSize, checkRotateAfter, []string{"/u01/logs/nginx.access", "/u01/logs/nginx.log"})
 
@@ -138,7 +138,7 @@ func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int)
 
 	var wstatus syscall.WaitStatus
 
-	syscall.Wait4(pid, &wstatus, 0, nil)
+	_, _ = syscall.Wait4(pid, &wstatus, 0, nil)
 
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
 		logrus.Info("Nginx exited successfully")
@@ -162,7 +162,7 @@ func findGraceTime() time.Duration {
 	return time.Duration(int64(sf) * int64(time.Second))
 }
 
-//PrintRadishCP :
+// PrintRadishCP :
 func PrintRadishCP(args []string) {
 	e := java.NewJavaExecutor()
 	radishDescriptor, err := locateRadishDescriptor(args)
@@ -198,7 +198,7 @@ func locateRadishDescriptor(args []string) (string, error) {
 	return "", errors.New("No radish descriptor found")
 }
 
-//GenerateNginxConfiguration :
+// GenerateNginxConfiguration :
 func GenerateNginxConfiguration(openshiftConfigPath string, nginxPath string) error {
 	return nginx.GenerateNginxConfiguration(openshiftConfigPath, nginxPath)
 }

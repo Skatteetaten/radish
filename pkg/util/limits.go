@@ -2,15 +2,14 @@ package util
 
 import (
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
 	"strings"
 )
 
-//https://www.kernel.org/doc/Documentation/cgroup-v1/memory.txt
-//https://www.kernel.org/doc/Documentation/scheduler/sched-bwc.txt
+// https://www.kernel.org/doc/Documentation/cgroup-v1/memory.txt
+// https://www.kernel.org/doc/Documentation/scheduler/sched-bwc.txt
 const (
 	cfsPeriodUs            = "/sys/fs/cgroup/cpu/cpu.cfs_period_us"
 	cfsQuotaUs             = "/sys/fs/cgroup/cpu/cpu.cfs_quota_us"
@@ -18,13 +17,13 @@ const (
 	memLimitInBytes        = "/sys/fs/cgroup/memory/memory.limit_in_bytes"
 )
 
-//CGroupLimits :
+// CGroupLimits :
 type CGroupLimits struct {
 	MaxCoresEstimated  int
 	MemoryLimitInBytes int
 }
 
-//ReadCGroupLimits :
+// ReadCGroupLimits :
 func ReadCGroupLimits() CGroupLimits {
 
 	ret := CGroupLimits{}
@@ -49,7 +48,7 @@ func ReadCGroupLimits() CGroupLimits {
 }
 
 func readCGroupLimit(cgroupFilePath string) int {
-	dat, err := ioutil.ReadFile(cgroupFilePath)
+	dat, err := os.ReadFile(cgroupFilePath)
 	if os.IsNotExist(err) {
 		logrus.Debugf("File %s does not exist", cgroupFilePath)
 		return -1
@@ -67,17 +66,17 @@ func readCGroupLimit(cgroupFilePath string) int {
 	return parsed
 }
 
-//HasMemoryLimit :
+// HasMemoryLimit :
 func (e CGroupLimits) HasMemoryLimit() bool {
 	return e.MemoryLimitInBytes > 0
 }
 
-//HasCoreLimit :
+// HasCoreLimit :
 func (e CGroupLimits) HasCoreLimit() bool {
 	return e.MaxCoresEstimated > 0
 }
 
-//MemoryFractionInMB :
+// MemoryFractionInMB :
 func (e CGroupLimits) MemoryFractionInMB(fraction int) interface{} {
 	//If memory limits is above a sensible default (64G), we set it to 1G
 	if e.MemoryLimitInBytes > 2<<37 {
