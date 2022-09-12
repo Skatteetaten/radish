@@ -35,6 +35,15 @@ func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, er
 	if err != nil {
 		return nil, err
 	}
+	// Use provided start script
+	if desc.Data.StartScript != "" {
+		cmd := exec.Command(desc.Data.StartScript)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		return cmd, nil
+	}
+	// Generate start script
 	argumentModificators := resolveArgumentModificators(os.Getenv)
 	args, err := buildArgline(desc, os.LookupEnv, argumentModificators, util.ReadCGroupLimits())
 	if err != nil {
@@ -45,6 +54,7 @@ func (m *generatedJavaExecutor) BuildCmd(radishDescriptor string) (*exec.Cmd, er
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd, nil
+
 }
 
 func (m *generatedJavaExecutor) BuildClasspath(radishDescriptor string) (string, error) {
