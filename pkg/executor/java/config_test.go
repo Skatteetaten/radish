@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/skatteetaten/radish/pkg/util"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -19,13 +19,14 @@ func envFunc(key string) (string, bool) {
 }
 
 func TestBuildArgLineFromDescriptor(t *testing.T) {
-	dat, err := ioutil.ReadFile("testdata/testconfig.json")
+	dat, err := os.ReadFile("testdata/testconfig.json")
 	assert.NoError(t, err)
 	desc, err := unmarshallDescriptor(bytes.NewBuffer(dat))
 	limits := util.CGroupLimits{
 		MaxCoresEstimated:  2,
 		MemoryLimitInBytes: 2 * 1024 * 1024 * 1024,
 	}
+	assert.Equal(t, "start.sh", desc.Data.StartScript)
 	assert.NoError(t, err)
 	args, err := buildArgline(desc, envFunc, Java8ArgumentsModificators, limits)
 	assert.NoError(t, err)
@@ -33,7 +34,7 @@ func TestBuildArgLineFromDescriptor(t *testing.T) {
 }
 
 func TestBuildArgLineFromDescriptorSubpath(t *testing.T) {
-	dat, err := ioutil.ReadFile("testdata/testconfig-subpath.json")
+	dat, err := os.ReadFile("testdata/testconfig-subpath.json")
 	assert.NoError(t, err)
 	desc, err := unmarshallDescriptor(bytes.NewBuffer(dat))
 	limits := util.CGroupLimits{

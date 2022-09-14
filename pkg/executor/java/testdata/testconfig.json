@@ -8,6 +8,7 @@
       "lib/lib2/lib4.jar"
     ],
     "JavaOptions": "-Dfoo=bar",
+    "StartScript": "start.sh",
     "MainClass": "foo.bar.Main",
     "ApplicationArgs": "--logging.config=logback.xml"
   }

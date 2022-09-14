@@ -23,6 +23,7 @@ type descriptorData struct {
 	MainClass             string
 	ApplicationArgs       string
 	JavaOptions           string
+	StartScript           string
 }
 
 type descriptor struct {
