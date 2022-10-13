@@ -48,7 +48,7 @@ func RunRadish(args []string) {
 	if err != nil {
 		logrus.Error(err)
 	}
-	signaler.SendSigtermToSidecars(findProcessesToTerminate())
+	signaler.SendSigtermToSidecars(findProcessesToTerminate(), findGraceTime())
 	logrus.Infof("Exit code %d", wstatus.ExitStatus())
 	exitCode := e.HandleExit(wstatus.ExitStatus(), pid)
 	os.Exit(exitCode)
@@ -109,7 +109,7 @@ func RunNodeJS(mainJavaScriptFile string, logLocation string, logFilename string
 
 	_, _ = syscall.Wait4(pid, &wstatus, 0, nil)
 
-	signaler.SendSigtermToSidecars(findProcessesToTerminate())
+	signaler.SendSigtermToSidecars(findProcessesToTerminate(), findGraceTime())
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
 		logrus.Info("NodeJS exited successfully")
 	} else {
@@ -142,7 +142,7 @@ func RunNginx(nginxConfigPath string, rotateLogsAfterSize, checkRotateAfter int)
 
 	_, _ = syscall.Wait4(pid, &wstatus, 0, nil)
 
-	signaler.SendSigtermToSidecars(findProcessesToTerminate())
+	signaler.SendSigtermToSidecars(findProcessesToTerminate(), findGraceTime())
 	if wstatus.Exited() && wstatus.ExitStatus() == 0 {
 		logrus.Info("Nginx exited successfully")
 	} else {

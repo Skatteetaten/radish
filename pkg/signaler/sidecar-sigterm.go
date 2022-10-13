@@ -4,10 +4,11 @@ import (
 	"github.com/mitchellh/go-ps"
 	"github.com/sirupsen/logrus"
 	"syscall"
+	"time"
 )
 
 // SendSigtermToSidecars :
-func SendSigtermToSidecars(processNames []string) {
+func SendSigtermToSidecars(processNames []string, terminateGracetime time.Duration) {
 	if len(processNames) == 0 {
 		logrus.Debugf("SIGTERM signaling ended, no processes specified for SIGTERM signaling")
 		return
@@ -18,6 +19,11 @@ func SendSigtermToSidecars(processNames []string) {
 		logrus.Errorf("Error getting process list %s", err)
 	}
 
+	logrus.Infof("Run completed. Sending SIGTERM to configured child processes in %0.0f seconds", terminateGracetime.Seconds())
+	if terminateGracetime > 0 {
+		time.Sleep(terminateGracetime)
+	}
+
 	for _, p := range processes {
 		if shouldTerminateProcess(p.Executable(), processNames) {
 			logrus.Infof("Sending SIGTERM to process=%s PID=%d", p.Executable(), p.Pid())
@@ -26,8 +32,6 @@ func SendSigtermToSidecars(processNames []string) {
 				logrus.Errorf("Error sending SIGTERM to process=%s, PID=%d", p.Executable(), p.Pid())
 				return
 			}
-		} else {
-
 		}
 	}
 }
