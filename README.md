@@ -26,28 +26,29 @@ The second task of Radish is a CLI to accomplish a number of tasks:
 
 # Config read by Radish
 
-| Environment variable | Description                                                                                                                      |
-| ---|----------------------------------------------------------------------------------------------------------------------------------| 
-| JAVA_OPTIONS | Checked for already set options                                                                                                  |
-| JAVA_MAX_MEM_RATIO | ONLY Java 8: adjust the ratio in percent of memory set as XMX. Default 25%. Remember that memory is more than heap.              |
-| JAVA_MAX_RAM_PERCENTAGE | Java 11+: adjust the max amount of memory set as XX:MaxRAMPercentage. Default 75.0. Remember that memory is more than heap. |
-| ENABLE_REMOTE_DEBUG| turn on remote debuging on DEBUG_PORT (default 5005)                                                                             |
-| ENABLE_EXIT_ON_OOM | If set to a non-empty string, the JVM will exit on OutOfMemoryError. Default is off.                                             |
-| ENABLE_JAVA_DIAGNOSTICS | If set to a non-empty string, the JVM is started with diagnostics flags set. Default is off.                                     | 
-| ENABLE_JOLOKIA | Enables the Jolokia-agent if set.                                                                                                |
-| SPLUNK_INDEX | Splunk Index to use for application logging.                                                                                     |
-| SPLUNK_AUDIT_INDEX | Splunk Index for audit logs.                                                                                                     |
-| SPLUNK_APPDYNAMICS_INDEX | Splunk Index for APM logs.                                                                                                       |
-| SPLUNK_ATS_INDEX | Splunk Index for ATS/STS logs.                                                                                                   |
-| SPLUNK_BLACKLIST | Rules for which incomming files that should be excluded. Must be a valid PCRE2 regular expression.                               |
-| IGNORE_NGINX_EXCLUDE | Ignore Nginx exclude for Nginx configuration.                                                                                    |
-| PROXY_PASS_HOST | Proxypass host for Nginx configuration. Default localhost.                                                                       |
-| PROXY_PASS_PORT | Proxypass port for Nginx configuration. Default 9090.                                                                            |
-| NGINX_WORKER_CONNECTIONS | Number of worker connections for Nginx configuration. Default 1024.                                                              |
-| NGINX_WORKER_PROCESSES | Number of worker processes for Nginx configuration. Default 1.                                                                   |
-| RADISH_SIGNAL_FORWARD_DELAY | The delay in second from a signal is received by radish until it is sent to the child process. Default is 0                      |
-| NGINX_PROXY_READ_TIMEOUT | Read timeout configuration. Default is 60                                                                                        |
-| NGINX_LOG_STRATEGY | Nginx indexing strategy is either set to `file` or `stdout`. Note: The `stdout` strategy is only available in OCP3 clusters.     
+| Environment variable               | Description                                                                                                                                              |
+|------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| JAVA_OPTIONS                       | Checked for already set options                                                                                                                          |
+| JAVA_MAX_MEM_RATIO                 | ONLY Java 8: adjust the ratio in percent of memory set as XMX. Default 25%. Remember that memory is more than heap.                                      |
+| JAVA_MAX_RAM_PERCENTAGE            | Java 11+: adjust the max amount of memory set as XX:MaxRAMPercentage. Default 75.0. Remember that memory is more than heap.                              |
+| ENABLE_REMOTE_DEBUG                | turn on remote debuging on DEBUG_PORT (default 5005)                                                                                                     |
+| ENABLE_EXIT_ON_OOM                 | If set to a non-empty string, the JVM will exit on OutOfMemoryError. Default is off.                                                                     |
+| ENABLE_JAVA_DIAGNOSTICS            | If set to a non-empty string, the JVM is started with diagnostics flags set. Default is off.                                                             | 
+| ENABLE_JOLOKIA                     | Enables the Jolokia-agent if set.                                                                                                                        |
+| SPLUNK_INDEX                       | Splunk Index to use for application logging.                                                                                                             |
+| SPLUNK_AUDIT_INDEX                 | Splunk Index for audit logs.                                                                                                                             |
+| SPLUNK_APPDYNAMICS_INDEX           | Splunk Index for APM logs.                                                                                                                               |
+| SPLUNK_ATS_INDEX                   | Splunk Index for ATS/STS logs.                                                                                                                           |
+| SPLUNK_BLACKLIST                   | Rules for which incomming files that should be excluded. Must be a valid PCRE2 regular expression.                                                       |
+| IGNORE_NGINX_EXCLUDE               | Ignore Nginx exclude for Nginx configuration.                                                                                                            |
+| PROXY_PASS_HOST                    | Proxypass host for Nginx configuration. Default localhost.                                                                                               |
+| PROXY_PASS_PORT                    | Proxypass port for Nginx configuration. Default 9090.                                                                                                    |
+| NGINX_WORKER_CONNECTIONS           | Number of worker connections for Nginx configuration. Default 1024.                                                                                      |
+| NGINX_WORKER_PROCESSES             | Number of worker processes for Nginx configuration. Default 1.                                                                                           |
+| RADISH_SIGNAL_FORWARD_DELAY        | The delay in second from a signal is received by radish until it is sent to the child process. Default is 0                                              |
+| NGINX_PROXY_READ_TIMEOUT           | Read timeout configuration. Default is 60                                                                                                                |
+| NGINX_LOG_STRATEGY                 | Nginx indexing strategy is either set to `file` or `stdout`. Note: The `stdout` strategy is only available in OCP3 clusters.                             |
+| RADISH_TERMINATE_SIDECAR_PROCESSES | Comma separated list of sidecar process names in pod to send SIGTERM to when exiting. Requires that pod is configured with `shareProcessNamespace: true` |
 
 # Build:
 
