@@ -19,7 +19,7 @@ func SendSigtermToSidecars(processNames []string, terminateGracetime time.Durati
 		logrus.Errorf("Error getting process list %s", err)
 	}
 
-	logrus.Infof("Run completed. Sending SIGTERM to configured child processes in %0.0f seconds", terminateGracetime.Seconds())
+	logrus.Infof("Run completed. Sending SIGTERM to configured sidecar processes in %0.0f seconds", terminateGracetime.Seconds())
 	if terminateGracetime > 0 {
 		time.Sleep(terminateGracetime)
 	}
