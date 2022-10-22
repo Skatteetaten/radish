@@ -176,6 +176,23 @@ func TestOptionsAppDynamics(t *testing.T) {
 	assert.Contains(t, modifiedArgs, "-Dappdynamics.agent.applicationName=mynamespace-test")
 }
 
+func TestOptionsOpentelemetry(t *testing.T) {
+	env := make(map[string]string)
+	env["HOME"] = "/u01"
+	env["OPENSHIFT_CLUSTER"] = "test"
+	env["ENABLE_OTEL_TRACE"] = "true"
+	env["OPENTELEMETRY_AGENT_BASE_DIR"] = "/opt/otel"
+	env["POD_NAMESPACE"] = "mynamespace"
+	env["APP_NAME"] = "myappname"
+	env["POD_NAME"] = "mypodname"
+	ctx := createTestContext(env)
+
+	modifiedArgs := applyArguments(Java8ArgumentsModificators, ctx)
+
+	assert.Contains(t, modifiedArgs, "-javaagent:/opt/otel/opentelemetry-javaagent.jar")
+	assert.Contains(t, modifiedArgs, "-Dotel.resource.attributes=service.name=myappname,service.namespace=mynamespace,service.cluster=test")
+}
+
 func TestReadingOfJavaOptionsInDescriptor(t *testing.T) {
 	env["VARIABLE_TO_EXPAND"] = "jallaball"
 	ctx := createTestContext(env)

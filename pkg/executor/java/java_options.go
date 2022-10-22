@@ -34,6 +34,7 @@ var Java8ArgumentsModificators = []ArgumentModificator{
 	&diagnosticsOptions{},
 	&jolokiaOptions{},
 	&appDynamicsOptions{},
+	&otelOptions{},
 	&cpuCoreTuning{},
 	&java8MemoryOptions{},
 	&metaspaceOptions{},
@@ -49,6 +50,7 @@ var Java11ArgumentsModificators = []ArgumentModificator{
 	&java11PlusDiagnosticsOptions{},
 	&jolokiaOptions{},
 	&appDynamicsOptions{},
+	&otelOptions{},
 	&java11PlusMemoryOptions{},
 	&heapDumpOptions{},
 }
@@ -195,6 +197,49 @@ func (m *jolokiaOptions) modifyArguments(context ArgumentsContext) []string {
 	}
 	jolokiaArgument := fmt.Sprintf("-javaagent:%s=host=0.0.0.0,port=8778,protocol=https", jolokiaPath)
 	args = append([]string{jolokiaArgument}, context.Arguments...)
+	return args
+}
+
+type otelOptions struct {
+}
+
+func (m *otelOptions) shouldModifyArguments(context ArgumentsContext) bool {
+	value, exists := context.Environment("ENABLE_OTEL_TRACE")
+	return exists && strings.ToUpper(value) == "TRUE"
+}
+
+func (m *otelOptions) modifyArguments(context ArgumentsContext) []string {
+	opentelemetryBaseDir, exists := context.Environment("OPENTELEMETRY_AGENT_BASE_DIR")
+	args := make([]string, 0)
+	if !exists {
+		logrus.Error("Opentelemetry was supposed to be enabled, but no path found")
+		return context.Arguments
+	}
+
+	appName, exists := context.Environment("APP_NAME")
+	if !exists {
+		logrus.Error("Required value APP_NAME not found. Opentelemetry agent is disabled")
+		return context.Arguments
+	}
+	namespace, exists := context.Environment("POD_NAMESPACE")
+	if !exists {
+		logrus.Error("Required value POD_NAMESPACE not found. Opentelemetry agent is disabled")
+		return context.Arguments
+	}
+	cluster, exists := context.Environment("OPENSHIFT_CLUSTER")
+	if !exists {
+		logrus.Error("Required value POD_NAMESPACE not found. Opentelemetry agent is disabled")
+		return context.Arguments
+	}
+	// uniqueHostId used to identify POD's by AppD machine agent
+	otelAgentArguments := fmt.Sprintf("-javaagent:%s/opentelemetry-javaagent.jar", opentelemetryBaseDir)
+	args = append([]string{otelAgentArguments})
+
+	args = append(args,
+		fmt.Sprintf("-Dotel.resource.attributes=service.name=%s,service.namespace=%s,service.cluster=%s", appName, namespace, cluster),
+	)
+
+	args = append(args, context.Arguments...)
 	return args
 }
 
