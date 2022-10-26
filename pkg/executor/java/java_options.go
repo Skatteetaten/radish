@@ -228,7 +228,7 @@ func (m *otelOptions) modifyArguments(context ArgumentsContext) []string {
 	}
 	cluster, exists := context.Environment("OPENSHIFT_CLUSTER")
 	if !exists {
-		logrus.Error("Required value POD_NAMESPACE not found. Opentelemetry agent is disabled")
+		logrus.Error("Required value OPENSHIFT_CLUSTER not found. Opentelemetry agent is disabled")
 		return context.Arguments
 	}
 	// uniqueHostId used to identify POD's by AppD machine agent
